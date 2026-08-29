@@ -32,9 +32,11 @@ class Settings(BaseSettings):
     # Agent Guardrails
     MAX_RETRY_ATTEMPTS: int = 2
 
-    # LLM API Keys
+    # LLM Configuration
+    GOOGLE_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
+    LLM_MODEL: str = "google:gemini-2.5-flash"
 
 
 settings = Settings()

@@ -18,6 +18,8 @@
 *   **Why a Hybrid Trigger?** Real webhooks prove technical capability, while the `/simulate-batch` endpoint guarantees a flawless, instantly measurable demo for the judges.
 *   **Database & Async Session Management:** SQLite with `aiosqlite` and `sqlmodel` provides asynchronous, non-blocking DB operations integrated directly into FastAPI's lifespan and dependency injection system.
 *   **Schema Separation:** Strict separation between persistence models (`Customer`, `Transaction`, `AuditLog`) and agent contracts (`DiagnosticContext`, `FailureDiagnosis`, `RecoveryStrategy`, `EmailPayload`, `WhatsAppPayload`).
+*   **Multi-Tier Agent Fallback:** Diagnostic & Strategy agents leverage Gemini (`gemini-2.5-flash`) via Pydantic-AI when API keys exist, while maintaining a 100% offline-capable, deterministic heuristic classifier fallback to prevent demo downtime.
+*   **Bounded Loops & Gating:** Explicit guardrails enforce a strict maximum retry limit (default: 2 retries per transaction) logging `GATING_RULE_BLOCKED` to the audit ledger and marking transactions `ABANDONED`.
 
 ## 3. Package & Environment Setup
 *   Managed via `uv` with fast dependency resolution and reproducible `.venv`.
