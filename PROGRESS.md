@@ -1,15 +1,10 @@
 # Project Implementation State
 
 ## Active Phase
-- [ ] **Phase 4: Frontend Dashboard (Vite+React)**
-    - [ ] Initialize Vite+React project with TailwindCSS and Lucide icons.
-    - [ ] Build Revenue Recovery metrics cards & charts.
-    - [ ] Build live WhatsApp Replica UI component polling the feed.
-    - [ ] Build Transaction & Audit Log timeline tables with manual recovery simulation actions.
-
-## Pending Phases
-- [ ] **Phase 5: Demo Polish**
-    - [ ] End-to-end testing and video recording prep.
+- [ ] **Phase 5: Demo Polish & End-to-End Verification**
+    - [ ] Run backend FastAPI server + Vite frontend integration test.
+    - [ ] Verify synthetic batch simulation, dynamic discount application, WhatsApp feed polling, manual recovery triggers, and audit trail rendering.
+    - [ ] Create demo launcher script (`run_demo.py` or powershell runner).
 
 ## Completed
 - [x] High-level system architecture design finalized.
@@ -31,3 +26,10 @@
     - [x] Expose `/api/simulate-batch` endpoint with pre-configured Indian SaaS/E-commerce payment failure scenarios.
     - [x] Expose dashboard query endpoints (`/api/metrics`, `/api/transactions`, `/api/audit-logs`, `/api/whatsapp-feed`, `/api/transactions/{id}/retry`, `/api/transactions/{id}/mark-recovered`).
     - [x] Complete end-to-end unit test suite in `test_api.py` (9/9 tests passed).
+- [x] **Phase 4: Frontend Dashboard (Vite+React)**
+    - [x] Initialize Vite+React project with TailwindCSS v4, TypeScript, and Lucide icons.
+    - [x] Built `MetricCards` displaying Recovered Revenue (INR), Revenue At Risk, Active In-Flight Cases, and Outreach Dispatches.
+    - [x] Built interactive `WhatsAppMock` replica widget with live contact switcher, chat bubbles, coupon badges, and payment simulation.
+    - [x] Built `TransactionTable` with search, status filtering, failure category tags, and action triggers.
+    - [x] Built `AuditLogTimeline` with expandable agent payloads and timing traces.
+    - [x] Production build passes clean (`npm run build`).

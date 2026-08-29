@@ -22,7 +22,9 @@
 *   **Bounded Loops & Gating:** Explicit guardrails enforce a strict maximum retry limit (default: 2 retries per transaction) logging `GATING_RULE_BLOCKED` to the audit ledger and marking transactions `ABANDONED`.
 *   **Dual-Trigger Architecture:** Razorpay webhooks (`payment.failed`, `payment_link.paid`) enable real-world integration, while the batch simulation router (`/api/simulate-batch`) generates realistic Indian localized scenarios (UPI limit exceeded, OTP expiration, SBI 503 outage) for live presentations.
 *   **Audit-Driven Observability:** Dashboard queries compute real-time recovery metrics and stream live WhatsApp replica messages directly from SQLite and memory stores.
+*   **Zero-Dependency Live UI Replica:** The React WhatsApp simulator mirrors mobile messaging UX with chat bubble styling, localized Hinglish copywriting, discount coupon tags, and instant simulated checkout triggers.
 
 ## 3. Package & Environment Setup
-*   Managed via `uv` with fast dependency resolution and reproducible `.venv`.
+*   Backend: Managed via `uv` with fast dependency resolution and reproducible `.venv`.
+*   Frontend: Vite + React + TypeScript + TailwindCSS v4 with proxy forwarding to `:8000`.
 *   Zero hallucinated environment variables: all settings mapped via `pydantic-settings` to `.env`.
