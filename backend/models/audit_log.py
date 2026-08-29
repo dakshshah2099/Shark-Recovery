@@ -1,0 +1,86 @@
+import enum
+import uuid
+from datetime import datetime
+from typing import Optional
+from sqlmodel import Field, SQLModel
+
+
+class ActionType(str, enum.Enum):
+    DIAGNOSIS_COMPLETED = "diagnosis_completed"
+    STRATEGY_DECIDED = "strategy_decided"
+    PAYMENT_LINK_GENERATED = "payment_link_generated"
+    EMAIL_DISPATCHED = "email_dispatched"
+    WHATSAPP_DISPATCHED = "whatsapp_dispatched"
+    GATING_RULE_BLOCKED = "gating_rule_blocked"
+    RECOVERY_VERIFIED = "recovery_verified"
+    SYSTEM_ERROR = "system_error"
+
+
+class AuditStatus(str, enum.Enum):
+    SUCCESS = "success"
+    FAILURE = "failure"
+    SKIPPED = "skipped"
+
+
+def generate_audit_id() -> str:
+    return f"audit_{uuid.uuid4().hex[:12]}"
+
+
+class AuditLogBase(SQLModel):
+    transaction_id: Optional[str] = Field(
+        default=None,
+        foreign_key="transaction.id",
+        index=True,
+        description="Related transaction ID if applicable",
+    )
+    customer_id: Optional[str] = Field(
+        default=None,
+        foreign_key="customer.id",
+        index=True,
+        description="Related customer ID if applicable",
+    )
+    agent_name: str = Field(
+        index=True,
+        description="Name of the agent or component performing the action",
+    )
+    action_type: ActionType = Field(
+        index=True,
+        description="Category of action executed",
+    )
+    status: AuditStatus = Field(
+        default=AuditStatus.SUCCESS,
+        index=True,
+        description="Outcome of the action execution",
+    )
+    input_payload: Optional[str] = Field(
+        default=None,
+        description="Serialized JSON input payload received by the agent/tool",
+    )
+    output_payload: Optional[str] = Field(
+        default=None,
+        description="Serialized JSON output/response produced by the agent/tool",
+    )
+    metadata_json: Optional[str] = Field(
+        default=None,
+        description="Extra context, prompt tokens, or error stack traces as serialized JSON",
+    )
+    execution_duration_ms: Optional[float] = Field(
+        default=None,
+        description="Execution duration in milliseconds",
+    )
+
+
+class AuditLog(AuditLogBase, table=True):
+    __tablename__ = "audit_log"
+
+    id: str = Field(
+        default_factory=generate_audit_id,
+        primary_key=True,
+        index=True,
+        description="Unique identifier for the audit ledger entry",
+    )
+    created_at: datetime = Field(
+        default_factory=datetime.utcnow,
+        index=True,
+        description="Timestamp when the action was logged",
+    )
