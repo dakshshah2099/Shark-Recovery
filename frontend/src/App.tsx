@@ -67,7 +67,7 @@ export const App: React.FC = () => {
         body: JSON.stringify({ count: 5 }),
       });
       if (res.ok) {
-        showNotification('⚡ Synthetic failed payment batch ingested & recovered autonomously!');
+        showNotification('Synthetic payment failure batch ingested & processed autonomously.');
         await fetchData();
       }
     } catch (err) {
@@ -83,7 +83,7 @@ export const App: React.FC = () => {
         method: 'POST',
       });
       if (res.ok) {
-        showNotification(`🔄 Re-executed AI recovery loop for txn ${transactionId}`);
+        showNotification(`Re-executed AI recovery loop for transaction ${transactionId}`);
         await fetchData();
       }
     } catch (err) {
@@ -97,7 +97,7 @@ export const App: React.FC = () => {
         method: 'POST',
       });
       if (res.ok) {
-        showNotification(`🎉 Customer completed payment! Revenue recovered for txn ${transactionId}`);
+        showNotification(`Payment verified. Revenue recovered for transaction ${transactionId}`);
         await fetchData();
       }
     } catch (err) {
@@ -106,7 +106,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080d1a] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#09090b] text-white flex flex-col font-sans">
       <Navbar
         onSimulateBatch={handleSimulateBatch}
         onRefresh={() => fetchData(true)}
@@ -114,18 +114,18 @@ export const App: React.FC = () => {
         refreshing={refreshing}
       />
 
-      {/* Floating Notification Toast */}
+      {/* Flat Notification Toast */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white font-medium text-xs py-3 px-4 rounded-xl shadow-2xl border border-emerald-400/40 flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-5 right-5 z-50 bg-blue-600 text-white font-medium text-xs py-2.5 px-4 rounded shadow-lg border border-blue-500 flex items-center gap-2">
           <span>{notification}</span>
         </div>
       )}
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Metric Cards Banner */}
+        {/* Top Metric Cards */}
         <MetricCards metrics={metrics} loading={loading} />
 
-        {/* Live Grid: Transaction Table & WhatsApp Live Replica */}
+        {/* Main Grid: Transaction Table & WhatsApp Live Replica */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <TransactionTable
@@ -150,8 +150,8 @@ export const App: React.FC = () => {
         </div>
       </main>
 
-      <footer className="border-t border-slate-800/80 py-4 bg-slate-950/60 text-center text-xs text-slate-500">
-        AI Shark Revenue Recovery Agent • Razorpay Buildathon 2026 • Powered by Pydantic-AI & FastAPI
+      <footer className="border-t border-zinc-800 py-4 bg-[#09090b] text-center text-xs text-zinc-500 font-mono">
+        AI Shark Revenue Recovery Agent • Razorpay Buildathon 2026 • Pydantic-AI & FastAPI
       </footer>
     </div>
   );

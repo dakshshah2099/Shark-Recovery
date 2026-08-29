@@ -1,4 +1,5 @@
-import { Bot, Play, RefreshCw } from 'lucide-react';
+import React from 'react';
+import { Play, RefreshCw, Layers } from 'lucide-react';
 
 interface NavbarProps {
   onSimulateBatch: () => void;
@@ -14,59 +15,48 @@ export const Navbar: React.FC<NavbarProps> = ({
   refreshing,
 }) => {
   return (
-    <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+    <header className="border-b border-zinc-800 bg-[#09090b] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 p-0.5 shadow-lg shadow-cyan-500/20">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center text-cyan-400">
-              <Bot className="w-5 h-5" />
-            </div>
+          <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
+            <Layers className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-black text-lg text-white tracking-tight">
-                SHARK<span className="text-cyan-400">RECOVERY</span>
+            <div className="flex items-center gap-2.5">
+              <span className="font-heading font-extrabold text-base tracking-tight text-white">
+                SHARK <span className="text-blue-500 font-bold">RECOVERY</span>
               </span>
-              <span className="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
+              <span className="text-[10px] font-medium bg-zinc-900 text-zinc-300 px-2 py-0.5 rounded border border-zinc-700">
                 Razorpay Buildathon
               </span>
             </div>
-            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>Autonomous Revenue Recovery Agent Active</span>
+            <div className="text-[11px] text-zinc-400 flex items-center gap-1.5 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>Multi-Agent Recovery Pipeline Online</span>
             </div>
           </div>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={onRefresh}
             disabled={refreshing}
-            className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-800 transition-all text-xs flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-md border border-zinc-800 text-xs font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             title="Refresh Ledger"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-cyan-400' : ''}`} />
-            <span className="hidden sm:inline">Sync</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-blue-400' : ''}`} />
+            <span>Sync</span>
           </button>
 
           <button
             onClick={onSimulateBatch}
             disabled={simulating}
-            className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-cyan-500/25 flex items-center gap-2 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-xs px-3.5 py-2 rounded-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            {simulating ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Orchestrating AI Agents...</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4 fill-white" />
-                <span>Simulate 5 Failed Payments</span>
-              </>
-            )}
+            <Play className="w-3.5 h-3.5 fill-white" />
+            <span>{simulating ? 'Orchestrating Batch...' : 'Simulate 5 Failed Payments'}</span>
           </button>
         </div>
       </div>

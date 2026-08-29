@@ -4,12 +4,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 try:
     from backend.config import settings
-    from backend.database import init_db
+    from backend.database import async_session_maker, init_db
+    from backend.models.transaction import Transaction
     from backend.routers import dashboard_router, simulate_router, webhook_router
+    from backend.seed import seed_database
 except ImportError:
     from config import settings
-    from database import init_db
+    from database import async_session_maker, init_db
+    from models.transaction import Transaction
     from routers import dashboard_router, simulate_router, webhook_router
+    from seed import seed_database
+from sqlmodel import select
 
 
 @asynccontextmanager
@@ -17,6 +22,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifespan context manager for startup and shutdown events."""
     # Startup: Ensure SQLite tables exist
     await init_db()
+    # Auto-seed if empty
+    async with async_session_maker() as session:
+        existing = (await session.execute(select(Transaction))).scalars().first()
+        if not existing:
+            await seed_database()
     yield
     # Shutdown: Cleanup if needed
 
