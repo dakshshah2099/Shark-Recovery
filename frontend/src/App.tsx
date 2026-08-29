@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
-import { MetricCards } from './components/MetricCards';
-import { TransactionTable } from './components/TransactionTable';
-import { WhatsAppMock } from './components/WhatsAppMock';
-import { AuditLogTimeline } from './components/AuditLogTimeline';
+import { OverviewView } from './views/OverviewView';
+import { TransactionsView } from './views/TransactionsView';
+import { OutreachView } from './views/OutreachView';
+import { AuditView } from './views/AuditView';
+import { SettingsView } from './views/SettingsView';
 import type {
   AuditLogItem,
   DashboardMetrics,
@@ -12,6 +13,7 @@ import type {
 } from './types';
 
 export const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<string>('overview');
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
@@ -33,9 +35,9 @@ export const App: React.FC = () => {
     try {
       const [metricsRes, txnsRes, auditRes, waRes] = await Promise.all([
         fetch('/api/metrics'),
-        fetch('/api/transactions?limit=50'),
-        fetch('/api/audit-logs?limit=50'),
-        fetch('/api/whatsapp-feed?limit=20'),
+        fetch('/api/transactions?limit=100'),
+        fetch('/api/audit-logs?limit=100'),
+        fetch('/api/whatsapp-feed?limit=50'),
       ]);
 
       if (metricsRes.ok) setMetrics(await metricsRes.json());
@@ -67,7 +69,7 @@ export const App: React.FC = () => {
         body: JSON.stringify({ count: 5 }),
       });
       if (res.ok) {
-        showNotification('Synthetic payment failure batch ingested & processed autonomously.');
+        showNotification('⚡ Synthetic payment failures ingested and processed autonomously!');
         await fetchData();
       }
     } catch (err) {
@@ -77,13 +79,37 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleSeedDB = async () => {
+    try {
+      const res = await fetch('/api/db/seed', { method: 'POST' });
+      if (res.ok) {
+        showNotification('🌱 Database seeded with realistic customer & payment records.');
+        await fetchData();
+      }
+    } catch (err) {
+      console.error('Seed DB error:', err);
+    }
+  };
+
+  const handleClearDB = async () => {
+    try {
+      const res = await fetch('/api/db/clear', { method: 'POST' });
+      if (res.ok) {
+        showNotification('🗑️ Database and outreach store cleared completely.');
+        await fetchData();
+      }
+    } catch (err) {
+      console.error('Clear DB error:', err);
+    }
+  };
+
   const handleRetry = async (transactionId: string) => {
     try {
       const res = await fetch(`/api/transactions/${transactionId}/retry`, {
         method: 'POST',
       });
       if (res.ok) {
-        showNotification(`Re-executed AI recovery loop for transaction ${transactionId}`);
+        showNotification(`🔄 Re-executed AI recovery loop for txn ${transactionId}`);
         await fetchData();
       }
     } catch (err) {
@@ -97,7 +123,7 @@ export const App: React.FC = () => {
         method: 'POST',
       });
       if (res.ok) {
-        showNotification(`Payment verified. Revenue recovered for transaction ${transactionId}`);
+        showNotification(`🎉 Customer completed payment! Revenue recovered for txn ${transactionId}`);
         await fetchData();
       }
     } catch (err) {
@@ -108,46 +134,62 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#09090b] text-white flex flex-col font-sans">
       <Navbar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
         onSimulateBatch={handleSimulateBatch}
         onRefresh={() => fetchData(true)}
         simulating={simulating}
         refreshing={refreshing}
       />
 
-      {/* Flat Notification Toast */}
+      {/* Floating Flat Notification Toast */}
       {notification && (
         <div className="fixed bottom-5 right-5 z-50 bg-blue-600 text-white font-medium text-xs py-2.5 px-4 rounded shadow-lg border border-blue-500 flex items-center gap-2">
           <span>{notification}</span>
         </div>
       )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Top Metric Cards */}
-        <MetricCards metrics={metrics} loading={loading} />
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {activeTab === 'overview' && (
+          <OverviewView
+            metrics={metrics}
+            transactions={transactions}
+            whatsappFeed={whatsappFeed}
+            onNavigateTab={setActiveTab}
+            onSimulateBatch={handleSimulateBatch}
+            onSeedDB={handleSeedDB}
+            onClearDB={handleClearDB}
+            simulating={simulating}
+          />
+        )}
 
-        {/* Main Grid: Transaction Table & WhatsApp Live Replica */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <TransactionTable
-              transactions={transactions}
-              loading={loading}
-              onRetry={handleRetry}
-              onSimulatePay={handleSimulatePay}
-            />
-          </div>
+        {activeTab === 'transactions' && (
+          <TransactionsView
+            transactions={transactions}
+            loading={loading}
+            onRetry={handleRetry}
+            onSimulatePay={handleSimulatePay}
+          />
+        )}
 
-          <div className="lg:col-span-1">
-            <WhatsAppMock
-              messages={whatsappFeed}
-              onSimulatePay={handleSimulatePay}
-            />
-          </div>
-        </div>
+        {activeTab === 'outreach' && (
+          <OutreachView
+            messages={whatsappFeed}
+            transactions={transactions}
+            onSimulatePay={handleSimulatePay}
+          />
+        )}
 
-        {/* Real-time Agent Audit Ledger */}
-        <div className="w-full">
-          <AuditLogTimeline logs={auditLogs} />
-        </div>
+        {activeTab === 'audit' && (
+          <AuditView logs={auditLogs} />
+        )}
+
+        {activeTab === 'settings' && (
+          <SettingsView
+            onClearDB={handleClearDB}
+            onSeedDB={handleSeedDB}
+          />
+        )}
       </main>
 
       <footer className="border-t border-zinc-800 py-4 bg-[#09090b] text-center text-xs text-zinc-500 font-mono">

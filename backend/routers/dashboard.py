@@ -279,3 +279,33 @@ async def mark_transaction_recovered(
         "recovered_amount": txn.recovered_amount,
         "message": f"Successfully marked transaction {txn.id} as recovered.",
     }
+
+
+@router.post("/db/clear")
+async def clear_database(session: AsyncSession = Depends(get_session)) -> Dict[str, Any]:
+    """Clears all transactions, customers, audit logs, and in-memory stores."""
+    from sqlmodel import delete
+    try:
+        from backend.tools.whatsapp_tool import _mock_whatsapp_message_store
+    except ImportError:
+        from tools.whatsapp_tool import _mock_whatsapp_message_store
+
+    await session.execute(delete(AuditLog))
+    await session.execute(delete(Transaction))
+    await session.execute(delete(Customer))
+    await session.commit()
+    _mock_whatsapp_message_store.clear()
+    return {"status": "success", "message": "Database and in-memory stores cleared successfully."}
+
+
+@router.post("/db/seed")
+async def trigger_seed_database() -> Dict[str, Any]:
+    """Re-seeds database with realistic transactions."""
+    try:
+        from backend.seed import seed_database
+    except ImportError:
+        from seed import seed_database
+
+    await seed_database()
+    return {"status": "success", "message": "Database successfully seeded."}
+

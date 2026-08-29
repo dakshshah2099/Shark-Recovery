@@ -22,11 +22,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifespan context manager for startup and shutdown events."""
     # Startup: Ensure SQLite tables exist
     await init_db()
-    # Auto-seed if empty
-    async with async_session_maker() as session:
-        existing = (await session.execute(select(Transaction))).scalars().first()
-        if not existing:
-            await seed_database()
     yield
     # Shutdown: Cleanup if needed
 

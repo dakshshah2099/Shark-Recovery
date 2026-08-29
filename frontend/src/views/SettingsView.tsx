@@ -1,0 +1,123 @@
+import React, { useState } from 'react';
+import { Settings, Copy, Check, Shield, Database, Trash2, Key, Bot } from 'lucide-react';
+
+interface SettingsViewProps {
+  onClearDB: () => void;
+  onSeedDB: () => void;
+}
+
+export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB }) => {
+  const [copied, setCopied] = useState<boolean>(false);
+  const webhookUrl = `${window.location.origin}/webhook/razorpay`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(webhookUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="space-y-6 max-w-4xl">
+      <div>
+        <h2 className="font-heading font-bold text-lg text-white flex items-center gap-2">
+          <Settings className="w-5 h-5 text-blue-500" />
+          <span>System & Webhook Configuration</span>
+        </h2>
+        <p className="text-xs text-zinc-400">
+          Manage Razorpay webhook endpoints, agent guardrails, and SQLite persistence.
+        </p>
+      </div>
+
+      {/* Razorpay Webhook Configuration Card */}
+      <div className="bg-[#121215] border border-zinc-800 rounded-lg p-5 space-y-4">
+        <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2">
+          <Key className="w-4 h-4 text-blue-400" />
+          <span>Razorpay Webhook Endpoint</span>
+        </h3>
+        <p className="text-xs text-zinc-400">
+          Provide this URL in your Razorpay Dashboard (&gt; Settings &gt; Webhooks) to ingest live payment events.
+        </p>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            readOnly
+            value={webhookUrl}
+            className="flex-1 bg-black border border-zinc-800 text-xs text-zinc-300 px-3 py-2 rounded font-mono select-all"
+          />
+          <button
+            onClick={handleCopy}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded font-medium flex items-center gap-1.5 cursor-pointer"
+          >
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copied ? 'Copied' : 'Copy URL'}</span>
+          </button>
+        </div>
+
+        <div className="pt-3 border-t border-zinc-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <div className="text-zinc-500 text-[11px]">Subscribed Events:</div>
+            <div className="text-zinc-300 font-mono text-[11px] mt-0.5">payment.failed, payment_link.paid</div>
+          </div>
+          <div>
+            <div className="text-zinc-500 text-[11px]">Signature Verification:</div>
+            <div className="text-emerald-400 font-mono text-[11px] mt-0.5">HMAC-SHA256 Supported</div>
+          </div>
+          <div>
+            <div className="text-zinc-500 text-[11px]">Payload Routing:</div>
+            <div className="text-blue-400 font-mono text-[11px] mt-0.5">Autonomous Agent Ingestion</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Agent & LLM Architecture */}
+      <div className="bg-[#121215] border border-zinc-800 rounded-lg p-5 space-y-3">
+        <h3 className="font-heading font-bold text-sm text-white flex items-center gap-2">
+          <Bot className="w-4 h-4 text-cyan-400" />
+          <span>Multi-Agent Stack & Guardrails</span>
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="bg-zinc-900/80 p-3 rounded border border-zinc-800">
+            <div className="font-semibold text-white">Diagnostic & Strategy Agent:</div>
+            <div className="text-zinc-400 text-[11px] mt-1 font-mono">Google Gemini 2.5 Flash via Pydantic-AI</div>
+            <div className="text-zinc-500 text-[10px] mt-1">Structured output with deterministic heuristic fallback.</div>
+          </div>
+          <div className="bg-zinc-900/80 p-3 rounded border border-zinc-800">
+            <div className="font-semibold text-white">Stopping & Gating Guardrail:</div>
+            <div className="text-zinc-400 text-[11px] mt-1 font-mono">Max 2 Recovery Retries Bound</div>
+            <div className="text-zinc-500 text-[10px] mt-1">Prevents customer spamming and unbounded loops.</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Database State Management / Danger Zone */}
+      <div className="bg-[#121215] border border-rose-900/40 rounded-lg p-5 space-y-4">
+        <h3 className="font-heading font-bold text-sm text-rose-400 flex items-center gap-2">
+          <Shield className="w-4 h-4 text-rose-400" />
+          <span>Database & State Management</span>
+        </h3>
+        <p className="text-xs text-zinc-400">
+          Reset SQLite database state or re-seed with realistic transactions for live demo presentations.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={onSeedDB}
+            className="bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs px-3.5 py-2 rounded font-medium flex items-center gap-2 cursor-pointer"
+          >
+            <Database className="w-3.5 h-3.5 text-blue-400" />
+            <span>Seed 6 Sample Transactions</span>
+          </button>
+
+          <button
+            onClick={onClearDB}
+            className="bg-rose-950/60 hover:bg-rose-900 text-rose-200 border border-rose-800 text-xs px-3.5 py-2 rounded font-medium flex items-center gap-2 cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Clear All Database Records</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
