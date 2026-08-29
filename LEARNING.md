@@ -20,6 +20,8 @@
 *   **Schema Separation:** Strict separation between persistence models (`Customer`, `Transaction`, `AuditLog`) and agent contracts (`DiagnosticContext`, `FailureDiagnosis`, `RecoveryStrategy`, `EmailPayload`, `WhatsAppPayload`).
 *   **Multi-Tier Agent Fallback:** Diagnostic & Strategy agents leverage Gemini (`gemini-2.5-flash`) via Pydantic-AI when API keys exist, while maintaining a 100% offline-capable, deterministic heuristic classifier fallback to prevent demo downtime.
 *   **Bounded Loops & Gating:** Explicit guardrails enforce a strict maximum retry limit (default: 2 retries per transaction) logging `GATING_RULE_BLOCKED` to the audit ledger and marking transactions `ABANDONED`.
+*   **Dual-Trigger Architecture:** Razorpay webhooks (`payment.failed`, `payment_link.paid`) enable real-world integration, while the batch simulation router (`/api/simulate-batch`) generates realistic Indian localized scenarios (UPI limit exceeded, OTP expiration, SBI 503 outage) for live presentations.
+*   **Audit-Driven Observability:** Dashboard queries compute real-time recovery metrics and stream live WhatsApp replica messages directly from SQLite and memory stores.
 
 ## 3. Package & Environment Setup
 *   Managed via `uv` with fast dependency resolution and reproducible `.venv`.

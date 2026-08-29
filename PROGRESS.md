@@ -1,16 +1,13 @@
 # Project Implementation State
 
 ## Active Phase
-- [ ] **Phase 3: Webhooks & Batch Simulation**
-    - [ ] Expose `/webhook/razorpay` endpoint.
-    - [ ] Expose `/api/simulate-batch` endpoint.
-    - [ ] Expose dashboard query endpoints (`/api/metrics`, `/api/transactions`, `/api/audit-logs`, `/api/whatsapp-feed`).
+- [ ] **Phase 4: Frontend Dashboard (Vite+React)**
+    - [ ] Initialize Vite+React project with TailwindCSS and Lucide icons.
+    - [ ] Build Revenue Recovery metrics cards & charts.
+    - [ ] Build live WhatsApp Replica UI component polling the feed.
+    - [ ] Build Transaction & Audit Log timeline tables with manual recovery simulation actions.
 
 ## Pending Phases
-- [ ] **Phase 4: Frontend Dashboard (Next.js)**
-    - [ ] Initialize Vite+React project.
-    - [ ] Build Revenue Recovery metrics UI.
-    - [ ] Build live WhatsApp Replica UI polling the audit ledger.
 - [ ] **Phase 5: Demo Polish**
     - [ ] End-to-end testing and video recording prep.
 
@@ -29,3 +26,8 @@
     - [x] Implement execution tools: Razorpay Payment Link generator, aiosmtplib Email dispatcher, and WhatsApp Mock replica feed.
     - [x] Implement Master Recovery Orchestrator with strict stopping rules (max retry bounding) and end-to-end audit logging.
     - [x] Unit test suite passed for all agent workflows and stopping rule triggers.
+- [x] **Phase 3: Webhooks & Batch Simulation**
+    - [x] Expose `/webhook/razorpay` endpoint with HMAC signature verification for `payment.failed` and `payment_link.paid`.
+    - [x] Expose `/api/simulate-batch` endpoint with pre-configured Indian SaaS/E-commerce payment failure scenarios.
+    - [x] Expose dashboard query endpoints (`/api/metrics`, `/api/transactions`, `/api/audit-logs`, `/api/whatsapp-feed`, `/api/transactions/{id}/retry`, `/api/transactions/{id}/mark-recovered`).
+    - [x] Complete end-to-end unit test suite in `test_api.py` (9/9 tests passed).

@@ -5,9 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 try:
     from backend.config import settings
     from backend.database import init_db
+    from backend.routers import dashboard_router, simulate_router, webhook_router
 except ImportError:
     from config import settings
     from database import init_db
+    from routers import dashboard_router, simulate_router, webhook_router
 
 
 @asynccontextmanager
@@ -34,6 +36,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include API Routers
+app.include_router(webhook_router)
+app.include_router(simulate_router)
+app.include_router(dashboard_router)
 
 
 @app.get("/health", tags=["Health"])

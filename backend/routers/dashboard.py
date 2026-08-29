@@ -1,0 +1,213 @@
+import json
+import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import func, select
+try:
+    from backend.agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
+    from backend.database import get_session
+    from backend.models.audit_log import ActionType, AuditLog, AuditStatus
+    from backend.models.customer import Customer
+    from backend.models.schemas import (
+        AuditLogRead,
+        CustomerRead,
+        DashboardMetrics,
+        TransactionRead,
+    )
+    from backend.models.transaction import Transaction, TransactionStatus
+    from backend.tools.whatsapp_tool import get_whatsapp_messages
+except ImportError:
+    from agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
+    from database import get_session
+    from models.audit_log import ActionType, AuditLog, AuditStatus
+    from models.customer import Customer
+    from models.schemas import (
+        AuditLogRead,
+        CustomerRead,
+        DashboardMetrics,
+        TransactionRead,
+    )
+    from models.transaction import Transaction, TransactionStatus
+    from tools.whatsapp_tool import get_whatsapp_messages
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/api", tags=["Dashboard"])
+
+
+@router.get("/metrics", response_model=DashboardMetrics)
+async def get_dashboard_metrics(
+    session: AsyncSession = Depends(get_session),
+) -> DashboardMetrics:
+    """Calculates real-time financial and operational metrics for the recovery dashboard."""
+    # Transactions summary
+    txns = (await session.execute(select(Transaction))).scalars().all()
+
+    total_failed_revenue = sum(t.amount for t in txns)
+    total_recovered_revenue = sum(t.recovered_amount for t in txns if t.status == TransactionStatus.RECOVERED)
+    total_count = len(txns)
+    active_recovery_count = sum(1 for t in txns if t.status == TransactionStatus.PROCESSING)
+
+    recovery_rate = (
+        round((total_recovered_revenue / total_failed_revenue) * 100, 1)
+        if total_failed_revenue > 0
+        else 0.0
+    )
+
+    # Dispatch counts from AuditLog
+    email_count_res = await session.execute(
+        select(func.count(AuditLog.id)).where(AuditLog.action_type == ActionType.EMAIL_DISPATCHED)
+    )
+    email_count = email_count_res.scalar() or 0
+
+    whatsapp_count_res = await session.execute(
+        select(func.count(AuditLog.id)).where(AuditLog.action_type == ActionType.WHATSAPP_DISPATCHED)
+    )
+    whatsapp_count = whatsapp_count_res.scalar() or 0
+
+    return DashboardMetrics(
+        total_failed_revenue=round(total_failed_revenue, 2),
+        total_recovered_revenue=round(total_recovered_revenue, 2),
+        recovery_rate_percent=recovery_rate,
+        total_transactions_count=total_count,
+        active_recovery_count=active_recovery_count,
+        email_dispatched_count=email_count,
+        whatsapp_dispatched_count=whatsapp_count,
+    )
+
+
+@router.get("/transactions")
+async def list_transactions(
+    limit: int = Query(default=50, ge=1, le=200),
+    status: Optional[str] = None,
+    session: AsyncSession = Depends(get_session),
+) -> List[Dict[str, Any]]:
+    """Lists transactions with embedded customer metadata."""
+    query = select(Transaction).order_by(Transaction.created_at.desc()).limit(limit)
+    if status:
+        query = select(Transaction).where(Transaction.status == status).order_by(Transaction.created_at.desc()).limit(limit)
+
+    txns = (await session.execute(query)).scalars().all()
+    results: List[Dict[str, Any]] = []
+
+    for t in txns:
+        cust_query = await session.execute(select(Customer).where(Customer.id == t.customer_id))
+        cust = cust_query.scalar_one_or_none()
+        results.append({
+            "id": t.id,
+            "razorpay_order_id": t.razorpay_order_id,
+            "razorpay_payment_id": t.razorpay_payment_id,
+            "customer_id": t.customer_id,
+            "customer_name": cust.name if cust else "Unknown",
+            "customer_email": cust.email if cust else "Unknown",
+            "customer_phone": cust.phone if cust else "Unknown",
+            "amount": t.amount,
+            "currency": t.currency,
+            "status": t.status.value,
+            "failure_code": t.failure_code,
+            "failure_reason": t.failure_reason,
+            "failure_category": t.failure_category.value if t.failure_category else "unknown",
+            "retry_count": t.retry_count,
+            "max_retries": t.max_retries,
+            "recovery_link": t.recovery_link,
+            "recovery_channel": t.recovery_channel,
+            "discount_applied_percent": t.discount_applied_percent,
+            "recovered_amount": t.recovered_amount,
+            "created_at": t.created_at.isoformat(),
+            "updated_at": t.updated_at.isoformat(),
+        })
+
+    return results
+
+
+@router.get("/audit-logs", response_model=List[AuditLogRead])
+async def list_audit_logs(
+    limit: int = Query(default=100, ge=1, le=500),
+    transaction_id: Optional[str] = None,
+    session: AsyncSession = Depends(get_session),
+) -> List[AuditLogRead]:
+    """Retrieves immutable audit ledger logs for real-time observability."""
+    query = select(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit)
+    if transaction_id:
+        query = select(AuditLog).where(AuditLog.transaction_id == transaction_id).order_by(AuditLog.created_at.desc()).limit(limit)
+
+    logs = (await session.execute(query)).scalars().all()
+    return [
+        AuditLogRead(
+            id=log.id,
+            transaction_id=log.transaction_id,
+            customer_id=log.customer_id,
+            agent_name=log.agent_name,
+            action_type=log.action_type,
+            status=log.status,
+            input_payload=log.input_payload,
+            output_payload=log.output_payload,
+            metadata_json=log.metadata_json,
+            execution_duration_ms=log.execution_duration_ms,
+            created_at=log.created_at,
+        )
+        for log in logs
+    ]
+
+
+@router.get("/whatsapp-feed")
+async def get_whatsapp_feed(limit: int = Query(default=50, ge=1, le=100)) -> List[Dict[str, Any]]:
+    """Returns real-time WhatsApp simulated message stream for frontend replica widget."""
+    return get_whatsapp_messages(limit=limit)
+
+
+@router.post("/transactions/{transaction_id}/retry")
+async def manual_retry_transaction(
+    transaction_id: str,
+    session: AsyncSession = Depends(get_session),
+) -> Dict[str, Any]:
+    """Manually re-triggers the autonomous recovery loop for a transaction."""
+    return await orchestrate_revenue_recovery(transaction_id, session)
+
+
+@router.post("/transactions/{transaction_id}/mark-recovered")
+async def mark_transaction_recovered(
+    transaction_id: str,
+    session: AsyncSession = Depends(get_session),
+) -> Dict[str, Any]:
+    """Simulates customer completing payment via link."""
+    txn_res = await session.execute(select(Transaction).where(Transaction.id == transaction_id))
+    txn = txn_res.scalar_one_or_none()
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    payable = round(txn.amount * (1.0 - txn.discount_applied_percent / 100.0), 2)
+    txn.status = TransactionStatus.RECOVERED
+    txn.recovered_amount = payable
+    txn.updated_at = datetime.utcnow()
+    session.add(txn)
+
+    cust_res = await session.execute(select(Customer).where(Customer.id == txn.customer_id))
+    cust = cust_res.scalar_one_or_none()
+    if cust:
+        cust.total_spent += payable
+        cust.successful_transactions_count += 1
+        cust.updated_at = datetime.utcnow()
+        session.add(cust)
+
+    await session.commit()
+
+    await record_audit_log(
+        session=session,
+        agent_name="ManualRecoveryTrigger",
+        action_type=ActionType.RECOVERY_VERIFIED,
+        status=AuditStatus.SUCCESS,
+        transaction_id=txn.id,
+        customer_id=txn.customer_id,
+        input_payload=json.dumps({"action": "mark_recovered", "amount": payable}),
+        output_payload=f"Marked recovered via manual trigger: INR {payable:.2f}",
+    )
+
+    return {
+        "status": "success",
+        "transaction_id": txn.id,
+        "recovered_amount": txn.recovered_amount,
+        "message": f"Successfully marked transaction {txn.id} as recovered.",
+    }
