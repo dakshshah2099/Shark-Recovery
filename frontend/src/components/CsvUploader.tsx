@@ -81,23 +81,23 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
   };
 
   return (
-    <div className="bg-[#121318] border border-white/[0.08] rounded-2xl p-6 sm:p-8 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
+    <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-7 sm:p-9 space-y-7 shadow-xs transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-white/[0.06]">
         <div>
-          <h3 className="font-heading font-black text-lg text-white flex items-center gap-2">
-            <UploadCloud className="w-5 h-5 text-blue-500" />
+          <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+            <UploadCloud className="w-5 h-5 text-blue-600 dark:text-blue-500" />
             <span>Bulk CSV Failed Payment Ingestion</span>
           </h3>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Upload transaction logs from your legacy checkout system or warehouse to trigger batch recovery.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1">
+            Upload transaction logs from your checkout warehouse to trigger autonomous multi-agent triage.
           </p>
         </div>
 
         <button
           onClick={handleDownloadSample}
-          className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-white/[0.08] text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+          className="bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer self-start sm:self-auto transition-colors"
         >
-          <Download className="w-3.5 h-3.5 text-blue-400" />
+          <Download className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
           <span>Download Sample CSV</span>
         </button>
       </div>
@@ -111,12 +111,12 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[180px] ${
+        className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[200px] ${
           dragOver
-            ? 'border-blue-500 bg-blue-950/20'
+            ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20'
             : file
-            ? 'border-emerald-500/60 bg-emerald-950/10'
-            : 'border-zinc-800 hover:border-zinc-700 bg-black/40'
+            ? 'border-emerald-500/60 bg-emerald-50/40 dark:bg-emerald-950/10'
+            : 'border-slate-200 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700 bg-slate-50/50 dark:bg-black/40'
         }`}
       >
         <input
@@ -129,22 +129,22 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
 
         {file ? (
           <div className="space-y-2">
-            <div className="w-12 h-12 rounded-xl bg-emerald-950 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-800/80">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800/80">
               <FileText className="w-6 h-6" />
             </div>
-            <div className="font-heading font-bold text-sm text-white">{file.name}</div>
-            <div className="text-[11px] text-zinc-400 font-mono">{(file.size / 1024).toFixed(1)} KB • Ready to Ingest</div>
+            <div className="font-heading font-bold text-sm text-slate-900 dark:text-white">{file.name}</div>
+            <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono">{(file.size / 1024).toFixed(1)} KB • Ready to Ingest</div>
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="w-12 h-12 rounded-xl bg-zinc-900 text-zinc-400 flex items-center justify-center mx-auto border border-white/[0.06]">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 flex items-center justify-center mx-auto border border-slate-200 dark:border-white/[0.06]">
               <UploadCloud className="w-6 h-6" />
             </div>
-            <div className="font-heading font-bold text-sm text-white">
-              Drag & Drop your <span className="text-blue-400">.csv</span> file here, or browse
+            <div className="font-heading font-bold text-sm text-slate-900 dark:text-white">
+              Drag & Drop your <span className="text-blue-600 dark:text-blue-400">.csv</span> file here, or browse
             </div>
-            <div className="text-[11px] text-zinc-500">
-              Headers: <span className="font-mono text-zinc-400">name, email, phone, amount, failure_code, failure_reason</span>
+            <div className="text-xs text-slate-500 dark:text-zinc-500">
+              Headers: <span className="font-mono text-slate-700 dark:text-zinc-400">name, email, phone, amount, failure_code, failure_reason</span>
             </div>
           </div>
         )}
@@ -155,7 +155,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
           <button
             type="button"
             onClick={() => setFile(null)}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
           >
             Cancel
           </button>
@@ -164,7 +164,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
             type="button"
             onClick={handleUpload}
             disabled={uploading}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs px-6 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs px-6 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50 transition-all"
           >
             {uploading ? (
               <>

@@ -18,25 +18,25 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header & Filter Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#121215] border border-zinc-800 rounded-lg p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 shadow-xs transition-colors">
         <div>
-          <h2 className="font-heading font-bold text-base text-white flex items-center gap-2">
-            <Activity className="w-4 h-4 text-blue-500" />
+          <h2 className="font-heading font-extrabold text-xl text-slate-900 dark:text-white flex items-center gap-2.5">
+            <Activity className="w-5 h-5 text-blue-600 dark:text-blue-500" />
             <span>Autonomous Agent Audit Ledger</span>
           </h2>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1">
             Immutable chronological trace of LLM reasoning chains, tool inputs/outputs, and guardrail decisions.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Filter className="w-3.5 h-3.5 text-zinc-500" />
+        <div className="flex items-center gap-2.5">
+          <Filter className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
           <select
             value={selectedAgent}
             onChange={(e) => setSelectedAgent(e.target.value)}
-            className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-500 cursor-pointer"
+            className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white font-medium rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
           >
             {agents.map((ag) => (
               <option key={ag} value={ag}>

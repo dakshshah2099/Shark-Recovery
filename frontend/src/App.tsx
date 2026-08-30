@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
+import { TopHeader } from './components/TopHeader';
 import { OverviewView } from './views/OverviewView';
 import { TransactionsView } from './views/TransactionsView';
 import { IngestionView } from './views/IngestionView';
@@ -19,6 +20,28 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [simulating, setSimulating] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+
+  // Dark / Light Theme State with LocalStorage persistence
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved === 'dark';
+    return true; // Default dark
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
+
+  const toggleTheme = () => {
+    setDarkMode((prev) => !prev);
+  };
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -125,61 +148,78 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white flex flex-col font-sans">
-      <Navbar
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090a0f] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-150">
+      {/* Enterprise Sidebar */}
+      <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onSimulateBatch={handleSimulateBatch}
         simulating={simulating}
+        darkMode={darkMode}
+        onToggleTheme={toggleTheme}
+        mobileOpen={mobileOpen}
+        onCloseMobile={() => setMobileOpen(false)}
       />
 
-      {/* Floating Flat Notification Toast */}
-      {notification && (
-        <div className="fixed bottom-5 right-5 z-50 bg-blue-600 text-white font-medium text-xs py-2.5 px-4 rounded shadow-lg border border-blue-500 flex items-center gap-2">
-          <span>{notification}</span>
-        </div>
-      )}
+      {/* Main Content Layout with Sidebar Offset */}
+      <div className="lg:pl-72 flex flex-col flex-1 min-h-screen">
+        {/* Top Header */}
+        <TopHeader
+          activeTab={activeTab}
+          onOpenMobile={() => setMobileOpen(true)}
+          darkMode={darkMode}
+          onToggleTheme={toggleTheme}
+        />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {activeTab === 'overview' && (
-          <OverviewView
-            metrics={metrics}
-            transactions={transactions}
-            onNavigateTab={setActiveTab}
-            onSimulateBatch={handleSimulateBatch}
-            onSeedDB={handleSeedDB}
-            onClearDB={handleClearDB}
-            simulating={simulating}
-          />
+        {/* Floating Flat Notification Toast */}
+        {notification && (
+          <div className="fixed bottom-6 right-6 z-50 bg-blue-600 dark:bg-blue-600 text-white font-medium text-xs py-3 px-5 rounded-xl shadow-lg border border-blue-500 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <span>{notification}</span>
+          </div>
         )}
 
-        {activeTab === 'transactions' && (
-          <TransactionsView
-            transactions={transactions}
-            loading={loading}
-            onRetry={handleRetry}
-            onSimulatePay={handleSimulatePay}
-          />
-        )}
+        {/* View Workspace Container */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
+          {activeTab === 'overview' && (
+            <OverviewView
+              metrics={metrics}
+              transactions={transactions}
+              onNavigateTab={setActiveTab}
+              onSimulateBatch={handleSimulateBatch}
+              onSeedDB={handleSeedDB}
+              onClearDB={handleClearDB}
+              simulating={simulating}
+            />
+          )}
 
-        {activeTab === 'ingest' && (
-          <IngestionView
-            onSuccess={() => fetchData()}
-            showNotification={showNotification}
-          />
-        )}
+          {activeTab === 'transactions' && (
+            <TransactionsView
+              transactions={transactions}
+              loading={loading}
+              onRetry={handleRetry}
+              onSimulatePay={handleSimulatePay}
+            />
+          )}
 
-        {activeTab === 'audit' && (
-          <AuditView logs={auditLogs} />
-        )}
+          {activeTab === 'ingest' && (
+            <IngestionView
+              onSuccess={() => fetchData()}
+              showNotification={showNotification}
+            />
+          )}
 
-        {activeTab === 'settings' && (
-          <SettingsView
-            onClearDB={handleClearDB}
-            onSeedDB={handleSeedDB}
-          />
-        )}
-      </main>
+          {activeTab === 'audit' && (
+            <AuditView logs={auditLogs} />
+          )}
+
+          {activeTab === 'settings' && (
+            <SettingsView
+              onClearDB={handleClearDB}
+              onSeedDB={handleSeedDB}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
 };
