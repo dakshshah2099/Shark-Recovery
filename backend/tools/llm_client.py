@@ -18,42 +18,35 @@ litellm.drop_params = True
 
 def get_llm_credentials() -> Tuple[Optional[str], str]:
     """
-    Returns (api_key, model_identifier) optimized for Groq and Google Gemini via LiteLLM.
+    Strictly reads the model name directly from settings.LLM_MODEL without auto-routing,
+    and pairs it with the corresponding provider API key.
     """
-    # 1. Sync environment variables for LiteLLM
+    model = settings.LLM_MODEL.strip() if settings.LLM_MODEL else "groq/llama-3.3-70b-versatile"
+
+    # Sync environment variables for LiteLLM provider integrations
     if settings.GROQ_API_KEY:
         os.environ["GROQ_API_KEY"] = settings.GROQ_API_KEY
     if settings.GEMINI_API_KEY:
         os.environ["GEMINI_API_KEY"] = settings.GEMINI_API_KEY
     if settings.GOOGLE_API_KEY:
         os.environ["GOOGLE_API_KEY"] = settings.GOOGLE_API_KEY
-
-    model = settings.LLM_MODEL or "groq/llama-3.3-70b-versatile"
-
-    # 2. Check if user configured Groq
-    if model.startswith("groq/") or (settings.GROQ_API_KEY and not model.startswith("gemini/")):
-        if settings.GROQ_API_KEY:
-            if not model.startswith("groq/"):
-                model = f"groq/{model}"
-            return settings.GROQ_API_KEY, model
-
-    # 3. Check if user configured Gemini
-    gemini_key = settings.GEMINI_API_KEY or settings.GOOGLE_API_KEY
-    if gemini_key:
-        if not model.startswith("gemini/") and not model.startswith("google/"):
-            clean_model = model.replace("google:", "").replace("google-gla:", "")
-            model = f"gemini/{clean_model}"
-        return gemini_key, model
-
-    # 4. Check OpenAI fallback if provided
     if settings.OPENAI_API_KEY:
-        return settings.OPENAI_API_KEY, "gpt-4o-mini"
+        os.environ["OPENAI_API_KEY"] = settings.OPENAI_API_KEY
 
-    # Return configured Groq key if available
-    if settings.GROQ_API_KEY:
-        return settings.GROQ_API_KEY, "groq/llama-3.3-70b-versatile"
+    # Determine corresponding API key based on exact model prefix specified by user
+    if model.startswith("groq/"):
+        return settings.GROQ_API_KEY or os.environ.get("GROQ_API_KEY"), model
 
-    return None, model
+    if model.startswith("gemini/") or model.startswith("google/"):
+        key = settings.GEMINI_API_KEY or settings.GOOGLE_API_KEY or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        return key, model
+
+    if model.startswith("openai/") or model.startswith("gpt-"):
+        return settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY"), model
+
+    # Fallback to any provided API key
+    key = settings.GROQ_API_KEY or settings.GEMINI_API_KEY or settings.GOOGLE_API_KEY or settings.OPENAI_API_KEY
+    return key, model
 
 
 async def complete_json_prompt(
@@ -62,12 +55,12 @@ async def complete_json_prompt(
     timeout: float = 12.0,
 ) -> Optional[Dict[str, Any]]:
     """
-    Calls LLM (Groq / Gemini / OpenAI) via LiteLLM with structured JSON parsing.
-    Returns parsed dict on success, or None on failure/fallback to deterministic rule engine.
+    Dispatches prompt to the exact LLM model specified in settings.LLM_MODEL.
+    Returns structured JSON on success, or None on failure/fallback to deterministic rule engine.
     """
     api_key, model = get_llm_credentials()
     if not api_key:
-        logger.info("No active Groq or Gemini API key configured. Utilizing heuristic agent fallback.")
+        logger.info(f"No API key provided for model '{model}'. Utilizing heuristic agent fallback.")
         return None
 
     try:
@@ -76,7 +69,7 @@ async def complete_json_prompt(
             {"role": "user", "content": user_prompt},
         ]
 
-        logger.info(f"Dispatching LLM call to LiteLLM with model: {model}")
+        logger.info(f"Dispatching LLM call to LiteLLM with explicit model: {model}")
         response = await litellm.acompletion(
             model=model,
             api_key=api_key,
@@ -98,5 +91,5 @@ async def complete_json_prompt(
         return json.loads(content)
 
     except Exception as e:
-        logger.warning(f"LiteLLM call failed on {model} ({type(e).__name__}: {e}). Falling back to heuristic rule engine.")
+        logger.warning(f"LiteLLM call failed on '{model}' ({type(e).__name__}: {e}). Falling back to heuristic rule engine.")
         return None
