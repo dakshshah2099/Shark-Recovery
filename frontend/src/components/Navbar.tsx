@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, RefreshCw, Layers, LayoutDashboard, Table, MessageSquare, Activity, Settings, Zap } from 'lucide-react';
+import { Play, RefreshCw, Layers, LayoutDashboard, Table, Activity, Settings, Zap } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
@@ -22,7 +22,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'transactions', label: 'Transactions', icon: Table },
     { id: 'ingest', label: 'CSV & Failure Injection', icon: Zap },
-    { id: 'outreach', label: 'Outreach Hub', icon: MessageSquare },
     { id: 'audit', label: 'Agent Audit Trail', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

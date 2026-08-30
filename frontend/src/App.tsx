@@ -3,14 +3,12 @@ import { Navbar } from './components/Navbar';
 import { OverviewView } from './views/OverviewView';
 import { TransactionsView } from './views/TransactionsView';
 import { IngestionView } from './views/IngestionView';
-import { OutreachView } from './views/OutreachView';
 import { AuditView } from './views/AuditView';
 import { SettingsView } from './views/SettingsView';
 import type {
   AuditLogItem,
   DashboardMetrics,
   TransactionItem,
-  WhatsAppMessage,
 } from './types';
 
 export const App: React.FC = () => {
@@ -18,7 +16,6 @@ export const App: React.FC = () => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
-  const [whatsappFeed, setWhatsappFeed] = useState<WhatsAppMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [simulating, setSimulating] = useState<boolean>(false);
@@ -34,17 +31,15 @@ export const App: React.FC = () => {
   const fetchData = useCallback(async (isManualSync = false) => {
     if (isManualSync) setRefreshing(true);
     try {
-      const [metricsRes, txnsRes, auditRes, waRes] = await Promise.all([
+      const [metricsRes, txnsRes, auditRes] = await Promise.all([
         fetch('/api/metrics'),
         fetch('/api/transactions?limit=100'),
         fetch('/api/audit-logs?limit=100'),
-        fetch('/api/whatsapp-feed?limit=50'),
       ]);
 
       if (metricsRes.ok) setMetrics(await metricsRes.json());
       if (txnsRes.ok) setTransactions(await txnsRes.json());
       if (auditRes.ok) setAuditLogs(await auditRes.json());
-      if (waRes.ok) setWhatsappFeed(await waRes.json());
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
     } finally {
@@ -96,7 +91,7 @@ export const App: React.FC = () => {
     try {
       const res = await fetch('/api/db/clear', { method: 'POST' });
       if (res.ok) {
-        showNotification('🗑️ Database and outreach store cleared completely.');
+        showNotification('🗑️ Database and audit logs cleared completely.');
         await fetchData();
       }
     } catch (err) {
@@ -155,7 +150,6 @@ export const App: React.FC = () => {
           <OverviewView
             metrics={metrics}
             transactions={transactions}
-            whatsappFeed={whatsappFeed}
             onNavigateTab={setActiveTab}
             onSimulateBatch={handleSimulateBatch}
             onSeedDB={handleSeedDB}
@@ -177,14 +171,6 @@ export const App: React.FC = () => {
           <IngestionView
             onSuccess={() => fetchData(true)}
             showNotification={showNotification}
-          />
-        )}
-
-        {activeTab === 'outreach' && (
-          <OutreachView
-            messages={whatsappFeed}
-            transactions={transactions}
-            onSimulatePay={handleSimulatePay}
           />
         )}
 
