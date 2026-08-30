@@ -155,12 +155,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Bottom Actions: Simulate Button + Dark Mode Switcher */}
-        <div className="p-4 space-y-3 border-t border-slate-200 dark:border-white/[0.06]">
+        <div className="p-4 space-y-2.5 border-t border-slate-200 dark:border-white/[0.06]">
           {/* Quick Simulate Button */}
           <button
             onClick={onSimulateBatch}
             disabled={simulating}
-            className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-heading font-semibold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-500/20 disabled:opacity-50 transition-all"
+            className="w-full h-11 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-500/20 disabled:opacity-50 transition-all"
           >
             <Play className="w-3.5 h-3.5 fill-white" />
             <span>{simulating ? 'Orchestrating...' : 'Simulate 5 Failures'}</span>
@@ -169,18 +169,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Theme Toggle Button */}
           <button
             onClick={onToggleTheme}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-black/40 hover:bg-slate-200 dark:hover:bg-white/[0.06] text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-white/[0.06] transition-colors cursor-pointer"
+            className="w-full h-11 px-4 rounded-xl text-xs font-medium bg-slate-100 dark:bg-black/40 hover:bg-slate-200 dark:hover:bg-white/[0.06] text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-white/[0.06] inline-flex items-center justify-between transition-colors cursor-pointer"
           >
-            <span className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-2">
               {darkMode ? (
-                <Moon className="w-3.5 h-3.5 text-blue-400" />
+                <Moon className="w-4 h-4 text-blue-400" />
               ) : (
-                <Sun className="w-3.5 h-3.5 text-amber-500" />
+                <Sun className="w-4 h-4 text-amber-500" />
               )}
-              <span>{darkMode ? 'Dark Mode' : 'Light Mode'}</span>
+              <span className="font-semibold">{darkMode ? 'Dark Mode' : 'Light Mode'}</span>
             </span>
             <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
-              {darkMode ? 'Switch to Light' : 'Switch to Dark'}
+              {darkMode ? 'Switch Light' : 'Switch Dark'}
             </span>
           </button>
         </div>

@@ -45,7 +45,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         {/* Mobile menu trigger */}
         <button
           onClick={onOpenMobile}
-          className="lg:hidden p-2 text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white rounded-xl border border-slate-200 dark:border-white/[0.08]"
+          className="lg:hidden w-10 h-10 rounded-xl border border-slate-200 dark:border-white/[0.08] text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white inline-flex items-center justify-center cursor-pointer"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -62,7 +62,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
       <div className="flex items-center gap-3">
         {/* Agent Status Badge */}
-        <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+        <div className="hidden sm:inline-flex items-center gap-2 h-10 px-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>Multi-Agent Engine Active</span>
         </div>
@@ -70,7 +70,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         {/* Theme quick switch */}
         <button
           onClick={onToggleTheme}
-          className="p-2 rounded-xl border border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-[#121318] transition-colors cursor-pointer"
+          className="w-10 h-10 rounded-xl border border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-[#121318] inline-flex items-center justify-center transition-colors cursor-pointer"
           title="Toggle color theme"
         >
           {darkMode ? (

@@ -45,11 +45,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             type="text"
             readOnly
             value={webhookUrl}
-            className="flex-1 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-zinc-300 px-4 py-3 rounded-xl font-mono select-all focus:outline-none transition-colors"
+            className="flex-1 h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-zinc-300 px-4 rounded-xl font-mono select-all focus:outline-none transition-colors"
           />
           <button
             onClick={handleCopy}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-5 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-500/20 transition-all"
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-500/20 transition-all"
           >
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             <span>{copied ? 'Copied' : 'Copy Endpoint'}</span>
@@ -132,7 +132,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         <div className="flex flex-wrap items-center gap-3 pt-2">
           <button
             onClick={onSeedDB}
-            className="bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-white/[0.08] text-xs px-4 py-2.5 rounded-xl font-semibold flex items-center gap-2 cursor-pointer transition-all"
+            className="h-11 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             <Database className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span>Seed 6 Sample Transactions</span>
@@ -140,7 +140,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
 
           <button
             onClick={onClearDB}
-            className="bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-200 border border-rose-200 dark:border-rose-800 text-xs px-4 py-2.5 rounded-xl font-semibold flex items-center gap-2 cursor-pointer transition-all"
+            className="h-11 px-5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-200 border border-rose-200 dark:border-rose-800 text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             <Trash2 className="w-4 h-4" />
             <span>Clear All Database Records</span>

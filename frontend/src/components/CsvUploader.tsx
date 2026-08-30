@@ -95,7 +95,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
 
         <button
           onClick={handleDownloadSample}
-          className="bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer self-start sm:self-auto transition-colors"
+          className="h-11 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto transition-colors"
         >
           <Download className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
           <span>Download Sample CSV</span>
@@ -155,7 +155,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
           <button
             type="button"
             onClick={() => setFile(null)}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+            className="h-11 px-4 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 inline-flex items-center justify-center cursor-pointer transition-colors"
           >
             Cancel
           </button>
@@ -164,7 +164,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
             type="button"
             onClick={handleUpload}
             disabled={uploading}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs px-6 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50 transition-all"
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50 transition-all"
           >
             {uploading ? (
               <>
