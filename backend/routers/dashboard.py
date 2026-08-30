@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -7,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import func, select
 try:
     from backend.agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
+    from backend.config import settings
     from backend.database import get_session
     from backend.models.audit_log import ActionType, AuditLog, AuditStatus
     from backend.models.customer import Customer
@@ -14,12 +16,15 @@ try:
         AuditLogRead,
         CustomerRead,
         DashboardMetrics,
+        EnvConfigRead,
+        EnvConfigUpdate,
         TransactionRead,
     )
     from backend.models.transaction import Transaction, TransactionStatus
     from backend.tools.whatsapp_tool import get_whatsapp_messages
 except ImportError:
     from agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
+    from config import settings
     from database import get_session
     from models.audit_log import ActionType, AuditLog, AuditStatus
     from models.customer import Customer
@@ -27,6 +32,8 @@ except ImportError:
         AuditLogRead,
         CustomerRead,
         DashboardMetrics,
+        EnvConfigRead,
+        EnvConfigUpdate,
         TransactionRead,
     )
     from models.transaction import Transaction, TransactionStatus
@@ -316,4 +323,91 @@ async def trigger_seed_database() -> Dict[str, Any]:
 
     await seed_database()
     return {"status": "success", "message": "Database successfully seeded."}
+
+
+@router.get("/env-config", response_model=EnvConfigRead)
+async def get_env_config() -> EnvConfigRead:
+    """Returns current environment variables and debug_mode status."""
+    is_debug = bool(getattr(settings, "DEBUG_MODE", False) or getattr(settings, "DEBUG", False))
+    if not is_debug:
+        return EnvConfigRead(debug_mode=False)
+
+    return EnvConfigRead(
+        debug_mode=True,
+        google_api_key=settings.GOOGLE_API_KEY,
+        gemini_api_key=settings.GEMINI_API_KEY,
+        razorpay_key_id=settings.RAZORPAY_KEY_ID,
+        razorpay_key_secret=settings.RAZORPAY_KEY_SECRET,
+        razorpay_webhook_secret=settings.RAZORPAY_WEBHOOK_SECRET,
+        twilio_account_sid=settings.TWILIO_ACCOUNT_SID,
+        twilio_auth_token=settings.TWILIO_AUTH_TOKEN,
+        twilio_whatsapp_from=settings.TWILIO_WHATSAPP_FROM,
+        smtp_host=settings.SMTP_HOST,
+        smtp_port=settings.SMTP_PORT,
+        smtp_username=settings.SMTP_USERNAME,
+        smtp_password=settings.SMTP_PASSWORD,
+        smtp_from=settings.SMTP_FROM,
+        max_retry_attempts=settings.MAX_RETRY_ATTEMPTS,
+    )
+
+
+@router.post("/env-config", response_model=EnvConfigRead)
+async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
+    """Updates runtime environment configuration when DEBUG_MODE is True."""
+    is_debug = bool(getattr(settings, "DEBUG_MODE", False) or getattr(settings, "DEBUG", False))
+    if not is_debug:
+        raise HTTPException(
+            status_code=403,
+            detail="Environment variables can only be edited when DEBUG_MODE is True.",
+        )
+
+    if payload.google_api_key is not None:
+        settings.GOOGLE_API_KEY = payload.google_api_key
+        os.environ["GOOGLE_API_KEY"] = payload.google_api_key
+    if payload.gemini_api_key is not None:
+        settings.GEMINI_API_KEY = payload.gemini_api_key
+        os.environ["GEMINI_API_KEY"] = payload.gemini_api_key
+    if payload.razorpay_key_id is not None:
+        settings.RAZORPAY_KEY_ID = payload.razorpay_key_id
+    if payload.razorpay_key_secret is not None:
+        settings.RAZORPAY_KEY_SECRET = payload.razorpay_key_secret
+    if payload.razorpay_webhook_secret is not None:
+        settings.RAZORPAY_WEBHOOK_SECRET = payload.razorpay_webhook_secret
+    if payload.twilio_account_sid is not None:
+        settings.TWILIO_ACCOUNT_SID = payload.twilio_account_sid
+    if payload.twilio_auth_token is not None:
+        settings.TWILIO_AUTH_TOKEN = payload.twilio_auth_token
+    if payload.twilio_whatsapp_from is not None:
+        settings.TWILIO_WHATSAPP_FROM = payload.twilio_whatsapp_from
+    if payload.smtp_host is not None:
+        settings.SMTP_HOST = payload.smtp_host
+    if payload.smtp_port is not None:
+        settings.SMTP_PORT = payload.smtp_port
+    if payload.smtp_username is not None:
+        settings.SMTP_USERNAME = payload.smtp_username
+    if payload.smtp_password is not None:
+        settings.SMTP_PASSWORD = payload.smtp_password
+    if payload.smtp_from is not None:
+        settings.SMTP_FROM = payload.smtp_from
+    if payload.max_retry_attempts is not None:
+        settings.MAX_RETRY_ATTEMPTS = payload.max_retry_attempts
+
+    # Update agents if API key was updated
+    try:
+        if payload.google_api_key or payload.gemini_api_key:
+            try:
+                from backend.agents.diagnostic_agent import init_diagnostic_agent
+                from backend.agents.strategy_agent import init_strategy_agent
+                init_diagnostic_agent()
+                init_strategy_agent()
+            except ImportError:
+                from agents.diagnostic_agent import init_diagnostic_agent
+                from agents.strategy_agent import init_strategy_agent
+                init_diagnostic_agent()
+                init_strategy_agent()
+    except Exception as e:
+        logger.warning(f"Could not reinitialize agents after key update: {e}")
+
+    return await get_env_config()
+
 

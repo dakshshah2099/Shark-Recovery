@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "AI Revenue Recovery Agent"
     APP_ENV: str = "development"
     DEBUG: bool = True
+    DEBUG_MODE: bool = True
     DATABASE_URL: str = "sqlite+aiosqlite:///./recovery.db"
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
 
