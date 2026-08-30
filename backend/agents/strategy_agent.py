@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-from pydantic_ai import Agent
+
 try:
     from backend.config import settings
     from backend.models.schemas import (
@@ -11,6 +11,7 @@ try:
         RecoveryStrategy,
     )
     from backend.models.transaction import FailureCategory
+    from backend.tools.llm_client import complete_json_prompt
 except ImportError:
     from config import settings
     from models.schemas import (
@@ -21,6 +22,7 @@ except ImportError:
         RecoveryStrategy,
     )
     from models.transaction import FailureCategory
+    from tools.llm_client import complete_json_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -33,24 +35,7 @@ Decision Rules:
 2. Insufficient Funds / Abandoned Carts: Offer a 10% instant checkout discount with promo code 'SAVE10' or 'RECOVER10'.
 3. Technical / Bank Errors: Tone should be empathetic/reassuring, discount 0% or 5% gesture, focus on smooth 1-click retry.
 4. Corporate / Email preferred: Use professional tone with detailed order summary.
-
-Output strictly conforms to the RecoveryStrategy schema.
 """
-
-
-def _get_agent() -> Optional[Agent]:
-    api_key = settings.GOOGLE_API_KEY or settings.GEMINI_API_KEY
-    if api_key:
-        try:
-            return Agent(
-                settings.LLM_MODEL,
-                output_type=RecoveryStrategy,
-                system_prompt=STRATEGY_SYSTEM_PROMPT,
-            )
-        except Exception as e:
-            logger.warning(f"Could not initialize Gemini Agent for Strategy ({e}). Using rule-based fallback.")
-            return None
-    return None
 
 
 def heuristic_strategy(ctx: DiagnosticContext, diag: FailureDiagnosis) -> RecoveryStrategy:
@@ -134,19 +119,45 @@ def heuristic_strategy(ctx: DiagnosticContext, diag: FailureDiagnosis) -> Recove
 
 
 async def run_strategy_agent(ctx: DiagnosticContext, diag: FailureDiagnosis) -> RecoveryStrategy:
-    """Executes the Strategy Selection Agent with LLM fallback to deterministic rules."""
-    agent = _get_agent()
-    if agent:
+    """Executes the Strategy Selection Agent with LiteLLM/OpenAI and heuristic fallback."""
+    user_prompt = f"""
+Select an optimal recovery strategy and return a JSON object matching this schema:
+{{
+  "transaction_id": "{ctx.transaction_id}",
+  "channel": "one of: email, whatsapp, sms",
+  "tone": "one of: urgent, empathetic, casual_hinglish, incentive_focused, professional",
+  "discount_percentage": float between 0.0 and 15.0,
+  "offer_code": "discount code or null",
+  "custom_headline": "catchy headline string",
+  "message_content": "persuasive recovery message text (Hinglish or English)",
+  "urgency_level": "one of: low, medium, high",
+  "rationale": "strategic justification string"
+}}
+
+Customer Context:
+{ctx.model_dump_json(indent=2)}
+
+Failure Diagnosis:
+{diag.model_dump_json(indent=2)}
+"""
+    parsed = await complete_json_prompt(STRATEGY_SYSTEM_PROMPT, user_prompt)
+    if parsed:
         try:
-            prompt = (
-                f"Select recovery strategy for:\n"
-                f"Customer Context: {ctx.model_dump_json(indent=2)}\n"
-                f"Diagnosis: {diag.model_dump_json(indent=2)}"
-            )
-            result = await agent.run(prompt)
-            if isinstance(result.data, RecoveryStrategy):
-                return result.data
+            chan_str = str(parsed.get("channel", "")).strip().lower()
+            if chan_str in RecoveryChannel.__members__:
+                parsed["channel"] = RecoveryChannel[chan_str]
+            else:
+                parsed["channel"] = RecoveryChannel.WHATSAPP if ctx.customer_phone else RecoveryChannel.EMAIL
+
+            tone_str = str(parsed.get("tone", "")).strip().lower().replace(" ", "_")
+            if tone_str in CommunicationTone.__members__:
+                parsed["tone"] = CommunicationTone[tone_str]
+            else:
+                parsed["tone"] = CommunicationTone.CASUAL_HINGLISH
+
+            parsed["transaction_id"] = ctx.transaction_id
+            return RecoveryStrategy(**parsed)
         except Exception as e:
-            logger.warning(f"Strategy LLM call failed: {e}. Executing heuristic fallback.")
+            logger.warning(f"Failed to parse LLM strategy JSON into schema ({e}). Fallback to heuristic.")
 
     return heuristic_strategy(ctx, diag)

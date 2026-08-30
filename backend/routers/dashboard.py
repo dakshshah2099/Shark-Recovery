@@ -336,6 +336,8 @@ async def get_env_config() -> EnvConfigRead:
         debug_mode=True,
         google_api_key=settings.GOOGLE_API_KEY,
         gemini_api_key=settings.GEMINI_API_KEY,
+        openai_api_key=settings.OPENAI_API_KEY,
+        llm_model=settings.LLM_MODEL,
         razorpay_key_id=settings.RAZORPAY_KEY_ID,
         razorpay_key_secret=settings.RAZORPAY_KEY_SECRET,
         razorpay_webhook_secret=settings.RAZORPAY_WEBHOOK_SECRET,
@@ -367,6 +369,11 @@ async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
     if payload.gemini_api_key is not None:
         settings.GEMINI_API_KEY = payload.gemini_api_key
         os.environ["GEMINI_API_KEY"] = payload.gemini_api_key
+    if payload.openai_api_key is not None:
+        settings.OPENAI_API_KEY = payload.openai_api_key
+        os.environ["OPENAI_API_KEY"] = payload.openai_api_key
+    if payload.llm_model is not None:
+        settings.LLM_MODEL = payload.llm_model
     if payload.razorpay_key_id is not None:
         settings.RAZORPAY_KEY_ID = payload.razorpay_key_id
     if payload.razorpay_key_secret is not None:
@@ -391,22 +398,6 @@ async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
         settings.SMTP_FROM = payload.smtp_from
     if payload.max_retry_attempts is not None:
         settings.MAX_RETRY_ATTEMPTS = payload.max_retry_attempts
-
-    # Update agents if API key was updated
-    try:
-        if payload.google_api_key or payload.gemini_api_key:
-            try:
-                from backend.agents.diagnostic_agent import init_diagnostic_agent
-                from backend.agents.strategy_agent import init_strategy_agent
-                init_diagnostic_agent()
-                init_strategy_agent()
-            except ImportError:
-                from agents.diagnostic_agent import init_diagnostic_agent
-                from agents.strategy_agent import init_strategy_agent
-                init_diagnostic_agent()
-                init_strategy_agent()
-    except Exception as e:
-        logger.warning(f"Could not reinitialize agents after key update: {e}")
 
     return await get_env_config()
 

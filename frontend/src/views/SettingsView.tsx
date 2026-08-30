@@ -27,6 +27,8 @@ interface EnvConfig {
   debug_mode: boolean;
   google_api_key?: string;
   gemini_api_key?: string;
+  openai_api_key?: string;
+  llm_model?: string;
   razorpay_key_id?: string;
   razorpay_key_secret?: string;
   razorpay_webhook_secret?: string;
@@ -53,6 +55,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   // Editable form state
   const [googleKey, setGoogleKey] = useState('');
   const [geminiKey, setGeminiKey] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [llmModel, setLlmModel] = useState('gemini/gemini-2.5-flash');
   const [rzpKeyId, setRzpKeyId] = useState('');
   const [rzpKeySecret, setRzpKeySecret] = useState('');
   const [rzpWebhookSecret, setRzpWebhookSecret] = useState('');
@@ -80,6 +84,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         if (data.debug_mode) {
           setGoogleKey(data.google_api_key || '');
           setGeminiKey(data.gemini_api_key || '');
+          setOpenaiKey(data.openai_api_key || '');
+          setLlmModel(data.llm_model || 'gemini/gemini-2.5-flash');
           setRzpKeyId(data.razorpay_key_id || '');
           setRzpKeySecret(data.razorpay_key_secret || '');
           setRzpWebhookSecret(data.razorpay_webhook_secret || '');
@@ -111,6 +117,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         body: JSON.stringify({
           google_api_key: googleKey,
           gemini_api_key: geminiKey,
+          openai_api_key: openaiKey,
+          llm_model: llmModel,
           razorpay_key_id: rzpKeyId,
           razorpay_key_secret: rzpKeySecret,
           razorpay_webhook_secret: rzpWebhookSecret,
@@ -241,29 +249,43 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             <div className="space-y-3">
               <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-                <span>Google Gemini AI Intelligence</span>
+                <span>LiteLLM & AI Intelligence Layer</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">GOOGLE_API_KEY</label>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">GOOGLE_API_KEY / GEMINI_API_KEY</label>
                   <input
                     type="password"
-                    value={googleKey}
-                    onChange={(e) => setGoogleKey(e.target.value)}
+                    value={geminiKey || googleKey}
+                    onChange={(e) => {
+                      setGeminiKey(e.target.value);
+                      setGoogleKey(e.target.value);
+                    }}
                     placeholder="AIzaSy..."
                     className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">GEMINI_API_KEY</label>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">OPENAI_API_KEY (Optional)</label>
                   <input
                     type="password"
-                    value={geminiKey}
-                    onChange={(e) => setGeminiKey(e.target.value)}
-                    placeholder="AIzaSy..."
+                    value={openaiKey}
+                    onChange={(e) => setOpenaiKey(e.target.value)}
+                    placeholder="sk-proj-..."
                     className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">LLM_MODEL (LiteLLM Format)</label>
+                <input
+                  type="text"
+                  value={llmModel}
+                  onChange={(e) => setLlmModel(e.target.value)}
+                  placeholder="gemini/gemini-2.5-flash or gpt-4o-mini"
+                  className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                />
               </div>
             </div>
 

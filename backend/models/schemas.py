@@ -243,6 +243,8 @@ class EnvConfigRead(BaseModel):
     debug_mode: bool
     google_api_key: Optional[str] = ""
     gemini_api_key: Optional[str] = ""
+    openai_api_key: Optional[str] = ""
+    llm_model: Optional[str] = "gemini/gemini-2.5-flash"
     razorpay_key_id: Optional[str] = ""
     razorpay_key_secret: Optional[str] = ""
     razorpay_webhook_secret: Optional[str] = ""
@@ -260,6 +262,8 @@ class EnvConfigRead(BaseModel):
 class EnvConfigUpdate(BaseModel):
     google_api_key: Optional[str] = None
     gemini_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    llm_model: Optional[str] = None
     razorpay_key_id: Optional[str] = None
     razorpay_key_secret: Optional[str] = None
     razorpay_webhook_secret: Optional[str] = None
@@ -272,4 +276,5 @@ class EnvConfigUpdate(BaseModel):
     smtp_password: Optional[str] = None
     smtp_from: Optional[str] = None
     max_retry_attempts: Optional[int] = None
+
 

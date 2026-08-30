@@ -1,15 +1,17 @@
 import json
 import logging
 from typing import Optional
-from pydantic_ai import Agent
+
 try:
     from backend.config import settings
     from backend.models.schemas import DiagnosticContext, FailureDiagnosis
     from backend.models.transaction import FailureCategory
+    from backend.tools.llm_client import complete_json_prompt
 except ImportError:
     from config import settings
     from models.schemas import DiagnosticContext, FailureDiagnosis
     from models.transaction import FailureCategory
+    from tools.llm_client import complete_json_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -25,24 +27,7 @@ Categorization Guidelines:
 - USER_DROPOUT: Checkout session abandoned before completing authentication. (can_retry: true, risk: low)
 - NETWORK_TIMEOUT: Latency or connection dropped mid-transaction. (can_retry: true, risk: low)
 - PAYMENT_DECLINED: Gateway fraud flag or blocked card. (can_retry: false, risk: high)
-
-Output strictly conforms to the FailureDiagnosis schema.
 """
-
-
-def _get_agent() -> Optional[Agent]:
-    api_key = settings.GOOGLE_API_KEY or settings.GEMINI_API_KEY
-    if api_key:
-        try:
-            return Agent(
-                settings.LLM_MODEL,
-                output_type=FailureDiagnosis,
-                system_prompt=DIAGNOSTIC_SYSTEM_PROMPT,
-            )
-        except Exception as e:
-            logger.warning(f"Could not initialize Gemini Agent for Diagnostics ({e}). Using heuristic fallback.")
-            return None
-    return None
 
 
 def heuristic_diagnosis(ctx: DiagnosticContext) -> FailureDiagnosis:
@@ -108,15 +93,33 @@ def heuristic_diagnosis(ctx: DiagnosticContext) -> FailureDiagnosis:
 
 
 async def run_diagnostic_agent(ctx: DiagnosticContext) -> FailureDiagnosis:
-    """Executes the Diagnostic Agent with LLM fallback to deterministic rules."""
-    agent = _get_agent()
-    if agent:
+    """Executes the Diagnostic Agent using LiteLLM/OpenAI with heuristic fallback."""
+    user_prompt = f"""
+Diagnose this failed transaction and return a JSON object matching this schema:
+{{
+  "transaction_id": "{ctx.transaction_id}",
+  "failure_category": "one of: INSUFFICIENT_FUNDS, AUTHENTICATION_FAILED, BANK_SERVER_ERROR, EXPIRED_CARD, USER_DROPOUT, NETWORK_TIMEOUT, PAYMENT_DECLINED",
+  "root_cause": "short explanation string",
+  "can_retry": true or false,
+  "risk_score": float between 0.0 and 1.0,
+  "recommended_action": "action description",
+  "diagnostic_notes": "optional notes"
+}}
+
+Transaction Details:
+{ctx.model_dump_json(indent=2)}
+"""
+    parsed = await complete_json_prompt(DIAGNOSTIC_SYSTEM_PROMPT, user_prompt)
+    if parsed:
         try:
-            prompt = f"Diagnose the following failed transaction:\n{ctx.model_dump_json(indent=2)}"
-            result = await agent.run(prompt)
-            if isinstance(result.data, FailureDiagnosis):
-                return result.data
+            cat_str = str(parsed.get("failure_category", "")).strip().upper().replace(" ", "_")
+            if cat_str in FailureCategory.__members__:
+                parsed["failure_category"] = FailureCategory[cat_str]
+            else:
+                parsed["failure_category"] = FailureCategory.USER_DROPOUT
+            parsed["transaction_id"] = ctx.transaction_id
+            return FailureDiagnosis(**parsed)
         except Exception as e:
-            logger.warning(f"Diagnostic LLM call failed: {e}. Executing heuristic fallback.")
+            logger.warning(f"Failed to parse LLM diagnostic JSON into schema ({e}). Fallback to heuristic.")
 
     return heuristic_diagnosis(ctx)

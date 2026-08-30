@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
-    LLM_MODEL: str = "google:gemini-2.5-flash"
+    LLM_MODEL: str = "gemini/gemini-2.5-flash"
 
 
 settings = Settings()
