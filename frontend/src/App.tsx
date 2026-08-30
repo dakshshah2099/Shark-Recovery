@@ -162,7 +162,7 @@ export const App: React.FC = () => {
       />
 
       {/* Main Content Layout with Sidebar Offset */}
-      <div className="lg:pl-72 flex flex-col flex-1 min-h-screen">
+      <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">
         {/* Top Header */}
         <TopHeader
           activeTab={activeTab}
@@ -179,7 +179,7 @@ export const App: React.FC = () => {
         )}
 
         {/* View Workspace Container */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {activeTab === 'overview' && (
             <OverviewView
               metrics={metrics}
