@@ -1,3 +1,4 @@
+import logging
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
@@ -6,12 +7,17 @@ try:
 except ImportError:
     from config import settings
 
+# Suppress verbose SQL query logging, only log errors
+logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
+logging.getLogger("sqlalchemy.pool").setLevel(logging.ERROR)
+logging.getLogger("sqlalchemy.dialects").setLevel(logging.ERROR)
+
 # SQLite async engine configuration
 connect_args = {"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
 
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.DEBUG,
+    echo=False,
     connect_args=connect_args,
 )
 
