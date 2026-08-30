@@ -12,7 +12,9 @@ export type FailureCategory =
 
 export interface DashboardMetrics {
   total_failed_revenue: number;
+  revenue_at_risk: number;
   total_recovered_revenue: number;
+  discount_loss_amount: number;
   recovery_rate_percent: number;
   total_transactions_count: number;
   active_recovery_count: number;

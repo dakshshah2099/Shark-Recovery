@@ -143,12 +143,20 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
           <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs text-zinc-500">
             <span>Deterministic Guardrail: Max 2 Retries Bounded</span>
-            <button
-              onClick={() => onNavigateTab('outreach')}
-              className="text-blue-400 hover:text-blue-300 font-medium cursor-pointer"
-            >
-              Open WhatsApp Simulator &rarr;
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => onNavigateTab('ingest')}
+                className="text-emerald-400 hover:text-emerald-300 font-medium cursor-pointer"
+              >
+                + Inject Custom Failure / CSV &rarr;
+              </button>
+              <button
+                onClick={() => onNavigateTab('outreach')}
+                className="text-blue-400 hover:text-blue-300 font-medium cursor-pointer"
+              >
+                Outreach Hub &rarr;
+              </button>
+            </div>
           </div>
         </div>
 

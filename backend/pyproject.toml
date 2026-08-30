@@ -13,8 +13,10 @@ dependencies = [
     "pydantic-ai>=2.36.0",
     "pydantic-settings>=2.15.0",
     "python-dotenv>=1.2.3",
+    "python-multipart>=0.0.32",
     "razorpay>=2.0.1",
     "sqlmodel>=0.0.42",
+    "twilio>=9.11.0",
     "uvicorn[standard]>=0.52.4",
 ]
 

@@ -46,7 +46,13 @@ async def get_dashboard_metrics(
     txns = (await session.execute(select(Transaction))).scalars().all()
 
     total_failed_revenue = sum(t.amount for t in txns)
+    # Active Revenue at risk decreases as transactions are recovered
+    revenue_at_risk = sum(t.amount for t in txns if t.status != TransactionStatus.RECOVERED)
     total_recovered_revenue = sum(t.recovered_amount for t in txns if t.status == TransactionStatus.RECOVERED)
+    # Total revenue loss incurred due to recovery discount incentives
+    discount_loss_amount = sum(
+        max(0.0, t.amount - t.recovered_amount) for t in txns if t.status == TransactionStatus.RECOVERED
+    )
     total_count = len(txns)
     active_recovery_count = sum(1 for t in txns if t.status == TransactionStatus.PROCESSING)
 
@@ -69,7 +75,9 @@ async def get_dashboard_metrics(
 
     return DashboardMetrics(
         total_failed_revenue=round(total_failed_revenue, 2),
+        revenue_at_risk=round(revenue_at_risk, 2),
         total_recovered_revenue=round(total_recovered_revenue, 2),
+        discount_loss_amount=round(discount_loss_amount, 2),
         recovery_rate_percent=recovery_rate,
         total_transactions_count=total_count,
         active_recovery_count=active_recovery_count,

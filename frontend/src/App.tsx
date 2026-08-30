@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { OverviewView } from './views/OverviewView';
 import { TransactionsView } from './views/TransactionsView';
+import { IngestionView } from './views/IngestionView';
 import { OutreachView } from './views/OutreachView';
 import { AuditView } from './views/AuditView';
 import { SettingsView } from './views/SettingsView';
@@ -169,6 +170,13 @@ export const App: React.FC = () => {
             loading={loading}
             onRetry={handleRetry}
             onSimulatePay={handleSimulatePay}
+          />
+        )}
+
+        {activeTab === 'ingest' && (
+          <IngestionView
+            onSuccess={() => fetchData(true)}
+            showNotification={showNotification}
           />
         )}
 

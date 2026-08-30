@@ -72,6 +72,33 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         </div>
       </div>
 
+      {/* Twilio & SMTP Live Gateway Configuration */}
+      <div className="bg-[#121318] border border-white/[0.08] rounded-2xl p-6 sm:p-8 space-y-4">
+        <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">
+          <Key className="w-4 h-4 text-emerald-400" />
+          <span>Twilio WhatsApp & SMTP Gateway Config (.env)</span>
+        </h3>
+        <p className="text-xs text-zinc-400">
+          Configure real outbound channels in <code className="text-blue-400 font-mono">backend/.env</code> to send actual WhatsApp messages and emails.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+          <div className="bg-black/40 p-4 rounded-xl border border-white/[0.06] space-y-1 text-zinc-300">
+            <div className="text-emerald-400 font-bold font-sans">Twilio WhatsApp:</div>
+            <div>TWILIO_ACCOUNT_SID="your_sid"</div>
+            <div>TWILIO_AUTH_TOKEN="your_token"</div>
+            <div>TWILIO_WHATSAPP_FROM="whatsapp:+14155238886"</div>
+          </div>
+          <div className="bg-black/40 p-4 rounded-xl border border-white/[0.06] space-y-1 text-zinc-300">
+            <div className="text-blue-400 font-bold font-sans">SMTP Email Server:</div>
+            <div>SMTP_HOST="smtp.gmail.com"</div>
+            <div>SMTP_PORT=587</div>
+            <div>SMTP_USERNAME="your_email@domain.com"</div>
+            <div>SMTP_PASSWORD="app_password"</div>
+          </div>
+        </div>
+      </div>
+
       {/* Multi-Agent Architecture */}
       <div className="bg-[#121318] border border-white/[0.08] rounded-2xl p-6 sm:p-8 space-y-4">
         <h3 className="font-heading font-bold text-base text-white flex items-center gap-2">

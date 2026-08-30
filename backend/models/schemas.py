@@ -204,8 +204,10 @@ class AuditLogRead(BaseModel):
 
 
 class DashboardMetrics(BaseModel):
-    total_failed_revenue: float = Field(description="Total value of failed transactions in INR")
+    total_failed_revenue: float = Field(description="Cumulative value of all ingested transactions in INR")
+    revenue_at_risk: float = Field(description="Active unrecovered revenue at risk in INR")
     total_recovered_revenue: float = Field(description="Total value of recovered revenue in INR")
+    discount_loss_amount: float = Field(default=0.0, description="Total loss incurred due to recovery discount incentives in INR")
     recovery_rate_percent: float = Field(description="Percentage of failed transactions successfully recovered")
     total_transactions_count: int = Field(description="Total transactions ingested")
     active_recovery_count: int = Field(description="Transactions currently in recovery pipeline")

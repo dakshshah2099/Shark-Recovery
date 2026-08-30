@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "recovery@sharkagent.local"
 
+    # Twilio WhatsApp Credentials
+    TWILIO_ACCOUNT_SID: str = ""
+    TWILIO_AUTH_TOKEN: str = ""
+    TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"  # Default Twilio WhatsApp Sandbox number
+
     # Agent Guardrails
     MAX_RETRY_ATTEMPTS: int = 2
 

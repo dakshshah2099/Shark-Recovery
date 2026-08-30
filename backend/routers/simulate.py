@@ -1,10 +1,12 @@
+import csv
+import io
 import json
 import logging
 import random
 import uuid
 from datetime import datetime
-from typing import List, Optional
-from fastapi import APIRouter, Depends
+from typing import Any, Dict, List, Optional
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 try:
@@ -44,7 +46,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api", tags=["Simulation"])
+router = APIRouter(prefix="/api", tags=["Simulation & Ingestion"])
 
 SYNTHETIC_SCENARIOS = [
     {
@@ -113,6 +115,104 @@ SYNTHETIC_SCENARIOS = [
 ]
 
 
+async def _process_single_failure_item(
+    item: SimulateBatchItem,
+    session: AsyncSession,
+) -> TransactionRead:
+    """Core helper to ingest a failed checkout item and execute recovery orchestration."""
+    # 1. Customer look up or creation
+    cust_query = await session.execute(
+        select(Customer).where(Customer.email == item.customer_email)
+    )
+    customer = cust_query.scalar_one_or_none()
+
+    if not customer:
+        customer = Customer(
+            name=item.customer_name,
+            email=item.customer_email,
+            phone=item.customer_phone,
+            total_spent=round(random.uniform(1000.0, 15000.0), 2),
+            successful_transactions_count=random.randint(1, 8),
+            failed_transactions_count=1,
+        )
+        session.add(customer)
+        await session.commit()
+        await session.refresh(customer)
+    else:
+        customer.failed_transactions_count += 1
+        session.add(customer)
+        await session.commit()
+
+    # 2. Create Failed Transaction
+    order_id = f"order_{uuid.uuid4().hex[:10]}"
+    payment_id = f"pay_{uuid.uuid4().hex[:10]}"
+
+    txn = Transaction(
+        razorpay_order_id=order_id,
+        razorpay_payment_id=payment_id,
+        customer_id=customer.id,
+        amount=item.amount,
+        currency="INR",
+        status=TransactionStatus.FAILED,
+        failure_code=item.failure_code,
+        failure_reason=item.failure_reason,
+        retry_count=0,
+        max_retries=settings.MAX_RETRY_ATTEMPTS,
+    )
+    session.add(txn)
+    await session.commit()
+    await session.refresh(txn)
+
+    # 3. Autonomous Orchestrator Call
+    orch_res = await orchestrate_revenue_recovery(txn.id, session)
+
+    # 4. Optional simulated customer payment
+    if item.simulate_instant_recovery and orch_res.get("status") == "success":
+        payable = orch_res.get("payable_amount", txn.amount)
+        txn.status = TransactionStatus.RECOVERED
+        txn.recovered_amount = payable
+        txn.updated_at = datetime.utcnow()
+        customer.total_spent += payable
+        customer.successful_transactions_count += 1
+
+        session.add(txn)
+        session.add(customer)
+        await session.commit()
+
+        await record_audit_log(
+            session=session,
+            agent_name="SimulatedPayer",
+            action_type=ActionType.RECOVERY_VERIFIED,
+            status=AuditStatus.SUCCESS,
+            transaction_id=txn.id,
+            customer_id=customer.id,
+            input_payload=json.dumps({"payment_link": txn.recovery_link, "amount": payable}),
+            output_payload=f"Customer clicked recovery link and completed payment of INR {payable:.2f}",
+        )
+
+    await session.refresh(txn)
+    return TransactionRead(
+        id=txn.id,
+        razorpay_order_id=txn.razorpay_order_id,
+        razorpay_payment_id=txn.razorpay_payment_id,
+        customer_id=txn.customer_id,
+        amount=txn.amount,
+        currency=txn.currency,
+        status=txn.status,
+        failure_code=txn.failure_code,
+        failure_reason=txn.failure_reason,
+        failure_category=txn.failure_category,
+        retry_count=txn.retry_count,
+        max_retries=txn.max_retries,
+        recovery_link=txn.recovery_link,
+        recovery_channel=txn.recovery_channel,
+        discount_applied_percent=txn.discount_applied_percent,
+        recovered_amount=txn.recovered_amount,
+        created_at=txn.created_at,
+        updated_at=txn.updated_at,
+    )
+
+
 @router.post("/simulate-batch", response_model=SimulateBatchResponse)
 async def simulate_batch_recovery(
     req: Optional[SimulateBatchRequest] = None,
@@ -120,7 +220,6 @@ async def simulate_batch_recovery(
 ) -> SimulateBatchResponse:
     """
     Generates and processes synthetic failed payment scenarios through the autonomous recovery pipeline.
-    Instantly demonstrates real-time revenue recovery metrics on the dashboard.
     """
     items_to_process: List[SimulateBatchItem] = []
 
@@ -143,104 +242,77 @@ async def simulate_batch_recovery(
             )
 
     processed_txns: List[TransactionRead] = []
-
     for item in items_to_process:
-        # 1. Customer look up or creation
-        cust_query = await session.execute(
-            select(Customer).where(Customer.email == item.customer_email)
-        )
-        customer = cust_query.scalar_one_or_none()
-
-        if not customer:
-            customer = Customer(
-                name=item.customer_name,
-                email=item.customer_email,
-                phone=item.customer_phone,
-                total_spent=round(random.uniform(1000.0, 15000.0), 2),
-                successful_transactions_count=random.randint(1, 8),
-                failed_transactions_count=1,
-            )
-            session.add(customer)
-            await session.commit()
-            await session.refresh(customer)
-        else:
-            customer.failed_transactions_count += 1
-            session.add(customer)
-            await session.commit()
-
-        # 2. Create Failed Transaction
-        order_id = f"order_{uuid.uuid4().hex[:10]}"
-        payment_id = f"pay_{uuid.uuid4().hex[:10]}"
-
-        txn = Transaction(
-            razorpay_order_id=order_id,
-            razorpay_payment_id=payment_id,
-            customer_id=customer.id,
-            amount=item.amount,
-            currency="INR",
-            status=TransactionStatus.FAILED,
-            failure_code=item.failure_code,
-            failure_reason=item.failure_reason,
-            retry_count=0,
-            max_retries=settings.MAX_RETRY_ATTEMPTS,
-        )
-        session.add(txn)
-        await session.commit()
-        await session.refresh(txn)
-
-        # 3. Autonomous Orchestrator Call
-        orch_res = await orchestrate_revenue_recovery(txn.id, session)
-
-        # 4. Optional simulated customer payment
-        if item.simulate_instant_recovery and orch_res.get("status") == "success":
-            payable = orch_res.get("payable_amount", txn.amount)
-            txn.status = TransactionStatus.RECOVERED
-            txn.recovered_amount = payable
-            txn.updated_at = datetime.utcnow()
-            customer.total_spent += payable
-            customer.successful_transactions_count += 1
-
-            session.add(txn)
-            session.add(customer)
-            await session.commit()
-
-            await record_audit_log(
-                session=session,
-                agent_name="SimulatedPayer",
-                action_type=ActionType.RECOVERY_VERIFIED,
-                status=AuditStatus.SUCCESS,
-                transaction_id=txn.id,
-                customer_id=customer.id,
-                input_payload=json.dumps({"payment_link": txn.recovery_link, "amount": payable}),
-                output_payload=f"Customer clicked recovery link and completed payment of INR {payable:.2f}",
-            )
-
-        await session.refresh(txn)
-        processed_txns.append(
-            TransactionRead(
-                id=txn.id,
-                razorpay_order_id=txn.razorpay_order_id,
-                razorpay_payment_id=txn.razorpay_payment_id,
-                customer_id=txn.customer_id,
-                amount=txn.amount,
-                currency=txn.currency,
-                status=txn.status,
-                failure_code=txn.failure_code,
-                failure_reason=txn.failure_reason,
-                failure_category=txn.failure_category,
-                retry_count=txn.retry_count,
-                max_retries=txn.max_retries,
-                recovery_link=txn.recovery_link,
-                recovery_channel=txn.recovery_channel,
-                discount_applied_percent=txn.discount_applied_percent,
-                recovered_amount=txn.recovered_amount,
-                created_at=txn.created_at,
-                updated_at=txn.updated_at,
-            )
-        )
+        processed_txns.append(await _process_single_failure_item(item, session))
 
     return SimulateBatchResponse(
         processed_count=len(processed_txns),
         transactions=processed_txns,
         message=f"Successfully simulated and orchestrated {len(processed_txns)} payment recovery workflows.",
+    )
+
+
+@router.post("/simulate-single", response_model=TransactionRead)
+async def simulate_single_failure(
+    item: SimulateBatchItem,
+    session: AsyncSession = Depends(get_session),
+) -> TransactionRead:
+    """
+    Manually injects a single custom payment failure into the multi-agent recovery system.
+    """
+    return await _process_single_failure_item(item, session)
+
+
+@router.post("/ingest-csv", response_model=SimulateBatchResponse)
+async def ingest_csv_failures(
+    file: UploadFile = File(...),
+    session: AsyncSession = Depends(get_session),
+) -> SimulateBatchResponse:
+    """
+    Uploads a CSV of failed transactions and automatically triggers the recovery workflow for each row.
+    Expected CSV headers: name, email, phone, amount, failure_code, failure_reason
+    """
+    content = await file.read()
+    text = content.decode("utf-8-sig")
+    reader = csv.DictReader(io.StringIO(text))
+
+    items: List[SimulateBatchItem] = []
+    for row in reader:
+        # Normalize column names
+        row_lower = {k.strip().lower(): v.strip() for k, v in row.items() if k}
+        name = row_lower.get("name") or row_lower.get("customer_name") or "Valued Customer"
+        email = row_lower.get("email") or row_lower.get("customer_email") or "customer@example.com"
+        phone = row_lower.get("phone") or row_lower.get("customer_phone") or "+919876543210"
+        
+        try:
+            amount = float(row_lower.get("amount", "1000").replace(",", "").replace("₹", ""))
+        except ValueError:
+            amount = 1000.0
+
+        code = row_lower.get("failure_code") or row_lower.get("code") or "BAD_REQUEST_ERROR"
+        reason = row_lower.get("failure_reason") or row_lower.get("reason") or "Payment processing failed"
+
+        items.append(
+            SimulateBatchItem(
+                customer_name=name,
+                customer_email=email,
+                customer_phone=phone,
+                amount=amount,
+                failure_code=code,
+                failure_reason=reason,
+                simulate_instant_recovery=False,
+            )
+        )
+
+    if not items:
+        raise HTTPException(status_code=400, detail="CSV file contained no valid transaction rows.")
+
+    processed_txns: List[TransactionRead] = []
+    for item in items:
+        processed_txns.append(await _process_single_failure_item(item, session))
+
+    return SimulateBatchResponse(
+        processed_count=len(processed_txns),
+        transactions=processed_txns,
+        message=f"Successfully ingested and orchestrated {len(processed_txns)} transactions from CSV.",
     )

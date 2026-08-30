@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, RefreshCw, Layers, LayoutDashboard, Table, MessageSquare, Activity, Settings } from 'lucide-react';
+import { Play, RefreshCw, Layers, LayoutDashboard, Table, MessageSquare, Activity, Settings, Zap } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
@@ -21,7 +21,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navTabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'transactions', label: 'Transactions', icon: Table },
-    { id: 'outreach', label: 'Outreach & WhatsApp', icon: MessageSquare },
+    { id: 'ingest', label: 'CSV & Failure Injection', icon: Zap },
+    { id: 'outreach', label: 'Outreach Hub', icon: MessageSquare },
     { id: 'audit', label: 'Agent Audit Trail', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -85,6 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onSimulateBatch}
               disabled={simulating}
               className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+              title="Quickly simulate 5 realistic failed payment scenarios"
             >
               <Play className="w-3 h-3 fill-white" />
               <span className="hidden sm:inline">{simulating ? 'Simulating...' : 'Simulate 5 Drops'}</span>
