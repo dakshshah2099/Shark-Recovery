@@ -38,11 +38,12 @@ class Settings(BaseSettings):
     # Agent Guardrails
     MAX_RETRY_ATTEMPTS: int = 2
 
-    # LLM Configuration
-    GOOGLE_API_KEY: str = ""
+    # LLM Configuration (LiteLLM supports Groq, Gemini, OpenAI, etc.)
+    GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
+    GOOGLE_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
-    LLM_MODEL: str = "gemini/gemini-2.5-flash"
+    LLM_MODEL: str = "groq/llama-3.3-70b-versatile"
 
 
 settings = Settings()

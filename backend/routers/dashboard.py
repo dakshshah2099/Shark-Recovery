@@ -334,8 +334,9 @@ async def get_env_config() -> EnvConfigRead:
 
     return EnvConfigRead(
         debug_mode=True,
-        google_api_key=settings.GOOGLE_API_KEY,
+        groq_api_key=settings.GROQ_API_KEY,
         gemini_api_key=settings.GEMINI_API_KEY,
+        google_api_key=settings.GOOGLE_API_KEY,
         openai_api_key=settings.OPENAI_API_KEY,
         llm_model=settings.LLM_MODEL,
         razorpay_key_id=settings.RAZORPAY_KEY_ID,
@@ -363,6 +364,9 @@ async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
             detail="Environment variables can only be edited when DEBUG_MODE is True.",
         )
 
+    if payload.groq_api_key is not None:
+        settings.GROQ_API_KEY = payload.groq_api_key
+        os.environ["GROQ_API_KEY"] = payload.groq_api_key
     if payload.google_api_key is not None:
         settings.GOOGLE_API_KEY = payload.google_api_key
         os.environ["GOOGLE_API_KEY"] = payload.google_api_key

@@ -25,8 +25,9 @@ interface SettingsViewProps {
 
 interface EnvConfig {
   debug_mode: boolean;
-  google_api_key?: string;
+  groq_api_key?: string;
   gemini_api_key?: string;
+  google_api_key?: string;
   openai_api_key?: string;
   llm_model?: string;
   razorpay_key_id?: string;
@@ -53,10 +54,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
   // Editable form state
-  const [googleKey, setGoogleKey] = useState('');
+  const [groqKey, setGroqKey] = useState('');
   const [geminiKey, setGeminiKey] = useState('');
   const [openaiKey, setOpenaiKey] = useState('');
-  const [llmModel, setLlmModel] = useState('gemini/gemini-2.5-flash');
+  const [llmModel, setLlmModel] = useState('groq/llama-3.3-70b-versatile');
   const [rzpKeyId, setRzpKeyId] = useState('');
   const [rzpKeySecret, setRzpKeySecret] = useState('');
   const [rzpWebhookSecret, setRzpWebhookSecret] = useState('');
@@ -82,10 +83,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         const data: EnvConfig = await res.json();
         setEnvConfig(data);
         if (data.debug_mode) {
-          setGoogleKey(data.google_api_key || '');
-          setGeminiKey(data.gemini_api_key || '');
+          setGroqKey(data.groq_api_key || '');
+          setGeminiKey(data.gemini_api_key || data.google_api_key || '');
           setOpenaiKey(data.openai_api_key || '');
-          setLlmModel(data.llm_model || 'gemini/gemini-2.5-flash');
+          setLlmModel(data.llm_model || 'groq/llama-3.3-70b-versatile');
           setRzpKeyId(data.razorpay_key_id || '');
           setRzpKeySecret(data.razorpay_key_secret || '');
           setRzpWebhookSecret(data.razorpay_webhook_secret || '');
@@ -115,8 +116,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          google_api_key: googleKey,
+          groq_api_key: groqKey,
           gemini_api_key: geminiKey,
+          google_api_key: geminiKey,
           openai_api_key: openaiKey,
           llm_model: llmModel,
           razorpay_key_id: rzpKeyId,
@@ -249,24 +251,52 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             <div className="space-y-3">
               <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-                <span>LiteLLM & AI Intelligence Layer</span>
+                <span>LiteLLM Multi-Model Engine (Groq & Google Gemini)</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">GOOGLE_API_KEY / GEMINI_API_KEY</label>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">
+                    GROQ_API_KEY <span className="text-emerald-600 dark:text-emerald-400 font-semibold">(Ultra-fast)</span>
+                  </label>
                   <input
                     type="password"
-                    value={geminiKey || googleKey}
-                    onChange={(e) => {
-                      setGeminiKey(e.target.value);
-                      setGoogleKey(e.target.value);
-                    }}
-                    placeholder="AIzaSy..."
+                    value={groqKey}
+                    onChange={(e) => setGroqKey(e.target.value)}
+                    placeholder="gsk_..."
                     className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">OPENAI_API_KEY (Optional)</label>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">
+                    GEMINI_API_KEY / GOOGLE_API_KEY
+                  </label>
+                  <input
+                    type="password"
+                    value={geminiKey}
+                    onChange={(e) => setGeminiKey(e.target.value)}
+                    placeholder="AIzaSy..."
+                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">
+                    LLM_MODEL
+                  </label>
+                  <input
+                    type="text"
+                    value={llmModel}
+                    onChange={(e) => setLlmModel(e.target.value)}
+                    placeholder="groq/llama-3.3-70b-versatile or gemini/gemini-2.5-flash"
+                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">
+                    OPENAI_API_KEY (Optional Fallback)
+                  </label>
                   <input
                     type="password"
                     value={openaiKey}
@@ -277,15 +307,29 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">LLM_MODEL (LiteLLM Format)</label>
-                <input
-                  type="text"
-                  value={llmModel}
-                  onChange={(e) => setLlmModel(e.target.value)}
-                  placeholder="gemini/gemini-2.5-flash or gpt-4o-mini"
-                  className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
-                />
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-[11px] text-slate-500 dark:text-zinc-500 font-medium">Quick Presets:</span>
+                <button
+                  type="button"
+                  onClick={() => setLlmModel('groq/llama-3.3-70b-versatile')}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 transition-colors cursor-pointer"
+                >
+                  groq/llama-3.3-70b-versatile
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLlmModel('groq/mixtral-8x7b-32768')}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 transition-colors cursor-pointer"
+                >
+                  groq/mixtral-8x7b-32768
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLlmModel('gemini/gemini-2.5-flash')}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 transition-colors cursor-pointer"
+                >
+                  gemini/gemini-2.5-flash
+                </button>
               </div>
             </div>
 

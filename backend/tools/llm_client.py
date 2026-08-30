@@ -1,6 +1,7 @@
 import json
 import logging
-from typing import Any, Dict, List, Optional
+import os
+from typing import Any, Dict, List, Optional, Tuple
 import litellm
 
 try:
@@ -15,23 +16,44 @@ litellm.suppress_debug_info = True
 litellm.drop_params = True
 
 
-def get_llm_credentials() -> tuple[Optional[str], str]:
+def get_llm_credentials() -> Tuple[Optional[str], str]:
     """
-    Returns (api_key, model_identifier) formatted for LiteLLM.
-    Supports Google Gemini, OpenAI, and custom LiteLLM prefixes.
+    Returns (api_key, model_identifier) optimized for Groq and Google Gemini via LiteLLM.
     """
-    api_key = settings.GEMINI_API_KEY or settings.GOOGLE_API_KEY
-    if api_key:
-        model = settings.LLM_MODEL
+    # 1. Sync environment variables for LiteLLM
+    if settings.GROQ_API_KEY:
+        os.environ["GROQ_API_KEY"] = settings.GROQ_API_KEY
+    if settings.GEMINI_API_KEY:
+        os.environ["GEMINI_API_KEY"] = settings.GEMINI_API_KEY
+    if settings.GOOGLE_API_KEY:
+        os.environ["GOOGLE_API_KEY"] = settings.GOOGLE_API_KEY
+
+    model = settings.LLM_MODEL or "groq/llama-3.3-70b-versatile"
+
+    # 2. Check if user configured Groq
+    if model.startswith("groq/") or (settings.GROQ_API_KEY and not model.startswith("gemini/")):
+        if settings.GROQ_API_KEY:
+            if not model.startswith("groq/"):
+                model = f"groq/{model}"
+            return settings.GROQ_API_KEY, model
+
+    # 3. Check if user configured Gemini
+    gemini_key = settings.GEMINI_API_KEY or settings.GOOGLE_API_KEY
+    if gemini_key:
         if not model.startswith("gemini/") and not model.startswith("google/"):
             clean_model = model.replace("google:", "").replace("google-gla:", "")
             model = f"gemini/{clean_model}"
-        return api_key, model
+        return gemini_key, model
 
+    # 4. Check OpenAI fallback if provided
     if settings.OPENAI_API_KEY:
         return settings.OPENAI_API_KEY, "gpt-4o-mini"
 
-    return None, settings.LLM_MODEL
+    # Return configured Groq key if available
+    if settings.GROQ_API_KEY:
+        return settings.GROQ_API_KEY, "groq/llama-3.3-70b-versatile"
+
+    return None, model
 
 
 async def complete_json_prompt(
@@ -40,12 +62,12 @@ async def complete_json_prompt(
     timeout: float = 12.0,
 ) -> Optional[Dict[str, Any]]:
     """
-    Calls LLM via LiteLLM with structured JSON parsing.
-    Returns parsed dict on success, or None on failure/fallback.
+    Calls LLM (Groq / Gemini / OpenAI) via LiteLLM with structured JSON parsing.
+    Returns parsed dict on success, or None on failure/fallback to deterministic rule engine.
     """
     api_key, model = get_llm_credentials()
     if not api_key:
-        logger.info("No LLM API key configured. Utilizing heuristic agent fallback.")
+        logger.info("No active Groq or Gemini API key configured. Utilizing heuristic agent fallback.")
         return None
 
     try:
@@ -76,5 +98,5 @@ async def complete_json_prompt(
         return json.loads(content)
 
     except Exception as e:
-        logger.warning(f"LiteLLM invocation failed ({type(e).__name__}: {e}). Falling back to heuristic rule engine.")
+        logger.warning(f"LiteLLM call failed on {model} ({type(e).__name__}: {e}). Falling back to heuristic rule engine.")
         return None
