@@ -379,6 +379,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Twilio WhatsApp API</span>
               </div>
+
+              <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 rounded-xl p-3.5 text-xs text-emerald-800 dark:text-emerald-300">
+                <p className="font-semibold flex items-center gap-1.5">
+                  <span>💡 Twilio Trial & Sandbox Notice:</span>
+                </p>
+                <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
+                  For free trial accounts, recipients must first join your Twilio WhatsApp Sandbox (send <code>join &lt;your-code&gt;</code> to your Twilio number from WhatsApp). When testing with Single Failure or CSV ingestion, provide your verified phone number.
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">TWILIO_ACCOUNT_SID</label>
