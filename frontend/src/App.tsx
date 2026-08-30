@@ -17,7 +17,6 @@ export const App: React.FC = () => {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [simulating, setSimulating] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
 
@@ -28,8 +27,7 @@ export const App: React.FC = () => {
     }, 4000);
   };
 
-  const fetchData = useCallback(async (isManualSync = false) => {
-    if (isManualSync) setRefreshing(true);
+  const fetchData = useCallback(async () => {
     try {
       const [metricsRes, txnsRes, auditRes] = await Promise.all([
         fetch('/api/metrics'),
@@ -44,7 +42,6 @@ export const App: React.FC = () => {
       console.error('Failed to fetch dashboard data:', err);
     } finally {
       setLoading(false);
-      if (isManualSync) setRefreshing(false);
     }
   }, []);
 
@@ -133,9 +130,7 @@ export const App: React.FC = () => {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onSimulateBatch={handleSimulateBatch}
-        onRefresh={() => fetchData(true)}
         simulating={simulating}
-        refreshing={refreshing}
       />
 
       {/* Floating Flat Notification Toast */}
@@ -169,7 +164,7 @@ export const App: React.FC = () => {
 
         {activeTab === 'ingest' && (
           <IngestionView
-            onSuccess={() => fetchData(true)}
+            onSuccess={() => fetchData()}
             showNotification={showNotification}
           />
         )}
@@ -185,10 +180,6 @@ export const App: React.FC = () => {
           />
         )}
       </main>
-
-      <footer className="border-t border-zinc-800 py-4 bg-[#09090b] text-center text-xs text-zinc-500 font-mono">
-        AI Shark Revenue Recovery Agent • Razorpay Buildathon 2026 • Pydantic-AI & FastAPI
-      </footer>
     </div>
   );
 };

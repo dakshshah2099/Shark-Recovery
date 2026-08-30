@@ -1,22 +1,18 @@
 import React from 'react';
-import { Play, RefreshCw, Layers, LayoutDashboard, Table, Activity, Settings, Zap } from 'lucide-react';
+import { Play, Layers, LayoutDashboard, Table, Activity, Settings, Zap } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   onSimulateBatch: () => void;
-  onRefresh: () => void;
   simulating: boolean;
-  refreshing: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   onTabChange,
   onSimulateBatch,
-  onRefresh,
   simulating,
-  refreshing,
 }) => {
   const navTabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -72,23 +68,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Right Action Controls */}
           <div className="flex items-center gap-2.5">
             <button
-              onClick={onRefresh}
-              disabled={refreshing}
-              className="p-2 bg-[#121318] hover:bg-zinc-800 text-zinc-300 rounded-xl border border-white/[0.08] text-xs font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-              title="Sync Ledger"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-blue-400' : ''}`} />
-              <span className="hidden sm:inline">Sync</span>
-            </button>
-
-            <button
               onClick={onSimulateBatch}
               disabled={simulating}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50 transition-all"
               title="Quickly simulate 5 realistic failed payment scenarios"
             >
-              <Play className="w-3 h-3 fill-white" />
-              <span className="hidden sm:inline">{simulating ? 'Simulating...' : 'Simulate 5 Drops'}</span>
+              <Play className="w-3.5 h-3.5 fill-white" />
+              <span>{simulating ? 'Simulating...' : 'Simulate 5 Drops'}</span>
             </button>
           </div>
         </div>

@@ -172,8 +172,8 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
             <input
               type="number"
               required
-              min={100}
-              step={10}
+              min={1}
+              step="any"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
               className="w-full bg-black/60 border border-white/[0.08] text-xs text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-500 font-mono"
