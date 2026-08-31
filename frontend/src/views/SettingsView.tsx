@@ -406,14 +406,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">TWILIO_ACCOUNT_SID</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300">TWILIO_ACCOUNT_SID</label>
+                    {twilioSid.startsWith('SK') && (
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold font-mono">
+                        Must start with AC...
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="text"
                     value={twilioSid}
                     onChange={(e) => setTwilioSid(e.target.value)}
-                    placeholder="AC..."
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    className={`w-full h-11 bg-slate-50 dark:bg-black/60 border text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none transition-colors ${
+                      twilioSid.startsWith('SK')
+                        ? 'border-amber-500 focus:border-amber-600'
+                        : 'border-slate-200 dark:border-white/[0.08] focus:border-blue-500'
+                    }`}
                   />
+                  {twilioSid.startsWith('SK') && (
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">
+                      ⚠️ You entered an API Key (SK...). Please use your Account SID (AC...) from your Twilio Console homepage.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">TWILIO_AUTH_TOKEN</label>
@@ -421,7 +437,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     type="password"
                     value={twilioToken}
                     onChange={(e) => setTwilioToken(e.target.value)}
-                    placeholder="Auth token..."
+                    placeholder="Primary Auth Token..."
                     className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>

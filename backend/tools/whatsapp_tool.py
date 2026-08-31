@@ -37,29 +37,44 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
     to_whatsapp = f"whatsapp:{phone_clean}" if not phone_clean.startswith("whatsapp:") else phone_clean
     from_whatsapp = settings.TWILIO_WHATSAPP_FROM if settings.TWILIO_WHATSAPP_FROM.startswith("whatsapp:") else f"whatsapp:{settings.TWILIO_WHATSAPP_FROM}"
 
-    # Attempt Real Twilio Dispatch if configured
-    if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN and settings.TWILIO_ACCOUNT_SID.strip() != "":
-        try:
-            from twilio.rest import Client
-            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    account_sid = settings.TWILIO_ACCOUNT_SID.strip() if settings.TWILIO_ACCOUNT_SID else ""
+    auth_token = settings.TWILIO_AUTH_TOKEN.strip() if settings.TWILIO_AUTH_TOKEN else ""
 
-            def _sync_send():
-                return client.messages.create(
-                    body=payload.message,
-                    from_=from_whatsapp,
-                    to=to_whatsapp,
-                )
-
-            msg = await asyncio.to_thread(_sync_send)
-            twilio_sid = msg.sid
-            delivery_status = msg.status or "sent"
-            dispatch_mode = "twilio_live"
-            logger.info(f"Twilio WhatsApp message dispatched successfully: SID {twilio_sid} to {to_whatsapp}")
-        except Exception as e:
-            err_msg = str(e)
-            logger.warning(f"Twilio WhatsApp dispatch warning ({err_msg}). Recording to audit ledger.")
-            delivery_status = f"twilio_info: {err_msg[:80]}"
+    # Validate Twilio SID format
+    if account_sid:
+        if account_sid.startswith("SK"):
+            err_notice = "TWILIO_ACCOUNT_SID is an API Key ('SK...'). Twilio requires your primary Account SID starting with 'AC...' (found on https://console.twilio.com homepage)."
+            logger.warning(err_notice)
+            delivery_status = f"twilio_config_error: Use Account SID (AC...) not API Key (SK...)"
             dispatch_mode = "twilio_fallback"
+        elif not account_sid.startswith("AC"):
+            err_notice = f"Invalid TWILIO_ACCOUNT_SID format '{account_sid[:4]}...'. Twilio Account SIDs always start with 'AC'."
+            logger.warning(err_notice)
+            delivery_status = f"twilio_config_error: Account SID must start with AC"
+            dispatch_mode = "twilio_fallback"
+        elif auth_token:
+            # Attempt Real Twilio Dispatch
+            try:
+                from twilio.rest import Client
+                client = Client(account_sid, auth_token)
+
+                def _sync_send():
+                    return client.messages.create(
+                        body=payload.message,
+                        from_=from_whatsapp,
+                        to=to_whatsapp,
+                    )
+
+                msg = await asyncio.to_thread(_sync_send)
+                twilio_sid = msg.sid
+                delivery_status = msg.status or "sent"
+                dispatch_mode = "twilio_live"
+                logger.info(f"Twilio WhatsApp message dispatched successfully: SID {twilio_sid} to {to_whatsapp}")
+            except Exception as e:
+                err_msg = str(e)
+                logger.warning(f"Twilio WhatsApp dispatch warning ({err_msg}). Recording to audit ledger.")
+                delivery_status = f"twilio_info: {err_msg[:80]}"
+                dispatch_mode = "twilio_fallback"
 
     message_entry = {
         "message_id": twilio_sid or message_id,
