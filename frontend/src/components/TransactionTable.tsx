@@ -13,8 +13,8 @@ import type { TransactionItem, TransactionStatus } from '../types';
 interface TransactionTableProps {
   transactions: TransactionItem[];
   loading?: boolean;
-  onRetry: (id: string) => void;
-  onSimulatePay: (id: string) => void;
+  onRetry: (id: string) => Promise<void> | void;
+  onSimulatePay: (id: string) => Promise<void> | void;
 }
 
 export const TransactionTable: React.FC<TransactionTableProps> = ({
@@ -25,6 +25,26 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [retryingIds, setRetryingIds] = useState<Record<string, boolean>>({});
+  const [payingIds, setPayingIds] = useState<Record<string, boolean>>({});
+
+  const handleRowRetry = async (id: string) => {
+    setRetryingIds((prev) => ({ ...prev, [id]: true }));
+    try {
+      await onRetry(id);
+    } finally {
+      setRetryingIds((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
+  const handleRowPay = async (id: string) => {
+    setPayingIds((prev) => ({ ...prev, [id]: true }));
+    try {
+      await onSimulatePay(id);
+    } finally {
+      setPayingIds((prev) => ({ ...prev, [id]: false }));
+    }
+  };
 
   const filteredTransactions = transactions.filter((txn) => {
     const matchesSearch =
@@ -212,20 +232,22 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                       {txn.status !== 'recovered' && (
                         <>
                           <button
-                            onClick={() => onSimulatePay(txn.id)}
-                            className="h-8 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold inline-flex items-center justify-center gap-1 cursor-pointer shadow-xs transition-colors whitespace-nowrap"
+                            onClick={() => handleRowPay(txn.id)}
+                            disabled={payingIds[txn.id] || retryingIds[txn.id]}
+                            className="h-8 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-[11px] font-semibold inline-flex items-center justify-center gap-1 cursor-pointer shadow-xs transition-colors whitespace-nowrap"
                             title="Simulate customer clicking payment link"
                           >
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Paid</span>
+                            <CheckCircle2 className={`w-3 h-3 ${payingIds[txn.id] ? 'animate-spin' : ''}`} />
+                            <span>{payingIds[txn.id] ? 'Saving...' : 'Paid'}</span>
                           </button>
 
                           <button
-                            onClick={() => onRetry(txn.id)}
-                            className="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 inline-flex items-center justify-center cursor-pointer border border-slate-200 dark:border-zinc-700 transition-colors"
+                            onClick={() => handleRowRetry(txn.id)}
+                            disabled={retryingIds[txn.id] || payingIds[txn.id]}
+                            className="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 inline-flex items-center justify-center cursor-pointer border border-slate-200 dark:border-zinc-700 disabled:opacity-50 transition-colors"
                             title="Re-run AI Triage"
                           >
-                            <RotateCw className="w-3 h-3" />
+                            <RotateCw className={`w-3.5 h-3.5 ${retryingIds[txn.id] ? 'animate-spin text-blue-600 dark:text-blue-400' : ''}`} />
                           </button>
                         </>
                       )}

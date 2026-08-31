@@ -125,11 +125,21 @@ export const App: React.FC = () => {
         method: 'POST',
       });
       if (res.ok) {
-        showNotification(`🔄 Re-executed AI recovery loop for txn ${transactionId}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          showNotification(`⚡ AI recovery executed for txn ${transactionId.slice(0, 8)}! (Link generated & outreach dispatched)`);
+        } else if (data.status === 'blocked') {
+          showNotification(`⚠️ Gating guardrail: ${data.reason}`);
+        } else {
+          showNotification(`🔄 Re-executed AI recovery loop for txn ${transactionId.slice(0, 8)}`);
+        }
         await fetchData();
+      } else {
+        showNotification(`❌ Retry request failed (${res.status})`);
       }
     } catch (err) {
       console.error('Retry error:', err);
+      showNotification('❌ Failed to execute recovery retry.');
     }
   };
 
@@ -139,11 +149,14 @@ export const App: React.FC = () => {
         method: 'POST',
       });
       if (res.ok) {
-        showNotification(`🎉 Customer completed payment! Revenue recovered for txn ${transactionId}`);
+        showNotification(`🎉 Customer completed payment! Revenue recovered for txn ${transactionId.slice(0, 8)}`);
         await fetchData();
+      } else {
+        showNotification(`❌ Failed to mark as paid (${res.status})`);
       }
     } catch (err) {
       console.error('Mark recovered error:', err);
+      showNotification('❌ Error updating payment status.');
     }
   };
 

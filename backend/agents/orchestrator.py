@@ -75,6 +75,7 @@ async def record_audit_log(
 async def orchestrate_revenue_recovery(
     transaction_id: str,
     session: AsyncSession,
+    force: bool = False,
 ) -> Dict[str, Any]:
     """
     Master autonomous recovery workflow orchestrator.
@@ -91,8 +92,8 @@ async def orchestrate_revenue_recovery(
     if not cust:
         return {"status": "error", "message": f"Customer for transaction {transaction_id} not found."}
 
-    # 2. Stopping Rules & Gating Check
-    if txn.retry_count >= txn.max_retries:
+    # 2. Stopping Rules & Gating Check (bypassed if force=True on manual operator action)
+    if not force and txn.retry_count >= txn.max_retries:
         await record_audit_log(
             session=session,
             agent_name="RecoveryOrchestrator",
@@ -111,6 +112,10 @@ async def orchestrate_revenue_recovery(
             "reason": "Max retry bound exceeded",
             "retry_count": txn.retry_count,
         }
+
+    if force and txn.retry_count >= txn.max_retries:
+        # Operator override: expand threshold by 1 to record clean attempt
+        txn.max_retries = txn.retry_count + 1
 
     # 3. Build Diagnostic Context
     ctx = DiagnosticContext(

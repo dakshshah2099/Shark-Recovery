@@ -246,8 +246,8 @@ async def manual_retry_transaction(
     transaction_id: str,
     session: AsyncSession = Depends(get_session),
 ) -> Dict[str, Any]:
-    """Manually re-triggers the autonomous recovery loop for a transaction."""
-    return await orchestrate_revenue_recovery(transaction_id, session)
+    """Manually re-triggers the autonomous recovery loop for a transaction with force override."""
+    return await orchestrate_revenue_recovery(transaction_id, session, force=True)
 
 
 @router.post("/transactions/{transaction_id}/mark-recovered")
