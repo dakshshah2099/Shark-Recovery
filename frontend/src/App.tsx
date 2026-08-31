@@ -161,7 +161,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090a0f] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-150">
+    <div className="min-h-screen bg-[#f4f6f9] dark:bg-[#080d1a] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-150">
       {/* Enterprise Sidebar */}
       <Sidebar
         activeTab={activeTab}
@@ -182,7 +182,7 @@ export const App: React.FC = () => {
 
         {/* Floating Flat Notification Toast */}
         {notification && (
-          <div className="fixed bottom-6 right-6 z-50 bg-blue-600 dark:bg-blue-600 text-white font-medium text-xs py-3 px-5 rounded-xl shadow-lg border border-blue-500 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="fixed bottom-6 right-6 z-50 bg-[#0c83ff] text-white font-medium text-xs py-2.5 px-4 rounded-lg shadow-lg border border-[#3395ff]/40 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
             <span>{notification}</span>
           </div>
         )}

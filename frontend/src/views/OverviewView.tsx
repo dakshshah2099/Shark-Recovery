@@ -36,46 +36,46 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   const recoveredTxns = transactions.filter((t) => t.status === 'recovered');
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* 1. Hero Executive Strip */}
-      <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-7 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xs transition-colors">
-        <div className="space-y-3 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 text-xs font-semibold text-blue-700 dark:text-blue-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-            <span>Autonomous Revenue Intelligence</span>
+      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-xs transition-colors">
+        <div className="space-y-2 max-w-2xl">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0c83ff]/10 border border-[#0c83ff]/25 text-xs font-semibold text-[#0c83ff] dark:text-[#3395ff]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0c83ff] animate-pulse" />
+            <span>Autonomous Recovery Intelligence</span>
           </div>
-          <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight">
+          <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-slate-900 dark:text-white tracking-tight leading-tight">
             Revenue Recovery for Indian Payment Dropouts
           </h2>
-          <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-            Intercept Razorpay payment dropouts, diagnose root causes (UPI limits, netbanking 3DS timeouts, SBI 503 outages), and dispatch personalized dynamic discount links via live WhatsApp & SMTP email.
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-[#7a95b8] leading-relaxed">
+            Intercept Razorpay checkout dropouts, diagnose root causes (UPI limits, 3DS bank outages, card decline), and dispatch dynamic discount recovery links via Twilio WhatsApp & SMTP email.
           </p>
         </div>
 
-        {/* Action Controls - Standardized h-11 button sizes */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+        {/* Action Controls */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
           <button
             onClick={onSimulateBatch}
             disabled={simulating}
-            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-500/20 transition-all disabled:opacity-50"
+            className="h-10 px-4 rounded-lg bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all disabled:opacity-50"
           >
-            <Play className="w-4 h-4 fill-white" />
-            <span>{simulating ? 'Orchestrating Batch...' : 'Simulate 5 Failed Payments'}</span>
+            <Play className="w-3.5 h-3.5 fill-white" />
+            <span>{simulating ? 'Processing Batch...' : 'Simulate 5 Failures'}</span>
           </button>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={onSeedDB}
-              className="h-11 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              className="h-10 px-3.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] text-slate-700 dark:text-[#cad8ec] border border-slate-200 dark:border-[#172a46] text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               title="Populate realistic transactions"
             >
-              <Database className="w-3.5 h-3.5 text-blue-500" />
-              <span>Seed Data</span>
+              <Database className="w-3.5 h-3.5 text-[#0c83ff]" />
+              <span>Seed</span>
             </button>
 
             <button
               onClick={onClearDB}
-              className="h-11 px-4 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-zinc-900 dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-300 border border-slate-200 hover:border-rose-200 dark:border-white/[0.08] dark:hover:border-rose-900 text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              className="h-10 px-3.5 rounded-lg bg-slate-100 hover:bg-rose-50 dark:bg-[#132238] dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-[#8ea5c8] dark:hover:text-rose-400 border border-slate-200 hover:border-rose-200 dark:border-[#172a46] text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               title="Clear all database records"
             >
               <Trash2 className="w-3.5 h-3.5 text-rose-500" />
@@ -89,42 +89,42 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       <MetricCards metrics={metrics} />
 
       {/* 3. Operational Overview & Pipeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Active Recovery Pipeline */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-7 sm:p-8 flex flex-col justify-between shadow-xs transition-colors">
+        <div className="lg:col-span-2 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 flex flex-col justify-between shadow-xs transition-colors">
           <div>
-            <div className="flex items-center justify-between pb-5 border-b border-slate-100 dark:border-white/[0.06] mb-5">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#172a46] mb-4">
               <div>
-                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-500" />
+                <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#0c83ff] dark:text-[#3395ff]" />
                   <span>In-Flight Intervention Pipeline</span>
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-                  Transactions undergoing automated recovery triage and discount outreach.
+                <p className="text-xs text-slate-500 dark:text-[#7a95b8] mt-0.5">
+                  Transactions actively undergoing automated diagnostic and discount outreach.
                 </p>
               </div>
               <button
                 onClick={() => onNavigateTab('transactions')}
-                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-[#0c83ff] dark:text-[#3395ff] hover:underline inline-flex items-center gap-1 cursor-pointer"
               >
-                <span>View All Ledger</span>
+                <span>View Ledger</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
             </div>
 
             {activeTxns.length === 0 ? (
-              <div className="py-16 text-center text-xs text-slate-400 dark:text-zinc-500 rounded-xl border border-dashed border-slate-200 dark:border-zinc-800">
-                <Activity className="w-8 h-8 mx-auto text-slate-300 dark:text-zinc-700 mb-2" />
+              <div className="py-12 text-center text-xs text-slate-400 dark:text-[#52719c] rounded-lg border border-dashed border-slate-200 dark:border-[#172a46]">
+                <Activity className="w-7 h-7 mx-auto text-slate-300 dark:text-[#2a456c] mb-2" />
                 <p className="font-semibold text-slate-700 dark:text-zinc-300">No active recovery tasks in flight.</p>
-                <p className="text-slate-500 dark:text-zinc-500 mt-1">Use "Simulate 5 Failed Payments" or Ingestion tab to start.</p>
+                <p className="text-slate-500 dark:text-[#52719c] mt-0.5">Use "Simulate 5 Failures" or Ingestion tab to start.</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 dark:divide-white/[0.04]">
+              <div className="divide-y divide-slate-100 dark:divide-[#172a46]/60">
                 {activeTxns.slice(0, 5).map((t) => (
-                  <div key={t.id} className="py-4 flex items-center justify-between text-xs">
-                    <div className="space-y-1">
+                  <div key={t.id} className="py-3 flex items-center justify-between text-xs">
+                    <div className="space-y-0.5">
                       <div className="font-semibold text-slate-900 dark:text-white">{t.customer_name}</div>
-                      <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono">
+                      <div className="text-[11px] text-slate-500 dark:text-[#7a95b8] font-mono">
                         {t.failure_category.replace(/_/g, ' ').toUpperCase()} • {t.razorpay_order_id}
                       </div>
                     </div>
@@ -132,7 +132,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                       <div className="font-heading font-bold text-slate-900 dark:text-white text-sm">
                         ₹{t.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </div>
-                      <span className="text-[11px] text-blue-600 dark:text-blue-400 font-mono font-medium">
+                      <span className="text-[11px] text-[#0c83ff] dark:text-[#3395ff] font-mono font-medium">
                         {t.recovery_channel === 'whatsapp' ? '💬 WhatsApp' : '✉️ Email'} ({t.discount_applied_percent}% OFF)
                       </span>
                     </div>
@@ -142,52 +142,52 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             )}
           </div>
 
-          <div className="pt-5 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
-            <span>Deterministic Guardrail: Bounded to 2 Retries Max</span>
+          <div className="pt-4 border-t border-slate-100 dark:border-[#172a46] flex items-center justify-between text-xs text-slate-500 dark:text-[#7a95b8]">
+            <span>Deterministic Guardrail: Bounded to 2 Retries</span>
             <button
               onClick={() => onNavigateTab('ingest')}
-              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer inline-flex items-center gap-1"
+              className="text-[#0c83ff] dark:text-[#3395ff] hover:underline font-semibold cursor-pointer inline-flex items-center gap-1"
             >
               <Zap className="w-3.5 h-3.5" />
-              <span>Inject Single / CSV Failure &rarr;</span>
+              <span>Simulate / CSV &rarr;</span>
             </button>
           </div>
         </div>
 
         {/* Right Column: Architecture & Disposition */}
-        <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-7 sm:p-8 flex flex-col justify-between shadow-xs transition-colors">
-          <div className="space-y-5">
-            <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
-              <Bot className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <span>Multi-Agent Workflow</span>
+        <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 flex flex-col justify-between shadow-xs transition-colors">
+          <div className="space-y-4">
+            <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-[#172a46]">
+              <Bot className="w-4 h-4 text-[#0c83ff] dark:text-[#3395ff]" />
+              <span>Autonomous Workflow</span>
             </h3>
 
-            <div className="space-y-3.5 text-xs">
-              <div className="bg-slate-50 dark:bg-black/40 p-4 rounded-xl border border-slate-200/60 dark:border-white/[0.04]">
-                <div className="text-slate-500 dark:text-zinc-400 font-medium">1. Diagnostic Agent</div>
-                <div className="text-slate-900 dark:text-white font-mono text-[11px] mt-1 font-semibold">
+            <div className="space-y-2.5 text-xs">
+              <div className="bg-slate-50 dark:bg-[#080d1a] p-3.5 rounded-lg border border-slate-200/60 dark:border-[#172a46]">
+                <div className="text-slate-500 dark:text-[#7a95b8] font-medium text-[11px]">1. Diagnostic Agent</div>
+                <div className="text-slate-900 dark:text-white font-mono text-[11px] mt-0.5 font-semibold">
                   Root-Cause Failure Categorization
                 </div>
               </div>
 
-              <div className="bg-slate-50 dark:bg-black/40 p-4 rounded-xl border border-slate-200/60 dark:border-white/[0.04]">
-                <div className="text-slate-500 dark:text-zinc-400 font-medium">2. Strategy Agent</div>
-                <div className="text-slate-900 dark:text-white font-mono text-[11px] mt-1 font-semibold">
-                  Dynamic Discounting & Hinglish Copy
+              <div className="bg-slate-50 dark:bg-[#080d1a] p-3.5 rounded-lg border border-slate-200/60 dark:border-[#172a46]">
+                <div className="text-slate-500 dark:text-[#7a95b8] font-medium text-[11px]">2. Strategy Agent</div>
+                <div className="text-slate-900 dark:text-white font-mono text-[11px] mt-0.5 font-semibold">
+                  Dynamic Discounting & Copy
                 </div>
               </div>
 
-              <div className="bg-slate-50 dark:bg-black/40 p-4 rounded-xl border border-slate-200/60 dark:border-white/[0.04]">
-                <div className="text-slate-500 dark:text-zinc-400 font-medium">3. Execution Layer</div>
-                <div className="text-slate-900 dark:text-white font-mono text-[11px] mt-1 font-semibold">
-                  Razorpay Payment Links + Twilio / SMTP
+              <div className="bg-slate-50 dark:bg-[#080d1a] p-3.5 rounded-lg border border-slate-200/60 dark:border-[#172a46]">
+                <div className="text-slate-500 dark:text-[#7a95b8] font-medium text-[11px]">3. Execution Layer</div>
+                <div className="text-slate-900 dark:text-white font-mono text-[11px] mt-0.5 font-semibold">
+                  Razorpay Links + WhatsApp / SMTP
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="pt-5 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs">
-            <span className="text-slate-500 dark:text-zinc-400">Total Recovered:</span>
+          <div className="pt-4 border-t border-slate-100 dark:border-[#172a46] flex items-center justify-between text-xs">
+            <span className="text-slate-500 dark:text-[#7a95b8]">Total Captured:</span>
             <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono font-bold">
               <CheckCircle2 className="w-3.5 h-3.5" />
               {recoveredTxns.length} Transactions

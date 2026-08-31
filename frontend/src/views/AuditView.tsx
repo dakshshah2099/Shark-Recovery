@@ -10,7 +10,15 @@ interface AuditViewProps {
 export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
 
-  const agents = ['all', 'DiagnosticAgent', 'StrategyAgent', 'RazorpayPaymentLinkTool', 'WhatsAppDispatchTool', 'SMTPDispatchTool', 'RecoveryOrchestrator'];
+  const agents = [
+    'all',
+    'DiagnosticAgent',
+    'StrategyAgent',
+    'RazorpayPaymentLinkTool',
+    'WhatsAppDispatchTool',
+    'SMTPDispatchTool',
+    'RecoveryOrchestrator',
+  ];
 
   const filteredLogs = logs.filter((log) => {
     if (selectedAgent === 'all') return true;
@@ -20,23 +28,23 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
   return (
     <div className="space-y-6">
       {/* Header & Filter Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 shadow-xs transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-5 sm:p-6 shadow-xs transition-colors">
         <div>
-          <h2 className="font-heading font-extrabold text-xl text-slate-900 dark:text-white flex items-center gap-2.5">
-            <Activity className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+          <h2 className="font-heading font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white flex items-center gap-2">
+            <Activity className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
             <span>Autonomous Agent Audit Ledger</span>
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7a95b8] mt-0.5">
             Immutable chronological trace of LLM reasoning chains, tool inputs/outputs, and guardrail decisions.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <Filter className="w-4 h-4 text-slate-400 dark:text-zinc-500" />
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-slate-400 dark:text-[#52719c]" />
           <select
             value={selectedAgent}
             onChange={(e) => setSelectedAgent(e.target.value)}
-            className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white font-medium rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-500 cursor-pointer transition-colors"
+            className="bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white font-medium rounded-lg px-3 py-2 focus:outline-none focus:border-[#0c83ff] cursor-pointer transition-colors"
           >
             {agents.map((ag) => (
               <option key={ag} value={ag}>

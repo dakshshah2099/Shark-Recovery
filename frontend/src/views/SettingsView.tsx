@@ -175,104 +175,104 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   };
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-6 max-w-4xl">
       <div>
-        <h2 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2.5">
-          <Settings className="w-6 h-6 text-blue-600 dark:text-blue-500" />
-          <span>System & Environment Settings</span>
+        <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+          <Settings className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
+          <span>System & Gateway Settings</span>
         </h2>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1">
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7a95b8] mt-0.5">
           Configure Razorpay live webhook ingesters, runtime environment credentials, and database persistence.
         </p>
       </div>
 
       {/* Razorpay Webhook Configuration */}
-      <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-7 sm:p-9 space-y-6 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 sm:p-8 space-y-5 shadow-xs transition-colors">
         <div>
-          <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-            <Key className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2">
+            <Key className="w-4 h-4 text-[#0c83ff] dark:text-[#3395ff]" />
             <span>Razorpay Webhook Endpoint</span>
           </h3>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7a95b8] mt-0.5">
             Register this webhook in your Razorpay Dashboard (<strong>Settings &gt; Webhooks &gt; Add New</strong>).
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
           <input
             type="text"
             readOnly
             value={webhookUrl}
-            className="flex-1 h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-zinc-300 px-4 rounded-xl font-mono select-all focus:outline-none transition-colors"
+            className="flex-1 h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-zinc-300 px-3.5 rounded-lg font-mono select-all focus:outline-none transition-colors"
           />
           <button
             onClick={handleCopy}
-            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-500/20 transition-all"
+            className="h-10 px-4 rounded-lg bg-[#0c83ff] hover:bg-[#006fdf] text-white text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all"
           >
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? 'Copied' : 'Copy Endpoint'}</span>
           </button>
         </div>
 
-        <div className="pt-4 border-t border-slate-100 dark:border-white/[0.06] grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-          <div className="bg-slate-50 dark:bg-black/30 p-4 rounded-xl border border-slate-200/60 dark:border-white/[0.04]">
-            <div className="text-slate-500 dark:text-zinc-500 text-[11px] font-semibold">Subscribed Events:</div>
-            <div className="text-slate-900 dark:text-zinc-200 font-mono text-[11px] mt-1 font-semibold">payment.failed, payment_link.paid</div>
+        <div className="pt-3 border-t border-slate-100 dark:border-[#172a46] grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="bg-slate-50 dark:bg-[#080d1a] p-3 rounded-lg border border-slate-200/60 dark:border-[#172a46]">
+            <div className="text-slate-500 dark:text-[#7a95b8] text-[11px] font-semibold">Subscribed Events:</div>
+            <div className="text-slate-900 dark:text-zinc-200 font-mono text-[11px] mt-0.5 font-semibold">payment.failed, payment_link.paid</div>
           </div>
-          <div className="bg-slate-50 dark:bg-black/30 p-4 rounded-xl border border-slate-200/60 dark:border-white/[0.04]">
-            <div className="text-slate-500 dark:text-zinc-500 text-[11px] font-semibold">Security Signature:</div>
-            <div className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px] mt-1 font-bold">HMAC-SHA256 Verified</div>
+          <div className="bg-slate-50 dark:bg-[#080d1a] p-3 rounded-lg border border-slate-200/60 dark:border-[#172a46]">
+            <div className="text-slate-500 dark:text-[#7a95b8] text-[11px] font-semibold">Security Signature:</div>
+            <div className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px] mt-0.5 font-bold">HMAC-SHA256 Verified</div>
           </div>
-          <div className="bg-slate-50 dark:bg-black/30 p-4 rounded-xl border border-slate-200/60 dark:border-white/[0.04]">
-            <div className="text-slate-500 dark:text-zinc-500 text-[11px] font-semibold">Payload Ingestion:</div>
-            <div className="text-blue-600 dark:text-blue-400 font-mono text-[11px] mt-1 font-bold">Pydantic Agent Loop</div>
+          <div className="bg-slate-50 dark:bg-[#080d1a] p-3 rounded-lg border border-slate-200/60 dark:border-[#172a46]">
+            <div className="text-slate-500 dark:text-[#7a95b8] text-[11px] font-semibold">Payload Ingestion:</div>
+            <div className="text-[#0c83ff] dark:text-[#3395ff] font-mono text-[11px] mt-0.5 font-bold">Pydantic Agent Loop</div>
           </div>
         </div>
       </div>
 
-      {/* Environment Variables Management (Editable when DEBUG_MODE is True) */}
-      <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-7 sm:p-9 space-y-6 shadow-xs transition-colors">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
+      {/* Environment Variables Management */}
+      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 sm:p-8 space-y-5 shadow-xs transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#172a46]">
           <div>
-            <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-              <Key className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2">
+              <Key className="w-4 h-4 text-emerald-500" />
               <span>Runtime Environment Variables (.env)</span>
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
-              Live credentials for Google Gemini LLMs, Razorpay APIs, Twilio WhatsApp, and SMTP gateway.
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7a95b8] mt-0.5">
+              Credentials for LLM models, Razorpay APIs, Twilio WhatsApp, and SMTP email.
             </p>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
             {envConfig?.debug_mode ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80 font-mono">
-                <Unlock className="w-3.5 h-3.5" />
-                <span>DEBUG_MODE Enabled</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 font-mono">
+                <Unlock className="w-3 h-3" />
+                <span>DEBUG_MODE</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 font-mono">
-                <Lock className="w-3.5 h-3.5" />
-                <span>Locked (DEBUG_MODE=False)</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-slate-100 dark:bg-[#132238] text-slate-600 dark:text-[#8ea5c8] border border-slate-200 dark:border-[#172a46] font-mono">
+                <Lock className="w-3 h-3" />
+                <span>Locked</span>
               </span>
             )}
           </div>
         </div>
 
         {loadingEnv ? (
-          <div className="py-12 text-center text-xs text-slate-400 dark:text-zinc-500 flex items-center justify-center gap-2">
+          <div className="py-10 text-center text-xs text-slate-400 dark:text-[#52719c] flex items-center justify-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span>Loading environment configuration...</span>
           </div>
         ) : envConfig?.debug_mode ? (
           /* Editable Live Form */
-          <form onSubmit={handleSaveEnv} className="space-y-6">
+          <form onSubmit={handleSaveEnv} className="space-y-5">
             {/* 1. AI & LLM Keys */}
-            <div className="space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+            <div className="space-y-2.5">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8] flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#0c83ff]" />
                 <span>LiteLLM Multi-Model Engine (Groq & Google Gemini)</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">
                     GROQ_API_KEY <span className="text-emerald-600 dark:text-emerald-400 font-semibold">(Ultra-fast)</span>
@@ -282,7 +282,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={groqKey}
                     onChange={(e) => setGroqKey(e.target.value)}
                     placeholder="gsk_..."
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -294,7 +294,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={geminiKey}
                     onChange={(e) => setGeminiKey(e.target.value)}
                     placeholder="AIzaSy..."
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
@@ -308,21 +308,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   value={llmModel}
                   onChange={(e) => setLlmModel(e.target.value)}
                   placeholder="groq/openai/gpt-oss-120b or gemini/gemini-2.5-flash"
-                  className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                 />
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-[11px] text-slate-500 dark:text-zinc-500 font-medium">Available Models:</span>
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <span className="text-[11px] text-slate-500 dark:text-[#7a95b8] font-medium">Quick Select:</span>
                 {groqModelsList.slice(0, 6).map((m) => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => setLlmModel(m)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-colors cursor-pointer ${
+                    className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors cursor-pointer ${
                       llmModel === m
-                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600'
+                        ? 'bg-[#0c83ff] text-white font-semibold shadow-xs'
+                        : 'bg-slate-100 dark:bg-[#132238] text-slate-700 dark:text-[#cad8ec] hover:bg-[#0c83ff]/10 hover:text-[#0c83ff]'
                     }`}
                   >
                     {m}
@@ -332,12 +332,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             </div>
 
             {/* 2. Razorpay Credentials */}
-            <div className="space-y-3 pt-2">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5 text-blue-500" />
+            <div className="space-y-2.5 pt-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8] flex items-center gap-1.5">
+                <Key className="w-3.5 h-3.5 text-[#0c83ff]" />
                 <span>Razorpay API Keys</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">RAZORPAY_KEY_ID</label>
                   <input
@@ -345,7 +345,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={rzpKeyId}
                     onChange={(e) => setRzpKeyId(e.target.value)}
                     placeholder="rzp_test_..."
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -355,7 +355,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={rzpKeySecret}
                     onChange={(e) => setRzpKeySecret(e.target.value)}
                     placeholder="Secret..."
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -365,29 +365,29 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={rzpWebhookSecret}
                     onChange={(e) => setRzpWebhookSecret(e.target.value)}
                     placeholder="Webhook secret..."
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
             </div>
 
             {/* 3. Twilio WhatsApp */}
-            <div className="space-y-3 pt-2">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
+            <div className="space-y-2.5 pt-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8] flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Twilio WhatsApp API (Trial & Sandbox Template Compatible)</span>
               </div>
 
-              <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 rounded-xl p-3.5 text-xs text-emerald-800 dark:text-emerald-300">
+              <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 rounded-lg p-3 text-xs text-emerald-800 dark:text-emerald-300">
                 <p className="font-semibold flex items-center gap-1.5">
-                  <span>💡 Twilio Trial Sandbox Template Rule:</span>
+                  <span>💡 Twilio Trial Sandbox Template:</span>
                 </p>
-                <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
-                  Twilio free trial accounts strictly require using pre-approved Sandbox templates. Select your preferred template below — when recovering failed payments, the link will be formatted into your selected template.
+                <p className="mt-0.5 text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
+                  Twilio trial accounts strictly require pre-approved Sandbox templates. Outgoing recovery links will be formatted into your selected template.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">
                     TWILIO_API_KEY <span className="text-emerald-600 dark:text-emerald-400 font-semibold">(SK...)</span>
@@ -397,7 +397,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={twilioApiKey}
                     onChange={(e) => setTwilioApiKey(e.target.value)}
                     placeholder="SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
 
@@ -410,7 +410,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={twilioApiSecret}
                     onChange={(e) => setTwilioApiSecret(e.target.value)}
                     placeholder="API Secret..."
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
 
@@ -421,31 +421,31 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={twilioFrom}
                     onChange={(e) => setTwilioFrom(e.target.value)}
                     placeholder="whatsapp:+14155238886"
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
 
               {/* Twilio Pre-approved Template Selector */}
-              <div className="pt-2 space-y-2">
+              <div className="pt-1.5 space-y-1.5">
                 <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300">
                   Pre-Approved Sandbox Template:
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setTwilioTemplate('appointment')}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                       twilioTemplate === 'appointment'
-                        ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 ring-1 ring-blue-600'
-                        : 'border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-black/40 text-slate-700 dark:text-zinc-300 hover:border-slate-300'
+                        ? 'border-[#0c83ff] bg-[#0c83ff]/10 text-blue-900 dark:text-white'
+                        : 'border-slate-200 dark:border-[#172a46] bg-slate-50 dark:bg-[#080d1a] text-slate-700 dark:text-[#8ea5c8] hover:border-slate-300'
                     }`}
                   >
                     <div className="font-semibold text-xs flex items-center justify-between">
                       <span>Appointment (Default)</span>
-                      {twilioTemplate === 'appointment' && <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-mono">Active</span>}
+                      {twilioTemplate === 'appointment' && <span className="text-[10px] bg-[#0c83ff] text-white px-1 py-0.2 rounded font-mono">Active</span>}
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 font-mono">
+                    <div className="text-[10px] text-slate-500 dark:text-[#6a87aa] mt-0.5 font-mono">
                       Your Razorpay Recovery appointment is coming up on &#123;link&#125;
                     </div>
                   </button>
@@ -453,17 +453,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   <button
                     type="button"
                     onClick={() => setTwilioTemplate('code')}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                       twilioTemplate === 'code'
-                        ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 ring-1 ring-blue-600'
-                        : 'border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-black/40 text-slate-700 dark:text-zinc-300 hover:border-slate-300'
+                        ? 'border-[#0c83ff] bg-[#0c83ff]/10 text-blue-900 dark:text-white'
+                        : 'border-slate-200 dark:border-[#172a46] bg-slate-50 dark:bg-[#080d1a] text-slate-700 dark:text-[#8ea5c8] hover:border-slate-300'
                     }`}
                   >
                     <div className="font-semibold text-xs flex items-center justify-between">
                       <span>Verification Code</span>
-                      {twilioTemplate === 'code' && <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-mono">Active</span>}
+                      {twilioTemplate === 'code' && <span className="text-[10px] bg-[#0c83ff] text-white px-1 py-0.2 rounded font-mono">Active</span>}
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 font-mono">
+                    <div className="text-[10px] text-slate-500 dark:text-[#6a87aa] mt-0.5 font-mono">
                       Your Razorpay Recovery code is &#123;link&#125;
                     </div>
                   </button>
@@ -471,17 +471,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   <button
                     type="button"
                     onClick={() => setTwilioTemplate('order')}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                       twilioTemplate === 'order'
-                        ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 ring-1 ring-blue-600'
-                        : 'border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-black/40 text-slate-700 dark:text-zinc-300 hover:border-slate-300'
+                        ? 'border-[#0c83ff] bg-[#0c83ff]/10 text-blue-900 dark:text-white'
+                        : 'border-slate-200 dark:border-[#172a46] bg-slate-50 dark:bg-[#080d1a] text-slate-700 dark:text-[#8ea5c8] hover:border-slate-300'
                     }`}
                   >
                     <div className="font-semibold text-xs flex items-center justify-between">
                       <span>Order Shipped</span>
-                      {twilioTemplate === 'order' && <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-mono">Active</span>}
+                      {twilioTemplate === 'order' && <span className="text-[10px] bg-[#0c83ff] text-white px-1 py-0.2 rounded font-mono">Active</span>}
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 font-mono">
+                    <div className="text-[10px] text-slate-500 dark:text-[#6a87aa] mt-0.5 font-mono">
                       Your order has shipped... Details: &#123;link&#125;
                     </div>
                   </button>
@@ -490,12 +490,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             </div>
 
             {/* 4. SMTP Email */}
-            <div className="space-y-3 pt-2">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-blue-500" />
+            <div className="space-y-2.5 pt-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8] flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-[#0c83ff]" />
                 <span>SMTP Email Gateway</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">SMTP_HOST</label>
                   <input
@@ -503,7 +503,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={smtpHost}
                     onChange={(e) => setSmtpHost(e.target.value)}
                     placeholder="smtp.gmail.com"
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -512,7 +512,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     type="number"
                     value={smtpPort}
                     onChange={(e) => setSmtpPort(Number(e.target.value))}
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -522,12 +522,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={smtpUser}
                     onChange={(e) => setSmtpUser(e.target.value)}
                     placeholder="user@domain.com"
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">SMTP_PASSWORD</label>
                   <input
@@ -535,7 +535,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={smtpPass}
                     onChange={(e) => setSmtpPass(e.target.value)}
                     placeholder="App password..."
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -545,19 +545,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={smtpFrom}
                     onChange={(e) => setSmtpFrom(e.target.value)}
                     placeholder="recovery@brand.com"
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
             </div>
 
             {/* Submit Bar */}
-            <div className="pt-4 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between">
+            <div className="pt-3 border-t border-slate-100 dark:border-[#172a46] flex items-center justify-between">
               <div>
                 {saveSuccess && (
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Environment variables updated & applied to runtime!</span>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Environment variables saved & applied to runtime!</span>
                   </span>
                 )}
               </div>
@@ -565,7 +565,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
               <button
                 type="submit"
                 disabled={savingEnv}
-                className="h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-500/20 disabled:opacity-50 transition-all"
+                className="h-10 px-5 rounded-lg bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
               >
                 {savingEnv ? (
                   <>
@@ -574,8 +574,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
-                    <span>Save & Apply Environment Config</span>
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Save & Apply Configuration</span>
                   </>
                 )}
               </button>
@@ -583,44 +583,42 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
           </form>
         ) : (
           /* Read-Only Notice when DEBUG_MODE is False */
-          <div className="bg-slate-50 dark:bg-black/40 p-6 rounded-2xl border border-slate-200/80 dark:border-white/[0.06] text-xs space-y-2">
+          <div className="bg-slate-50 dark:bg-[#080d1a] p-5 rounded-xl border border-slate-200/80 dark:border-[#172a46] text-xs space-y-1.5">
             <div className="font-semibold text-slate-800 dark:text-white flex items-center gap-1.5">
               <Lock className="w-4 h-4 text-amber-500" />
               <span>Environment Variable Editing is Locked</span>
             </div>
-            <p className="text-slate-600 dark:text-zinc-400 leading-relaxed">
-              To edit API keys and credentials directly from this web console, set <code className="text-blue-600 dark:text-blue-400 font-mono">DEBUG_MODE=true</code> in your backend environment or <code className="text-blue-600 dark:text-blue-400 font-mono">.env</code> file.
+            <p className="text-slate-600 dark:text-[#7a95b8] leading-relaxed">
+              To edit API keys directly from this web console, set <code className="text-[#0c83ff] dark:text-[#3395ff] font-mono">DEBUG_MODE=true</code> in your backend environment or <code className="text-[#0c83ff] dark:text-[#3395ff] font-mono">.env</code> file.
             </p>
           </div>
         )}
       </div>
 
-
-
       {/* Database State Management */}
-      <div className="bg-white dark:bg-[#111217] border border-rose-200 dark:border-rose-900/30 rounded-2xl p-7 sm:p-9 space-y-4 shadow-xs transition-colors">
-        <h3 className="font-heading font-bold text-base text-rose-600 dark:text-rose-400 flex items-center gap-2">
+      <div className="bg-white dark:bg-[#0c182b] border border-rose-200 dark:border-rose-900/30 rounded-xl p-6 sm:p-8 space-y-3 shadow-xs transition-colors">
+        <h3 className="font-heading font-bold text-sm sm:text-base text-rose-600 dark:text-rose-400 flex items-center gap-2">
           <Shield className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-          <span>Database & Environment State</span>
+          <span>Database State Management</span>
         </h3>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400">
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7a95b8]">
           Reset SQLite database state or re-seed with realistic transactions for live demo presentations.
         </p>
 
-        <div className="flex flex-wrap items-center gap-3 pt-2">
+        <div className="flex flex-wrap items-center gap-2.5 pt-1">
           <button
             onClick={onSeedDB}
-            className="h-11 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
+            className="h-10 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] text-slate-700 dark:text-[#cad8ec] border border-slate-200 dark:border-[#172a46] text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
-            <Database className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <Database className="w-3.5 h-3.5 text-[#0c83ff]" />
             <span>Seed 6 Sample Transactions</span>
           </button>
 
           <button
             onClick={onClearDB}
-            className="h-11 px-5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-200 border border-rose-200 dark:border-rose-800 text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
+            className="h-10 px-4 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
             <span>Clear All Database Records</span>
           </button>
         </div>

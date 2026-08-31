@@ -18,30 +18,30 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
   const emailCount = metrics?.email_dispatched_count ?? 0;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       {/* 1. Total Recovered Revenue */}
-      <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 flex flex-col justify-between h-48 sm:h-52 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-5 sm:p-6 flex flex-col justify-between h-44 sm:h-48 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8]">
               Recovered Revenue
             </span>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/80">
-              <ArrowUpRight className="w-3.5 h-3.5" />
-              {recoveryRate}% Rate
+            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 font-mono">
+              <ArrowUpRight className="w-3 h-3" />
+              {recoveryRate}%
             </span>
           </div>
-          <div className="font-heading font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white mt-3.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-3 tracking-tight">
             ₹{recoveredRev.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
         <div>
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 mb-2">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#7a95b8] mb-1.5 font-mono text-[11px]">
             <span>Recovery Efficiency</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-mono font-bold">{recoveryRate}%</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold">{recoveryRate}%</span>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-zinc-800/80 h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-slate-100 dark:bg-[#132238] h-1.5 rounded-full overflow-hidden">
             <div
               className="bg-emerald-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.min(recoveryRate, 100)}%` }}
@@ -51,68 +51,68 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
       </div>
 
       {/* 2. Active Revenue At Risk */}
-      <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 flex flex-col justify-between h-48 sm:h-52 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-5 sm:p-6 flex flex-col justify-between h-44 sm:h-48 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-              Active Revenue At Risk
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8]">
+              Revenue At Risk
             </span>
-            <div className="p-2 bg-rose-50 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 rounded-xl border border-rose-200 dark:border-rose-800/60">
-              <AlertCircle className="w-4 h-4" />
+            <div className="p-1.5 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-lg border border-rose-200 dark:border-rose-800/40">
+              <AlertCircle className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white mt-3.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-3 tracking-tight">
             ₹{revAtRisk.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 pt-3 border-t border-slate-100 dark:border-white/[0.06]">
-          <span>Ingested: <strong className="text-slate-800 dark:text-white font-mono font-semibold">{totalCount}</strong></span>
-          <span className="text-rose-600 dark:text-rose-400 font-mono font-medium">{activeCount} In Pipeline</span>
+        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#7a95b8] pt-2.5 border-t border-slate-100 dark:border-[#172a46] font-mono">
+          <span>Dropouts: <strong className="text-slate-800 dark:text-zinc-200 font-semibold">{totalCount}</strong></span>
+          <span className="text-rose-600 dark:text-rose-400 font-medium">{activeCount} In Pipeline</span>
         </div>
       </div>
 
       {/* 3. Discount Loss Incurred */}
-      <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 flex flex-col justify-between h-48 sm:h-52 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-5 sm:p-6 flex flex-col justify-between h-44 sm:h-48 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-              Discount Loss Incurred
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8]">
+              Incentive Loss
             </span>
-            <div className="p-2 bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-200 dark:border-amber-800/60">
-              <Percent className="w-4 h-4" />
+            <div className="p-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg border border-amber-200 dark:border-amber-800/40">
+              <Percent className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-3xl sm:text-4xl text-amber-600 dark:text-amber-300 mt-3.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-amber-600 dark:text-amber-400 mt-3 tracking-tight">
             ₹{discountLoss.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 pt-3 border-t border-slate-100 dark:border-white/[0.06]">
-          <span>CAC Incentive Cost</span>
-          <span className="text-amber-600 dark:text-amber-400 font-mono font-medium">Dynamic 0–15%</span>
+        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#7a95b8] pt-2.5 border-t border-slate-100 dark:border-[#172a46] font-mono">
+          <span>AI Discount Range</span>
+          <span className="text-amber-600 dark:text-amber-400 font-medium">0% – 15%</span>
         </div>
       </div>
 
       {/* 4. Live Outreach Dispatched */}
-      <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-6 sm:p-7 flex flex-col justify-between h-48 sm:h-52 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-5 sm:p-6 flex flex-col justify-between h-44 sm:h-48 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-              Live Outreach Dispatched
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8]">
+              Outreach Sent
             </span>
-            <div className="p-2 bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-200 dark:border-blue-800/60">
-              <MessageSquare className="w-4 h-4" />
+            <div className="p-1.5 bg-[#0c83ff]/10 text-[#0c83ff] dark:text-[#3395ff] rounded-lg border border-[#0c83ff]/20">
+              <MessageSquare className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white mt-3.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-3 tracking-tight">
             {whatsappCount + emailCount}
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 pt-3 border-t border-slate-100 dark:border-white/[0.06]">
-          <span className="text-blue-600 dark:text-blue-400 font-mono font-semibold">{whatsappCount} WhatsApp</span>
-          <span className="text-slate-600 dark:text-zinc-300 font-mono">{emailCount} Email</span>
+        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#7a95b8] pt-2.5 border-t border-slate-100 dark:border-[#172a46] font-mono">
+          <span className="text-[#0c83ff] dark:text-[#3395ff] font-semibold">{whatsappCount} WhatsApp</span>
+          <span className="text-slate-600 dark:text-zinc-300">{emailCount} Email</span>
         </div>
       </div>
     </div>
