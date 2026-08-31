@@ -356,7 +356,7 @@ async def get_env_config() -> EnvConfigRead:
 
 @router.post("/env-config", response_model=EnvConfigRead)
 async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
-    """Updates runtime environment configuration when DEBUG_MODE is True."""
+    """Updates and strictly persists environment configuration to .env file."""
     is_debug = bool(getattr(settings, "DEBUG_MODE", False) or getattr(settings, "DEBUG", False))
     if not is_debug:
         raise HTTPException(
@@ -364,45 +364,82 @@ async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
             detail="Environment variables can only be edited when DEBUG_MODE is True.",
         )
 
-    if payload.groq_api_key is not None:
-        settings.GROQ_API_KEY = payload.groq_api_key
-        os.environ["GROQ_API_KEY"] = payload.groq_api_key
-    if payload.google_api_key is not None:
-        settings.GOOGLE_API_KEY = payload.google_api_key
-        os.environ["GOOGLE_API_KEY"] = payload.google_api_key
-    if payload.gemini_api_key is not None:
-        settings.GEMINI_API_KEY = payload.gemini_api_key
-        os.environ["GEMINI_API_KEY"] = payload.gemini_api_key
-    if payload.openai_api_key is not None:
-        settings.OPENAI_API_KEY = payload.openai_api_key
-        os.environ["OPENAI_API_KEY"] = payload.openai_api_key
-    if payload.llm_model is not None:
-        settings.LLM_MODEL = payload.llm_model
-    if payload.razorpay_key_id is not None:
-        settings.RAZORPAY_KEY_ID = payload.razorpay_key_id
-    if payload.razorpay_key_secret is not None:
-        settings.RAZORPAY_KEY_SECRET = payload.razorpay_key_secret
-    if payload.razorpay_webhook_secret is not None:
-        settings.RAZORPAY_WEBHOOK_SECRET = payload.razorpay_webhook_secret
-    if payload.twilio_account_sid is not None:
-        settings.TWILIO_ACCOUNT_SID = payload.twilio_account_sid
-    if payload.twilio_auth_token is not None:
-        settings.TWILIO_AUTH_TOKEN = payload.twilio_auth_token
-    if payload.twilio_whatsapp_from is not None:
-        settings.TWILIO_WHATSAPP_FROM = payload.twilio_whatsapp_from
-    if payload.smtp_host is not None:
-        settings.SMTP_HOST = payload.smtp_host
-    if payload.smtp_port is not None:
-        settings.SMTP_PORT = payload.smtp_port
-    if payload.smtp_username is not None:
-        settings.SMTP_USERNAME = payload.smtp_username
-    if payload.smtp_password is not None:
-        settings.SMTP_PASSWORD = payload.smtp_password
-    if payload.smtp_from is not None:
-        settings.SMTP_FROM = payload.smtp_from
-    if payload.max_retry_attempts is not None:
-        settings.MAX_RETRY_ATTEMPTS = payload.max_retry_attempts
+    try:
+        from backend.config import save_settings_to_env
+    except ImportError:
+        from config import save_settings_to_env
 
+    updates: Dict[str, Any] = {}
+    if payload.groq_api_key is not None:
+        updates["GROQ_API_KEY"] = payload.groq_api_key
+    if payload.google_api_key is not None:
+        updates["GOOGLE_API_KEY"] = payload.google_api_key
+    if payload.gemini_api_key is not None:
+        updates["GEMINI_API_KEY"] = payload.gemini_api_key
+    if payload.openai_api_key is not None:
+        updates["OPENAI_API_KEY"] = payload.openai_api_key
+    if payload.llm_model is not None:
+        updates["LLM_MODEL"] = payload.llm_model
+    if payload.razorpay_key_id is not None:
+        updates["RAZORPAY_KEY_ID"] = payload.razorpay_key_id
+    if payload.razorpay_key_secret is not None:
+        updates["RAZORPAY_KEY_SECRET"] = payload.razorpay_key_secret
+    if payload.razorpay_webhook_secret is not None:
+        updates["RAZORPAY_WEBHOOK_SECRET"] = payload.razorpay_webhook_secret
+    if payload.twilio_account_sid is not None:
+        updates["TWILIO_ACCOUNT_SID"] = payload.twilio_account_sid
+    if payload.twilio_auth_token is not None:
+        updates["TWILIO_AUTH_TOKEN"] = payload.twilio_auth_token
+    if payload.twilio_whatsapp_from is not None:
+        updates["TWILIO_WHATSAPP_FROM"] = payload.twilio_whatsapp_from
+    if payload.smtp_host is not None:
+        updates["SMTP_HOST"] = payload.smtp_host
+    if payload.smtp_port is not None:
+        updates["SMTP_PORT"] = payload.smtp_port
+    if payload.smtp_username is not None:
+        updates["SMTP_USERNAME"] = payload.smtp_username
+    if payload.smtp_password is not None:
+        updates["SMTP_PASSWORD"] = payload.smtp_password
+    if payload.smtp_from is not None:
+        updates["SMTP_FROM"] = payload.smtp_from
+    if payload.max_retry_attempts is not None:
+        updates["MAX_RETRY_ATTEMPTS"] = payload.max_retry_attempts
+
+    save_settings_to_env(updates)
     return await get_env_config()
+
+
+@router.get("/groq-models", response_model=List[str])
+async def list_groq_models() -> List[str]:
+    """Fetches real-time available chat models directly from Groq API."""
+    groq_key = settings.GROQ_API_KEY or os.environ.get("GROQ_API_KEY")
+    default_models = [
+        "groq/openai/gpt-oss-120b",
+        "groq/openai/gpt-oss-20b",
+        "groq/qwen/qwen3.6-27b",
+        "groq/qwen/qwen3.8-27b",
+        "groq/allam-2-7b",
+    ]
+    if not groq_key:
+        return default_models
+
+    try:
+        import httpx
+        headers = {"Authorization": f"Bearer {groq_key}"}
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            res = await client.get("https://api.groq.com/openai/v1/models", headers=headers)
+            if res.status_code == 200:
+                data = res.json()
+                models = [
+                    f"groq/{m['id']}" for m in data.get("data", [])
+                    if not m.get("id", "").startswith("whisper")
+                    and not "guard" in m.get("id", "").lower()
+                ]
+                if models:
+                    return models
+    except Exception as e:
+        logger.warning(f"Could not fetch dynamic Groq models: {e}")
+
+    return default_models
 
 

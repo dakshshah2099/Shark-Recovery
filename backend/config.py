@@ -1,14 +1,36 @@
-from typing import List
+import os
+from pathlib import Path
+from typing import Dict, List, Optional
+from dotenv import find_dotenv, load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Locate and strictly load .env file from workspace/backend root
+_env_path = find_dotenv(usecwd=True)
+if not _env_path:
+    # Look in current directory or parent directory
+    candidate_paths = [
+        Path.cwd() / ".env",
+        Path.cwd() / "backend" / ".env",
+        Path(__file__).parent / ".env",
+        Path(__file__).parent.parent / ".env",
+    ]
+    for p in candidate_paths:
+        if p.exists():
+            _env_path = str(p)
+            break
+
+if _env_path:
+    load_dotenv(dotenv_path=_env_path, override=True)
 
 
 class Settings(BaseSettings):
-    """Application configuration loaded from environment variables or .env file."""
+    """Application configuration strictly loaded from environment variables / .env file."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_env_path if _env_path else ".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        case_sensitive=False,
     )
 
     APP_NAME: str = "AI Revenue Recovery Agent"
@@ -18,32 +40,78 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./recovery.db"
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
 
-    # Razorpay API Credentials
+    # Razorpay API Credentials (strictly from .env)
     RAZORPAY_KEY_ID: str = ""
     RAZORPAY_KEY_SECRET: str = ""
     RAZORPAY_WEBHOOK_SECRET: str = ""
 
-    # SMTP Credentials
-    SMTP_HOST: str = "smtp.mailtrap.io"
-    SMTP_PORT: int = 2525
+    # SMTP Credentials (strictly from .env)
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
     SMTP_USERNAME: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "recovery@sharkagent.local"
 
-    # Twilio WhatsApp Credentials
+    # Twilio WhatsApp Credentials (strictly from .env)
     TWILIO_ACCOUNT_SID: str = ""
     TWILIO_AUTH_TOKEN: str = ""
-    TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"  # Default Twilio WhatsApp Sandbox number
+    TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"
 
-    # Agent Guardrails
+    # Agent Guardrails (strictly from .env)
     MAX_RETRY_ATTEMPTS: int = 2
 
-    # LLM Configuration (LiteLLM supports Groq, Gemini, OpenAI, etc.)
+    # LLM Configuration (strictly from .env)
     GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     GOOGLE_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
-    LLM_MODEL: str = "groq/llama-3.3-70b-versatile"
+    LLM_MODEL: str = "groq/openai/gpt-oss-120b"
 
 
 settings = Settings()
+
+
+def save_settings_to_env(updates: Dict[str, Optional[str]]) -> None:
+    """
+    Updates configuration on disk strictly in the .env file and reloads runtime settings.
+    """
+    target_env = _env_path if _env_path else str(Path(__file__).parent / ".env")
+    
+    # Read existing lines or create new
+    existing_lines: List[str] = []
+    if os.path.exists(target_env):
+        with open(target_env, "r", encoding="utf-8") as f:
+            existing_lines = f.readlines()
+
+    # Parse existing keys
+    key_line_map: Dict[str, int] = {}
+    for idx, line in enumerate(existing_lines):
+        clean = line.strip()
+        if clean and not clean.startswith("#") and "=" in clean:
+            k = clean.split("=", 1)[0].strip().upper()
+            key_line_map[k] = idx
+
+    # Apply updates
+    for k, v in updates.items():
+        if v is None:
+            continue
+        v_str = str(v)
+        upper_k = k.upper()
+        formatted_line = f'{upper_k}="{v_str}"\n'
+        
+        # Set os.environ strictly
+        os.environ[upper_k] = v_str
+
+        if upper_k in key_line_map:
+            existing_lines[key_line_map[upper_k]] = formatted_line
+        else:
+            existing_lines.append(formatted_line)
+
+    # Write back to .env
+    with open(target_env, "w", encoding="utf-8") as f:
+        f.writelines(existing_lines)
+
+    # Reload settings singleton
+    global settings
+    load_dotenv(dotenv_path=target_env, override=True)
+    settings = Settings()

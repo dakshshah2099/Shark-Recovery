@@ -21,7 +21,7 @@ def get_llm_credentials() -> Tuple[Optional[str], str]:
     Strictly reads the model name directly from settings.LLM_MODEL without auto-routing,
     and pairs it with the corresponding provider API key.
     """
-    model = settings.LLM_MODEL.strip() if settings.LLM_MODEL else "groq/llama-3.3-70b-versatile"
+    model = settings.LLM_MODEL.strip() if settings.LLM_MODEL else "groq/openai/gpt-oss-120b"
 
     # Sync environment variables for LiteLLM provider integrations
     if settings.GROQ_API_KEY:

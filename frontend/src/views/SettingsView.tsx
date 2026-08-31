@@ -52,12 +52,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   const [loadingEnv, setLoadingEnv] = useState<boolean>(true);
   const [savingEnv, setSavingEnv] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [groqModelsList, setGroqModelsList] = useState<string[]>([
+    'groq/openai/gpt-oss-120b',
+    'groq/openai/gpt-oss-20b',
+    'groq/qwen/qwen3.6-27b',
+    'groq/qwen/qwen3.8-27b',
+    'gemini/gemini-2.5-flash',
+  ]);
 
   // Editable form state
   const [groqKey, setGroqKey] = useState('');
   const [geminiKey, setGeminiKey] = useState('');
   const [openaiKey, setOpenaiKey] = useState('');
-  const [llmModel, setLlmModel] = useState('groq/llama-3.3-70b-versatile');
+  const [llmModel, setLlmModel] = useState('groq/openai/gpt-oss-120b');
   const [rzpKeyId, setRzpKeyId] = useState('');
   const [rzpKeySecret, setRzpKeySecret] = useState('');
   const [rzpWebhookSecret, setRzpWebhookSecret] = useState('');
@@ -73,7 +80,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
 
   useEffect(() => {
     fetchEnvConfig();
+    fetchGroqModels();
   }, []);
+
+  const fetchGroqModels = async () => {
+    try {
+      const res = await fetch('/api/groq-models');
+      if (res.ok) {
+        const models = await res.json();
+        if (Array.isArray(models) && models.length > 0) {
+          setGroqModelsList([...models, 'gemini/gemini-2.5-flash']);
+        }
+      }
+    } catch {
+      // Keep defaults
+    }
+  };
 
   const fetchEnvConfig = async () => {
     setLoadingEnv(true);
@@ -86,7 +108,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
           setGroqKey(data.groq_api_key || '');
           setGeminiKey(data.gemini_api_key || data.google_api_key || '');
           setOpenaiKey(data.openai_api_key || '');
-          setLlmModel(data.llm_model || 'groq/llama-3.3-70b-versatile');
+          setLlmModel(data.llm_model || 'groq/openai/gpt-oss-120b');
           setRzpKeyId(data.razorpay_key_id || '');
           setRzpKeySecret(data.razorpay_key_secret || '');
           setRzpWebhookSecret(data.razorpay_webhook_secret || '');
@@ -308,28 +330,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
               </div>
 
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-[11px] text-slate-500 dark:text-zinc-500 font-medium">Quick Presets:</span>
-                <button
-                  type="button"
-                  onClick={() => setLlmModel('groq/llama-3.3-70b-versatile')}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 transition-colors cursor-pointer"
-                >
-                  groq/llama-3.3-70b-versatile
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLlmModel('groq/mixtral-8x7b-32768')}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 transition-colors cursor-pointer"
-                >
-                  groq/mixtral-8x7b-32768
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLlmModel('gemini/gemini-2.5-flash')}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 transition-colors cursor-pointer"
-                >
-                  gemini/gemini-2.5-flash
-                </button>
+                <span className="text-[11px] text-slate-500 dark:text-zinc-500 font-medium">Available Models:</span>
+                {groqModelsList.slice(0, 6).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setLlmModel(m)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-colors cursor-pointer ${
+                      llmModel === m
+                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600'
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
               </div>
             </div>
 
