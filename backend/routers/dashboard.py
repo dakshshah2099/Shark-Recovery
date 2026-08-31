@@ -343,6 +343,7 @@ async def get_env_config() -> EnvConfigRead:
         twilio_api_key=settings.TWILIO_API_KEY,
         twilio_api_secret=settings.TWILIO_API_SECRET,
         twilio_whatsapp_from=settings.TWILIO_WHATSAPP_FROM,
+        twilio_sandbox_template=settings.TWILIO_SANDBOX_TEMPLATE,
         smtp_host=settings.SMTP_HOST,
         smtp_port=settings.SMTP_PORT,
         smtp_username=settings.SMTP_USERNAME,
@@ -386,6 +387,8 @@ async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
         updates["TWILIO_API_SECRET"] = payload.twilio_api_secret
     if payload.twilio_whatsapp_from is not None:
         updates["TWILIO_WHATSAPP_FROM"] = payload.twilio_whatsapp_from
+    if payload.twilio_sandbox_template is not None:
+        updates["TWILIO_SANDBOX_TEMPLATE"] = payload.twilio_sandbox_template
     if payload.smtp_host is not None:
         updates["SMTP_HOST"] = payload.smtp_host
     if payload.smtp_port is not None:

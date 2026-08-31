@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     TWILIO_API_KEY: str = ""
     TWILIO_API_SECRET: str = ""
     TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"
+    TWILIO_SANDBOX_TEMPLATE: str = "appointment"  # "appointment", "code", "order"
 
     # Agent Guardrails (strictly from .env)
     MAX_RETRY_ATTEMPTS: int = 2

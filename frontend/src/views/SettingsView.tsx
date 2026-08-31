@@ -34,6 +34,7 @@ interface EnvConfig {
   twilio_api_key?: string;
   twilio_api_secret?: string;
   twilio_whatsapp_from?: string;
+  twilio_sandbox_template?: string;
   smtp_host?: string;
   smtp_port?: number;
   smtp_username?: string;
@@ -68,6 +69,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   const [twilioApiKey, setTwilioApiKey] = useState('');
   const [twilioApiSecret, setTwilioApiSecret] = useState('');
   const [twilioFrom, setTwilioFrom] = useState('');
+  const [twilioTemplate, setTwilioTemplate] = useState('appointment');
   const [smtpHost, setSmtpHost] = useState('');
   const [smtpPort, setSmtpPort] = useState(587);
   const [smtpUser, setSmtpUser] = useState('');
@@ -111,6 +113,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
           setTwilioApiKey(data.twilio_api_key || '');
           setTwilioApiSecret(data.twilio_api_secret || '');
           setTwilioFrom(data.twilio_whatsapp_from || 'whatsapp:+14155238886');
+          setTwilioTemplate(data.twilio_sandbox_template || 'appointment');
           setSmtpHost(data.smtp_host || 'smtp.gmail.com');
           setSmtpPort(data.smtp_port || 587);
           setSmtpUser(data.smtp_username || '');
@@ -143,6 +146,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
           twilio_api_key: twilioApiKey,
           twilio_api_secret: twilioApiSecret,
           twilio_whatsapp_from: twilioFrom,
+          twilio_sandbox_template: twilioTemplate,
           smtp_host: smtpHost,
           smtp_port: Number(smtpPort),
           smtp_username: smtpUser,
@@ -372,15 +376,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             <div className="space-y-3 pt-2">
               <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Twilio WhatsApp API (Secured via API Key & Secret)</span>
+                <span>Twilio WhatsApp API (Trial & Sandbox Template Compatible)</span>
               </div>
 
               <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 rounded-xl p-3.5 text-xs text-emerald-800 dark:text-emerald-300">
                 <p className="font-semibold flex items-center gap-1.5">
-                  <span>💡 Twilio API Key & Sandbox Guidance:</span>
+                  <span>💡 Twilio Trial Sandbox Template Rule:</span>
                 </p>
                 <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
-                  Authenticate securely using your <strong>API Key (SK...)</strong> and <strong>API Secret</strong> created in Twilio Console. For sandbox testing, recipient numbers must first join by sending <code>join &lt;code&gt;</code> to your Twilio number.
+                  Twilio free trial accounts strictly require using pre-approved Sandbox templates. Select your preferred template below — when recovering failed payments, the link will be formatted into your selected template.
                 </p>
               </div>
 
@@ -420,6 +424,68 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     placeholder="whatsapp:+14155238886"
                     className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
                   />
+                </div>
+              </div>
+
+              {/* Twilio Pre-approved Template Selector */}
+              <div className="pt-2 space-y-2">
+                <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300">
+                  Pre-Approved Sandbox Template:
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setTwilioTemplate('appointment')}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      twilioTemplate === 'appointment'
+                        ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 ring-1 ring-blue-600'
+                        : 'border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-black/40 text-slate-700 dark:text-zinc-300 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="font-semibold text-xs flex items-center justify-between">
+                      <span>Appointment (Default)</span>
+                      {twilioTemplate === 'appointment' && <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-mono">Active</span>}
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 font-mono">
+                      Your Razorpay Recovery appointment is coming up on &#123;link&#125;
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTwilioTemplate('code')}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      twilioTemplate === 'code'
+                        ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 ring-1 ring-blue-600'
+                        : 'border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-black/40 text-slate-700 dark:text-zinc-300 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="font-semibold text-xs flex items-center justify-between">
+                      <span>Verification Code</span>
+                      {twilioTemplate === 'code' && <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-mono">Active</span>}
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 font-mono">
+                      Your Razorpay Recovery code is &#123;link&#125;
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTwilioTemplate('order')}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      twilioTemplate === 'order'
+                        ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 ring-1 ring-blue-600'
+                        : 'border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-black/40 text-slate-700 dark:text-zinc-300 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="font-semibold text-xs flex items-center justify-between">
+                      <span>Order Shipped</span>
+                      {twilioTemplate === 'order' && <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-mono">Active</span>}
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 font-mono">
+                      Your order has shipped... Details: &#123;link&#125;
+                    </div>
+                  </button>
                 </div>
               </div>
             </div>

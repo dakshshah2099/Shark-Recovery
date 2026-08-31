@@ -250,6 +250,7 @@ class EnvConfigRead(BaseModel):
     twilio_api_key: Optional[str] = ""
     twilio_api_secret: Optional[str] = ""
     twilio_whatsapp_from: Optional[str] = "whatsapp:+14155238886"
+    twilio_sandbox_template: Optional[str] = "appointment"
     smtp_host: Optional[str] = "smtp.gmail.com"
     smtp_port: Optional[int] = 587
     smtp_username: Optional[str] = ""
@@ -268,6 +269,7 @@ class EnvConfigUpdate(BaseModel):
     twilio_api_key: Optional[str] = None
     twilio_api_secret: Optional[str] = None
     twilio_whatsapp_from: Optional[str] = None
+    twilio_sandbox_template: Optional[str] = None
     smtp_host: Optional[str] = None
     smtp_port: Optional[int] = None
     smtp_username: Optional[str] = None

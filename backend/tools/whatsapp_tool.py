@@ -31,10 +31,36 @@ def _get_twilio_client():
     return None
 
 
+def format_twilio_sandbox_message(payload: WhatsAppPayload) -> str:
+    """
+    Formats the message body to match Twilio WhatsApp Sandbox pre-approved templates
+    for trial accounts (required outside 24h conversation windows).
+    
+    Twilio Sandbox Supported Pre-approved Templates:
+    1. 'appointment': Your {{1}} appointment is coming up on {{2}}
+    2. 'code': Your {{1}} code is {{2}}
+    3. 'order': Your {{1}} order of {{2}} has shipped and should be delivered on {{3}}. Details: {{4}}
+    """
+    template = getattr(settings, "TWILIO_SANDBOX_TEMPLATE", "appointment").lower()
+    app_name = "Razorpay Recovery"
+    link = payload.payment_link or "https://razorpay.com"
+
+    if template == "code":
+        return f"Your {app_name} code is {link}"
+    elif template == "order":
+        return f"Your {app_name} order of pending items has shipped and should be delivered on today. Details: {link}"
+    elif template == "raw":
+        # Sends freeform message directly (for upgraded/paid accounts or active 24h sessions)
+        return payload.message
+    else:
+        # Default pre-approved sandbox template
+        return f"Your {app_name} appointment is coming up on {link}"
+
+
 async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
     """
-    Dispatches a WhatsApp message via Twilio API using API Key & Secret if configured,
-    otherwise records to local outreach store.
+    Dispatches a WhatsApp message via Twilio API using pre-approved sandbox template
+    for trial accounts, and records to local outreach store.
     """
     message_id = f"wam_{uuid.uuid4().hex[:10]}"
     twilio_sid = None
@@ -54,10 +80,12 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
 
     client = _get_twilio_client()
     if client:
+        # Format outbound body with pre-approved template for Twilio trial accounts
+        outbound_body = format_twilio_sandbox_message(payload)
         try:
             def _sync_send():
                 return client.messages.create(
-                    body=payload.message,
+                    body=outbound_body,
                     from_=from_whatsapp,
                     to=to_whatsapp,
                 )
@@ -66,7 +94,7 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
             twilio_sid = msg.sid
             delivery_status = msg.status or "sent"
             dispatch_mode = "twilio_live"
-            logger.info(f"Twilio WhatsApp message dispatched successfully: SID {twilio_sid} to {to_whatsapp}")
+            logger.info(f"Twilio WhatsApp template message dispatched successfully: SID {twilio_sid} to {to_whatsapp}")
         except Exception as e:
             err_msg = str(e)
             logger.warning(f"Twilio WhatsApp dispatch warning ({err_msg}). Recording to audit ledger.")
@@ -80,7 +108,7 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
         "recipient_name": payload.recipient_name,
         "message": payload.message,
         "payment_link": payload.payment_link,
-        "template_name": payload.template_name,
+        "template_name": getattr(settings, "TWILIO_SANDBOX_TEMPLATE", "appointment"),
         "status": delivery_status,
         "mode": dispatch_mode,
         "read_receipt": True,
