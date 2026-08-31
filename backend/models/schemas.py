@@ -243,16 +243,12 @@ class EnvConfigRead(BaseModel):
     debug_mode: bool
     groq_api_key: Optional[str] = ""
     gemini_api_key: Optional[str] = ""
-    google_api_key: Optional[str] = ""
-    openai_api_key: Optional[str] = ""
     llm_model: Optional[str] = "groq/openai/gpt-oss-120b"
     razorpay_key_id: Optional[str] = ""
     razorpay_key_secret: Optional[str] = ""
     razorpay_webhook_secret: Optional[str] = ""
-    twilio_account_sid: Optional[str] = ""
     twilio_api_key: Optional[str] = ""
     twilio_api_secret: Optional[str] = ""
-    twilio_auth_token: Optional[str] = ""
     twilio_whatsapp_from: Optional[str] = "whatsapp:+14155238886"
     smtp_host: Optional[str] = "smtp.gmail.com"
     smtp_port: Optional[int] = 587
@@ -265,16 +261,12 @@ class EnvConfigRead(BaseModel):
 class EnvConfigUpdate(BaseModel):
     groq_api_key: Optional[str] = None
     gemini_api_key: Optional[str] = None
-    google_api_key: Optional[str] = None
-    openai_api_key: Optional[str] = None
     llm_model: Optional[str] = None
     razorpay_key_id: Optional[str] = None
     razorpay_key_secret: Optional[str] = None
     razorpay_webhook_secret: Optional[str] = None
-    twilio_account_sid: Optional[str] = None
     twilio_api_key: Optional[str] = None
     twilio_api_secret: Optional[str] = None
-    twilio_auth_token: Optional[str] = None
     twilio_whatsapp_from: Optional[str] = None
     smtp_host: Optional[str] = None
     smtp_port: Optional[int] = None

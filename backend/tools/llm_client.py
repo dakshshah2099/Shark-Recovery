@@ -19,7 +19,7 @@ litellm.drop_params = True
 def get_llm_credentials() -> Tuple[Optional[str], str]:
     """
     Strictly reads the model name directly from settings.LLM_MODEL without auto-routing,
-    and pairs it with the corresponding provider API key.
+    and pairs it with the corresponding provider API key (Groq or Gemini).
     """
     model = settings.LLM_MODEL.strip() if settings.LLM_MODEL else "groq/openai/gpt-oss-120b"
 
@@ -28,24 +28,16 @@ def get_llm_credentials() -> Tuple[Optional[str], str]:
         os.environ["GROQ_API_KEY"] = settings.GROQ_API_KEY
     if settings.GEMINI_API_KEY:
         os.environ["GEMINI_API_KEY"] = settings.GEMINI_API_KEY
-    if settings.GOOGLE_API_KEY:
-        os.environ["GOOGLE_API_KEY"] = settings.GOOGLE_API_KEY
-    if settings.OPENAI_API_KEY:
-        os.environ["OPENAI_API_KEY"] = settings.OPENAI_API_KEY
 
-    # Determine corresponding API key based on exact model prefix specified by user
+    # Determine corresponding API key based on exact model prefix specified in .env
     if model.startswith("groq/"):
         return settings.GROQ_API_KEY or os.environ.get("GROQ_API_KEY"), model
 
     if model.startswith("gemini/") or model.startswith("google/"):
-        key = settings.GEMINI_API_KEY or settings.GOOGLE_API_KEY or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        return key, model
+        return settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY"), model
 
-    if model.startswith("openai/") or model.startswith("gpt-"):
-        return settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY"), model
-
-    # Fallback to any provided API key
-    key = settings.GROQ_API_KEY or settings.GEMINI_API_KEY or settings.GOOGLE_API_KEY or settings.OPENAI_API_KEY
+    # Fallback to configured key
+    key = settings.GROQ_API_KEY or settings.GEMINI_API_KEY
     return key, model
 
 

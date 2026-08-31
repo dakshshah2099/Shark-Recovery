@@ -336,16 +336,12 @@ async def get_env_config() -> EnvConfigRead:
         debug_mode=True,
         groq_api_key=settings.GROQ_API_KEY,
         gemini_api_key=settings.GEMINI_API_KEY,
-        google_api_key=settings.GOOGLE_API_KEY,
-        openai_api_key=settings.OPENAI_API_KEY,
         llm_model=settings.LLM_MODEL,
         razorpay_key_id=settings.RAZORPAY_KEY_ID,
         razorpay_key_secret=settings.RAZORPAY_KEY_SECRET,
         razorpay_webhook_secret=settings.RAZORPAY_WEBHOOK_SECRET,
-        twilio_account_sid=settings.TWILIO_ACCOUNT_SID,
         twilio_api_key=settings.TWILIO_API_KEY,
         twilio_api_secret=settings.TWILIO_API_SECRET,
-        twilio_auth_token=settings.TWILIO_AUTH_TOKEN,
         twilio_whatsapp_from=settings.TWILIO_WHATSAPP_FROM,
         smtp_host=settings.SMTP_HOST,
         smtp_port=settings.SMTP_PORT,
@@ -374,12 +370,8 @@ async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
     updates: Dict[str, Any] = {}
     if payload.groq_api_key is not None:
         updates["GROQ_API_KEY"] = payload.groq_api_key
-    if payload.google_api_key is not None:
-        updates["GOOGLE_API_KEY"] = payload.google_api_key
     if payload.gemini_api_key is not None:
         updates["GEMINI_API_KEY"] = payload.gemini_api_key
-    if payload.openai_api_key is not None:
-        updates["OPENAI_API_KEY"] = payload.openai_api_key
     if payload.llm_model is not None:
         updates["LLM_MODEL"] = payload.llm_model
     if payload.razorpay_key_id is not None:
@@ -388,14 +380,10 @@ async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
         updates["RAZORPAY_KEY_SECRET"] = payload.razorpay_key_secret
     if payload.razorpay_webhook_secret is not None:
         updates["RAZORPAY_WEBHOOK_SECRET"] = payload.razorpay_webhook_secret
-    if payload.twilio_account_sid is not None:
-        updates["TWILIO_ACCOUNT_SID"] = payload.twilio_account_sid
     if payload.twilio_api_key is not None:
         updates["TWILIO_API_KEY"] = payload.twilio_api_key
     if payload.twilio_api_secret is not None:
         updates["TWILIO_API_SECRET"] = payload.twilio_api_secret
-    if payload.twilio_auth_token is not None:
-        updates["TWILIO_AUTH_TOKEN"] = payload.twilio_auth_token
     if payload.twilio_whatsapp_from is not None:
         updates["TWILIO_WHATSAPP_FROM"] = payload.twilio_whatsapp_from
     if payload.smtp_host is not None:

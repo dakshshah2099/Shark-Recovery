@@ -52,11 +52,9 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "recovery@sharkagent.local"
 
-    # Twilio WhatsApp Credentials (strictly from .env - supports API Key/Secret and Auth Token)
-    TWILIO_ACCOUNT_SID: str = ""
+    # Twilio WhatsApp Credentials (strictly from .env via API Key & Secret)
     TWILIO_API_KEY: str = ""
     TWILIO_API_SECRET: str = ""
-    TWILIO_AUTH_TOKEN: str = ""
     TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"
 
     # Agent Guardrails (strictly from .env)
@@ -65,8 +63,6 @@ class Settings(BaseSettings):
     # LLM Configuration (strictly from .env)
     GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    GOOGLE_API_KEY: str = ""
-    OPENAI_API_KEY: str = ""
     LLM_MODEL: str = "groq/openai/gpt-oss-120b"
 
 
