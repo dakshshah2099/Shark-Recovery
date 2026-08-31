@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
-import { TopHeader } from './components/TopHeader';
 import { OverviewView } from './views/OverviewView';
 import { TransactionsView } from './views/TransactionsView';
 import { IngestionView } from './views/IngestionView';
 import { AuditView } from './views/AuditView';
 import { SettingsView } from './views/SettingsView';
+import { Menu } from 'lucide-react';
 import type {
   AuditLogItem,
   DashboardMetrics,
@@ -21,6 +21,20 @@ export const App: React.FC = () => {
   const [simulating, setSimulating] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+
+  // Collapsible Sidebar State with LocalStorage persistence
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    const saved = localStorage.getItem('sidebar_collapsed');
+    return saved === 'true';
+  });
+
+  const toggleSidebarCollapse = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebar_collapsed', String(next));
+      return next;
+    });
+  };
 
   // Dark / Light Theme State with LocalStorage persistence
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -162,24 +176,33 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] dark:bg-[#080d1a] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-150">
-      {/* Enterprise Sidebar */}
+      {/* Floating Mobile Trigger on Small Screens */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-40 p-2.5 rounded-xl bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] text-slate-700 dark:text-zinc-200 shadow-md cursor-pointer inline-flex items-center justify-center transition-transform active:scale-95"
+        title="Open menu"
+      >
+        <Menu className="w-5 h-5 text-[#0c83ff]" />
+      </button>
+
+      {/* Enterprise Collapsible Sidebar */}
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapse}
+        darkMode={darkMode}
+        onToggleTheme={toggleTheme}
       />
 
-      {/* Main Content Layout with Sidebar Offset */}
-      <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">
-        {/* Top Header */}
-        <TopHeader
-          activeTab={activeTab}
-          onOpenMobile={() => setMobileOpen(true)}
-          darkMode={darkMode}
-          onToggleTheme={toggleTheme}
-        />
-
+      {/* Main Content Layout with Dynamic Sidebar Offset */}
+      <div
+        className={`flex flex-col flex-1 min-h-screen transition-all duration-200 ${
+          sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
+        }`}
+      >
         {/* Floating Flat Notification Toast */}
         {notification && (
           <div className="fixed bottom-6 right-6 z-50 bg-[#0c83ff] text-white font-medium text-xs py-2.5 px-4 rounded-lg shadow-lg border border-[#3395ff]/40 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
