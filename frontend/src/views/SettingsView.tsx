@@ -7,7 +7,6 @@ import {
   Database,
   Trash2,
   Key,
-  Bot,
   Save,
   Lock,
   Unlock,
@@ -596,25 +595,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         )}
       </div>
 
-      {/* Multi-Agent Architecture */}
-      <div className="bg-white dark:bg-[#111217] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-7 sm:p-9 space-y-5 shadow-xs transition-colors">
-        <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-          <Bot className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-          <span>Multi-Agent Stack & Guardrails</span>
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          <div className="bg-slate-50 dark:bg-black/30 p-4 rounded-xl border border-slate-200/60 dark:border-white/[0.04] space-y-1.5">
-            <div className="font-semibold text-slate-900 dark:text-white">Diagnostic & Strategy Agent:</div>
-            <div className="text-slate-600 dark:text-zinc-400 text-[11px] font-mono">Google Gemini 2.5 Flash via Pydantic-AI</div>
-            <div className="text-slate-500 dark:text-zinc-500 text-[10px]">Strict Pydantic I/O models with dual-mode heuristic engine.</div>
-          </div>
-          <div className="bg-slate-50 dark:bg-black/30 p-4 rounded-xl border border-slate-200/60 dark:border-white/[0.04] space-y-1.5">
-            <div className="font-semibold text-slate-900 dark:text-white">Stopping & Gating Guardrail:</div>
-            <div className="text-slate-600 dark:text-zinc-400 text-[11px] font-mono">Max 2 Retries Bounded Threshold</div>
-            <div className="text-zinc-500 text-[10px]">Prevents customer fatigue and protects merchant reputation.</div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Database State Management */}
       <div className="bg-white dark:bg-[#111217] border border-rose-200 dark:border-rose-900/30 rounded-2xl p-7 sm:p-9 space-y-4 shadow-xs transition-colors">

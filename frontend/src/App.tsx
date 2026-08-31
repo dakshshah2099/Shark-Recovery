@@ -166,10 +166,6 @@ export const App: React.FC = () => {
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onSimulateBatch={handleSimulateBatch}
-        simulating={simulating}
-        darkMode={darkMode}
-        onToggleTheme={toggleTheme}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
       />

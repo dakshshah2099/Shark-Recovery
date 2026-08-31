@@ -5,9 +5,6 @@ import {
   Zap,
   Activity,
   Settings,
-  Play,
-  Moon,
-  Sun,
   ShieldCheck,
   X,
 } from 'lucide-react';
@@ -15,10 +12,6 @@ import {
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  onSimulateBatch: () => void;
-  simulating: boolean;
-  darkMode: boolean;
-  onToggleTheme: () => void;
   mobileOpen: boolean;
   onCloseMobile: () => void;
 }
@@ -26,10 +19,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onTabChange,
-  onSimulateBatch,
-  simulating,
-  darkMode,
-  onToggleTheme,
   mobileOpen,
   onCloseMobile,
 }) => {
@@ -152,37 +141,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               );
             })}
           </nav>
-        </div>
-
-        {/* Bottom Actions: Simulate Button + Dark Mode Switcher */}
-        <div className="p-4 space-y-2.5 border-t border-slate-200 dark:border-white/[0.06]">
-          {/* Quick Simulate Button */}
-          <button
-            onClick={onSimulateBatch}
-            disabled={simulating}
-            className="w-full h-11 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-500/20 disabled:opacity-50 transition-all"
-          >
-            <Play className="w-3.5 h-3.5 fill-white" />
-            <span>{simulating ? 'Orchestrating...' : 'Simulate 5 Failures'}</span>
-          </button>
-
-          {/* Theme Toggle Button */}
-          <button
-            onClick={onToggleTheme}
-            className="w-full h-11 px-4 rounded-xl text-xs font-medium bg-slate-100 dark:bg-black/40 hover:bg-slate-200 dark:hover:bg-white/[0.06] text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-white/[0.06] inline-flex items-center justify-between transition-colors cursor-pointer"
-          >
-            <span className="inline-flex items-center gap-2">
-              {darkMode ? (
-                <Moon className="w-4 h-4 text-blue-400" />
-              ) : (
-                <Sun className="w-4 h-4 text-amber-500" />
-              )}
-              <span className="font-semibold">{darkMode ? 'Dark Mode' : 'Light Mode'}</span>
-            </span>
-            <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
-              {darkMode ? 'Switch Light' : 'Switch Dark'}
-            </span>
-          </button>
         </div>
       </aside>
     </>
