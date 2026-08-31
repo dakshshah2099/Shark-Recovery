@@ -12,7 +12,7 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
   const [activeTab, setActiveTab] = useState<'single' | 'csv'>('single');
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 w-full">
       {/* Mode Switcher Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-5 sm:p-6 shadow-xs transition-colors">
         <div>

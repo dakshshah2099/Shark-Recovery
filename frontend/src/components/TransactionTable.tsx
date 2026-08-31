@@ -123,11 +123,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full sm:w-auto h-10 bg-white dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg pl-3 pr-8 focus:outline-none focus:border-[#0c83ff] appearance-none font-medium cursor-pointer"
             >
-              <option value="ALL">All Dispositions ({transactions.length})</option>
-              <option value="PROCESSING">Active Triage</option>
-              <option value="RECOVERED">Captured / Recovered</option>
-              <option value="FAILED">Failed</option>
-              <option value="ABANDONED">Dropped</option>
+              <option value="ALL" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">All Dispositions ({transactions.length})</option>
+              <option value="PROCESSING" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Active Triage</option>
+              <option value="RECOVERED" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Captured / Recovered</option>
+              <option value="FAILED" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Failed</option>
+              <option value="ABANDONED" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Dropped</option>
             </select>
             <ChevronDown className="w-4 h-4 text-slate-400 dark:text-[#52719c] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>

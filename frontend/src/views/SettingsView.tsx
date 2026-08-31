@@ -175,7 +175,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 w-full">
       <div>
         <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-slate-900 dark:text-white flex items-center gap-2">
           <Settings className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
@@ -303,13 +303,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                 <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">
                   LLM_MODEL
                 </label>
-                <input
-                  type="text"
-                  value={llmModel}
-                  onChange={(e) => setLlmModel(e.target.value)}
-                  placeholder="groq/openai/gpt-oss-120b or gemini/gemini-2.5-flash"
-                  className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
-                />
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <input
+                    type="text"
+                    value={llmModel}
+                    onChange={(e) => setLlmModel(e.target.value)}
+                    placeholder="groq/openai/gpt-oss-120b or gemini/gemini-2.5-flash"
+                    className="flex-1 h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                  />
+                  <select
+                    value={llmModel}
+                    onChange={(e) => setLlmModel(e.target.value)}
+                    className="h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3 font-mono focus:outline-none focus:border-[#0c83ff] cursor-pointer"
+                  >
+                    <option value="" disabled className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Select Model Preset</option>
+                    {groqModelsList.map((m) => (
+                      <option key={m} value={m} className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
