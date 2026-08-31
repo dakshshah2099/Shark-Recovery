@@ -34,6 +34,8 @@ interface EnvConfig {
   razorpay_key_secret?: string;
   razorpay_webhook_secret?: string;
   twilio_account_sid?: string;
+  twilio_api_key?: string;
+  twilio_api_secret?: string;
   twilio_auth_token?: string;
   twilio_whatsapp_from?: string;
   smtp_host?: string;
@@ -69,6 +71,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   const [rzpKeySecret, setRzpKeySecret] = useState('');
   const [rzpWebhookSecret, setRzpWebhookSecret] = useState('');
   const [twilioSid, setTwilioSid] = useState('');
+  const [twilioApiKey, setTwilioApiKey] = useState('');
+  const [twilioApiSecret, setTwilioApiSecret] = useState('');
   const [twilioToken, setTwilioToken] = useState('');
   const [twilioFrom, setTwilioFrom] = useState('');
   const [smtpHost, setSmtpHost] = useState('');
@@ -113,6 +117,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
           setRzpKeySecret(data.razorpay_key_secret || '');
           setRzpWebhookSecret(data.razorpay_webhook_secret || '');
           setTwilioSid(data.twilio_account_sid || '');
+          setTwilioApiKey(data.twilio_api_key || '');
+          setTwilioApiSecret(data.twilio_api_secret || '');
           setTwilioToken(data.twilio_auth_token || '');
           setTwilioFrom(data.twilio_whatsapp_from || 'whatsapp:+14155238886');
           setSmtpHost(data.smtp_host || 'smtp.gmail.com');
@@ -147,6 +153,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
           razorpay_key_secret: rzpKeySecret,
           razorpay_webhook_secret: rzpWebhookSecret,
           twilio_account_sid: twilioSid,
+          twilio_api_key: twilioApiKey,
+          twilio_api_secret: twilioApiSecret,
           twilio_auth_token: twilioToken,
           twilio_whatsapp_from: twilioFrom,
           smtp_host: smtpHost,
@@ -392,22 +400,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             <div className="space-y-3 pt-2">
               <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Twilio WhatsApp API</span>
+                <span>Twilio WhatsApp API (Secured via API Key)</span>
               </div>
 
               <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 rounded-xl p-3.5 text-xs text-emerald-800 dark:text-emerald-300">
                 <p className="font-semibold flex items-center gap-1.5">
-                  <span>💡 Twilio Trial & Sandbox Notice:</span>
+                  <span>💡 Twilio API Key & Sandbox Guidance:</span>
                 </p>
                 <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
-                  For free trial accounts, recipients must first join your Twilio WhatsApp Sandbox (send <code>join &lt;your-code&gt;</code> to your Twilio number from WhatsApp). When testing with Single Failure or CSV ingestion, provide your verified phone number.
+                  Authenticate securely using your <strong>Account SID (AC...)</strong> paired with an <strong>API Key (SK...)</strong> and <strong>API Secret</strong> created in Twilio Console. For sandbox testing, recipient numbers must first join by sending <code>join &lt;code&gt;</code> to your Twilio number.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300">TWILIO_ACCOUNT_SID</label>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300">TWILIO_ACCOUNT_SID (Required)</label>
                     {twilioSid.startsWith('SK') && (
                       <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold font-mono">
                         Must start with AC...
@@ -427,20 +435,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   />
                   {twilioSid.startsWith('SK') && (
                     <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">
-                      ⚠️ You entered an API Key (SK...). Please use your Account SID (AC...) from your Twilio Console homepage.
+                      ⚠️ You entered an API Key (SK...). Paste your Account SID (AC...) here and put the SK key into TWILIO_API_KEY below.
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">TWILIO_AUTH_TOKEN</label>
-                  <input
-                    type="password"
-                    value={twilioToken}
-                    onChange={(e) => setTwilioToken(e.target.value)}
-                    placeholder="Primary Auth Token..."
-                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
-                  />
-                </div>
+
                 <div>
                   <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">TWILIO_WHATSAPP_FROM</label>
                   <input
@@ -448,6 +447,37 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={twilioFrom}
                     onChange={(e) => setTwilioFrom(e.target.value)}
                     placeholder="whatsapp:+14155238886"
+                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">
+                    TWILIO_API_KEY <span className="text-emerald-600 dark:text-emerald-400 font-semibold">(SK... Safer Auth)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={twilioApiKey}
+                    onChange={(e) => setTwilioApiKey(e.target.value)}
+                    placeholder="SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-zinc-300 mb-1">
+                    TWILIO_API_SECRET (or Auth Token)
+                  </label>
+                  <input
+                    type="password"
+                    value={twilioApiSecret || twilioToken}
+                    onChange={(e) => {
+                      setTwilioApiSecret(e.target.value);
+                      setTwilioToken(e.target.value);
+                    }}
+                    placeholder="API Secret or Auth Token..."
                     className="w-full h-11 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/[0.08] text-xs text-slate-900 dark:text-white rounded-xl px-4 font-mono focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>

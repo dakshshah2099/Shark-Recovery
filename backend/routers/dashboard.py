@@ -343,6 +343,8 @@ async def get_env_config() -> EnvConfigRead:
         razorpay_key_secret=settings.RAZORPAY_KEY_SECRET,
         razorpay_webhook_secret=settings.RAZORPAY_WEBHOOK_SECRET,
         twilio_account_sid=settings.TWILIO_ACCOUNT_SID,
+        twilio_api_key=settings.TWILIO_API_KEY,
+        twilio_api_secret=settings.TWILIO_API_SECRET,
         twilio_auth_token=settings.TWILIO_AUTH_TOKEN,
         twilio_whatsapp_from=settings.TWILIO_WHATSAPP_FROM,
         smtp_host=settings.SMTP_HOST,
@@ -388,6 +390,10 @@ async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
         updates["RAZORPAY_WEBHOOK_SECRET"] = payload.razorpay_webhook_secret
     if payload.twilio_account_sid is not None:
         updates["TWILIO_ACCOUNT_SID"] = payload.twilio_account_sid
+    if payload.twilio_api_key is not None:
+        updates["TWILIO_API_KEY"] = payload.twilio_api_key
+    if payload.twilio_api_secret is not None:
+        updates["TWILIO_API_SECRET"] = payload.twilio_api_secret
     if payload.twilio_auth_token is not None:
         updates["TWILIO_AUTH_TOKEN"] = payload.twilio_auth_token
     if payload.twilio_whatsapp_from is not None:

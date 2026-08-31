@@ -52,8 +52,10 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "recovery@sharkagent.local"
 
-    # Twilio WhatsApp Credentials (strictly from .env)
+    # Twilio WhatsApp Credentials (strictly from .env - supports API Key/Secret and Auth Token)
     TWILIO_ACCOUNT_SID: str = ""
+    TWILIO_API_KEY: str = ""
+    TWILIO_API_SECRET: str = ""
     TWILIO_AUTH_TOKEN: str = ""
     TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"
 

@@ -245,11 +245,13 @@ class EnvConfigRead(BaseModel):
     gemini_api_key: Optional[str] = ""
     google_api_key: Optional[str] = ""
     openai_api_key: Optional[str] = ""
-    llm_model: Optional[str] = "groq/llama-3.3-70b-versatile"
+    llm_model: Optional[str] = "groq/openai/gpt-oss-120b"
     razorpay_key_id: Optional[str] = ""
     razorpay_key_secret: Optional[str] = ""
     razorpay_webhook_secret: Optional[str] = ""
     twilio_account_sid: Optional[str] = ""
+    twilio_api_key: Optional[str] = ""
+    twilio_api_secret: Optional[str] = ""
     twilio_auth_token: Optional[str] = ""
     twilio_whatsapp_from: Optional[str] = "whatsapp:+14155238886"
     smtp_host: Optional[str] = "smtp.gmail.com"
@@ -270,6 +272,8 @@ class EnvConfigUpdate(BaseModel):
     razorpay_key_secret: Optional[str] = None
     razorpay_webhook_secret: Optional[str] = None
     twilio_account_sid: Optional[str] = None
+    twilio_api_key: Optional[str] = None
+    twilio_api_secret: Optional[str] = None
     twilio_auth_token: Optional[str] = None
     twilio_whatsapp_from: Optional[str] = None
     smtp_host: Optional[str] = None
