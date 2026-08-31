@@ -84,10 +84,24 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Smart Polling: Pause when tab is hidden; poll every 15s idle, or faster only when active
     const interval = setInterval(() => {
+      if (document.hidden) return; // Skip background calls when tab is inactive/idle
       fetchData();
-    }, 4000);
-    return () => clearInterval(interval);
+    }, 15000);
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchData(); // Fetch immediately when user returns to tab
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [fetchData]);
 
   const handleSimulateBatch = async () => {
