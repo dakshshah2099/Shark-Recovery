@@ -15,6 +15,8 @@ import type { DashboardMetrics, TransactionItem } from '../types';
 interface OverviewViewProps {
   metrics: DashboardMetrics | null;
   transactions: TransactionItem[];
+  maxRetries?: number;
+  onUpdateMaxRetries?: (retries: number) => Promise<void> | void;
   onNavigateTab: (tab: string) => void;
   onSimulateBatch: () => void;
   onSeedDB: () => void;
@@ -25,6 +27,8 @@ interface OverviewViewProps {
 export const OverviewView: React.FC<OverviewViewProps> = ({
   metrics,
   transactions,
+  maxRetries = 2,
+  onUpdateMaxRetries,
   onNavigateTab,
   onSimulateBatch,
   onSeedDB,
@@ -93,7 +97,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       <MetricCards metrics={metrics} />
 
       {/* 3. Interactive Visual Multi-Agent Node/Step Flow */}
-      <AgentStepFlow />
+      <AgentStepFlow maxRetries={maxRetries} onUpdateMaxRetries={onUpdateMaxRetries} />
 
       {/* 4. Active Recovery Pipeline */}
       <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs transition-colors space-y-4">
@@ -148,7 +152,10 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         )}
 
         <div className="pt-3.5 border-t border-zinc-100 dark:border-[#27272a] flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
-          <span className="font-body">Deterministic Guardrail: Bounded to 2 Retries</span>
+          <span className="font-body flex items-center gap-1.5">
+            <span>Deterministic Guardrail:</span>
+            <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">Bounded to {maxRetries} Retries</span>
+          </span>
           <button
             type="button"
             onClick={() => onNavigateTab('ingest')}

@@ -15,6 +15,7 @@ import {
   Mail,
   MessageSquare,
   Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 import { CustomSelect } from '../components/CustomSelect';
 
@@ -576,6 +577,51 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     placeholder="recovery@brand.com"
                     className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* 5. Deterministic Guardrails & Retry Policy */}
+            <div className="space-y-2.5 pt-2">
+              <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                <span>Deterministic Guardrails & Recovery Policy</span>
+              </div>
+              <div>
+                <label htmlFor="settings-max-retries" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+                  MAX_RETRY_ATTEMPTS (Bounded Retries)
+                </label>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-2.5 font-body">
+                  Maximum autonomous diagnostic & outreach attempts before gating rules mark a dropout as dropped/abandoned. Directly persists to <code className="font-mono text-blue-600 dark:text-blue-400">MAX_RETRY_ATTEMPTS</code> in environment.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setMaxRetries(val)}
+                      aria-pressed={maxRetries === val}
+                      className={`px-3 py-1.5 rounded-md text-xs font-mono font-semibold transition-all cursor-pointer focus-rzp ${
+                        maxRetries === val
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-[#27272a]'
+                      }`}
+                    >
+                      {val} {val === 1 ? 'Attempt' : 'Attempts'}
+                    </button>
+                  ))}
+                  <div className="relative w-28">
+                    <input
+                      id="settings-max-retries"
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={maxRetries}
+                      onChange={(e) => setMaxRetries(Math.max(1, Math.min(10, Number(e.target.value) || 1)))}
+                      className="w-full h-8.5 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
