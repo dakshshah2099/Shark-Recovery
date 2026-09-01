@@ -87,10 +87,10 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
         <div>
           <h3 className="font-heading font-extrabold text-base sm:text-lg text-zinc-900 dark:text-white flex items-center gap-2">
             <UploadCloud className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <span>Bulk CSV Payment Ingestion</span>
+            <span>Batch CSV Dropout Ingestion</span>
           </h3>
           <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
-            Upload checkout transaction logs to trigger automated multi-agent triage.
+            Upload payment gateway failure logs or dropout batches for automated multi-agent triage.
           </p>
         </div>
 
@@ -99,7 +99,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
           className="h-8 px-3 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto transition-colors"
         >
           <Download className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-          <span>Download Sample CSV</span>
+          <span>Download CSV Template</span>
         </button>
       </div>
 
@@ -175,7 +175,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
             type="button"
             onClick={handleUpload}
             disabled={uploading}
-            className="h-8 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
+            className="h-8 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all focus-rzp"
           >
             {uploading ? (
               <>
@@ -185,7 +185,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
             ) : (
               <>
                 <UploadCloud className="w-3.5 h-3.5" />
-                <span>Process CSV File</span>
+                <span>Ingest & Process Batch</span>
               </>
             )}
           </button>

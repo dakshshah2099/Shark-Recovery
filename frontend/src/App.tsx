@@ -25,7 +25,6 @@ export const App: React.FC = () => {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [simulating, setSimulating] = useState<boolean>(false);
   const [seeding, setSeeding] = useState<boolean>(false);
   const [clearing, setClearing] = useState<boolean>(false);
   const [toast, setToast] = useState<ToastNotification | null>(null);
@@ -142,30 +141,6 @@ export const App: React.FC = () => {
       setActiveTab('overview');
     }
   }, [debugMode, activeTab]);
-
-  const handleSimulateBatch = async () => {
-    setSimulating(true);
-    showNotification('⚡ Interception Engine: Ingesting & triaging 5 synthetic payment failures...', 'loading', 0);
-    try {
-      const res = await fetch('/api/simulate-batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ count: 5 }),
-      });
-      if (res.ok) {
-        showNotification('⚡ 5 synthetic payment failures ingested and processed autonomously!', 'success', 4000);
-        await fetchData();
-      } else {
-        const err = await res.json().catch(() => ({}));
-        showNotification(`❌ Batch simulation failed: ${err.detail || 'Could not ingest failures'}`, 'error', 5000);
-      }
-    } catch (err) {
-      console.error('Failed to simulate batch:', err);
-      showNotification('❌ Network error while simulating failure batch.', 'error', 5000);
-    } finally {
-      setSimulating(false);
-    }
-  };
 
   const handleSeedDB = async () => {
     setSeeding(true);
@@ -327,12 +302,6 @@ export const App: React.FC = () => {
               transactions={transactions}
               maxRetries={maxRetries}
               onNavigateTab={setActiveTab}
-              onSimulateBatch={handleSimulateBatch}
-              onSeedDB={handleSeedDB}
-              onClearDB={handleClearDB}
-              simulating={simulating}
-              seeding={seeding}
-              clearing={clearing}
             />
           )}
 

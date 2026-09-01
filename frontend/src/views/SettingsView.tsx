@@ -740,7 +740,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <span>Database State Management</span>
         </h3>
         <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-body">
-          Reset SQLite database state or re-seed with realistic transactions for live demo presentations.
+          Administrative controls to reset transaction records or populate standard benchmark transactions for baseline verification.
         </p>
 
         <div className="flex flex-wrap items-center gap-2.5 pt-1">
@@ -751,7 +751,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             className="h-9 px-4 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50 focus-rzp"
           >
             <Database className={`w-3.5 h-3.5 text-blue-600 dark:text-blue-400 ${seeding ? 'animate-spin' : ''}`} />
-            <span>{seeding ? 'Seeding Database...' : 'Seed 6 Sample Transactions'}</span>
+            <span>{seeding ? 'Populating Benchmark...' : 'Load Benchmark Dataset'}</span>
           </button>
 
           <button
@@ -761,7 +761,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             className="h-9 px-4 rounded-md bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 text-xs font-subheading font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50 focus-rzp"
           >
             <Trash2 className={`w-3.5 h-3.5 text-rose-500 ${clearing ? 'animate-pulse' : ''}`} />
-            <span>{clearing ? 'Purging Database...' : 'Clear All Database Records'}</span>
+            <span>{clearing ? 'Purging Records...' : 'Purge All Database Records'}</span>
           </button>
         </div>
       </div>

@@ -18,10 +18,10 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
         <div>
           <h2 className="font-heading font-extrabold text-lg sm:text-xl text-zinc-900 dark:text-white flex items-center gap-2">
             <Layers className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <span>Failure Ingestion & Simulation Hub</span>
+            <span>Payment Dropout Ingestion Hub</span>
           </h2>
           <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
-            Trigger autonomous recovery by injecting single failed checkout events or batch CSV logs.
+            Ingest checkout dropouts, bank gateway error logs, or batch reconciliation files to trigger autonomous multi-agent recovery.
           </p>
         </div>
 
@@ -38,7 +38,7 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
             }`}
           >
             <Zap className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Single Failure</span>
+            <span>Manual Entry</span>
           </button>
 
           <button
@@ -53,7 +53,7 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
             }`}
           >
             <UploadCloud className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>CSV Upload</span>
+            <span>Batch CSV Ingestion</span>
           </button>
         </div>
       </div>

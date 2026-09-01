@@ -43,14 +43,12 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
   onSuccess,
   showNotification,
 }) => {
-  const [name, setName] = useState<string>('Rahul Sharma');
-  const [email, setEmail] = useState<string>('rahul.sharma@example.com');
-  const [phone, setPhone] = useState<string>('+919876543210');
-  const [amount, setAmount] = useState<number>(3499);
-  const [failureCode, setFailureCode] = useState<string>('BAD_REQUEST_ERROR');
-  const [failureReason, setFailureReason] = useState<string>(
-    'Payment failed due to daily UPI transaction limit exceeded'
-  );
+  const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [amount, setAmount] = useState<string>('');
+  const [failureCode, setFailureCode] = useState<string>('');
+  const [failureReason, setFailureReason] = useState<string>('');
   const [instantRecovery, setInstantRecovery] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
@@ -61,12 +59,13 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !phone.trim() || amount <= 0) {
-      showNotification('Please fill in all required customer and transaction fields.', 'error', 4000);
+    const numAmount = Number(amount);
+    if (!name.trim() || !email.trim() || !phone.trim() || !amount || isNaN(numAmount) || numAmount <= 0) {
+      showNotification('Please fill in all required customer and transaction fields with valid values.', 'error', 4000);
       return;
     }
     setSubmitting(true);
-    showNotification(`Replicating payment failure & initiating multi-agent triage for ${name}...`, 'loading', 0);
+    showNotification(`Ingesting payment dropout & initiating multi-agent triage for ${name.trim()}...`, 'loading', 0);
     try {
       const res = await fetch('/api/simulate-single', {
         method: 'POST',
@@ -75,23 +74,29 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
           customer_name: name.trim(),
           customer_email: email.trim(),
           customer_phone: phone.trim(),
-          amount: Number(amount),
-          failure_code: failureCode.trim(),
-          failure_reason: failureReason.trim(),
+          amount: numAmount,
+          failure_code: failureCode.trim() || 'BAD_REQUEST_ERROR',
+          failure_reason: failureReason.trim() || 'Payment failed during checkout authentication',
           simulate_instant_recovery: instantRecovery,
         }),
       });
 
       if (res.ok) {
-        showNotification(`⚡ Single failure replicated & recovery orchestrated for ${name}!`, 'success', 4500);
+        showNotification(`⚡ Dropout event ingested & recovery orchestrated for ${name}!`, 'success', 4500);
+        setName('');
+        setEmail('');
+        setPhone('');
+        setAmount('');
+        setFailureCode('');
+        setFailureReason('');
         onSuccess();
       } else {
         const err = await res.json().catch(() => ({}));
         showNotification(`❌ Ingestion failed: ${err.detail || 'Could not process transaction'}`, 'error', 5000);
       }
     } catch (err) {
-      console.error('Error simulating single failure:', err);
-      showNotification('❌ Network error while replicating failure.', 'error', 5000);
+      console.error('Error ingesting payment failure:', err);
+      showNotification('❌ Network error while ingesting failure event.', 'error', 5000);
     } finally {
       setSubmitting(false);
     }
@@ -103,10 +108,10 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
         <div>
           <h3 className="font-heading font-extrabold text-base sm:text-lg text-zinc-900 dark:text-white flex items-center gap-2">
             <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-            <span>Single Payment Failure Replicator</span>
+            <span>Manual Dropout Event Ingestion</span>
           </h3>
           <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
-            Inject a simulated failed checkout transaction to trigger live multi-agent recovery.
+            Ingest checkout dropout events to trigger automated root-cause diagnosis, strategy selection, and recovery outreach.
           </p>
         </div>
       </div>
@@ -114,7 +119,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
       {/* Preset Quick Fill */}
       <div>
         <div id="dropout-scenario-label" className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
-          Select Common Indian Payment Dropout Scenario:
+          Quick-Fill Common Dropout Scenarios (Optional):
         </div>
         <div role="group" aria-labelledby="dropout-scenario-label" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {FAILURE_OPTIONS.map((opt, i) => (
@@ -149,6 +154,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               aria-required="true"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Rahul Sharma"
               className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp transition-colors font-body"
             />
           </div>
@@ -164,6 +170,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               aria-required="true"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. rahul.sharma@example.com"
               className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp transition-colors font-body"
             />
           </div>
@@ -179,7 +186,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               aria-required="true"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+919876543210"
+              placeholder="e.g. +91 98765 43210"
               className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp font-mono transition-colors"
             />
           </div>
@@ -198,7 +205,8 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               min={1}
               step="any"
               value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="e.g. 4999.00"
               className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp font-mono transition-colors"
             />
           </div>
@@ -214,6 +222,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               aria-required="true"
               value={failureCode}
               onChange={(e) => setFailureCode(e.target.value)}
+              placeholder="e.g. BAD_REQUEST_ERROR"
               className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp font-mono transition-colors"
             />
           </div>
@@ -230,6 +239,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
             aria-required="true"
             value={failureReason}
             onChange={(e) => setFailureReason(e.target.value)}
+            placeholder="e.g. Payment failed due to daily UPI transaction limit exceeded"
             className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp transition-colors font-body"
           />
         </div>
@@ -243,7 +253,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
             className="rounded border-zinc-300 dark:border-[#27272a] text-blue-600 focus:ring-blue-500 bg-white dark:bg-[#18181b] cursor-pointer"
           />
           <label htmlFor="instant-pay" className="text-xs text-zinc-800 dark:text-zinc-200 cursor-pointer select-none font-body font-medium">
-            Simulate customer immediately completing payment via recovery link
+            Simulate instant customer settlement upon link generation
           </label>
         </div>
 
@@ -261,7 +271,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
             ) : (
               <>
                 <Send className="w-3.5 h-3.5 fill-white" aria-hidden="true" />
-                <span>Replicate Failure & Run Recovery Loop</span>
+                <span>Ingest Dropout & Execute Recovery</span>
               </>
             )}
           </button>

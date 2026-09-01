@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { MetricCards } from '../components/MetricCards';
 import {
-  Play,
-  Database,
-  Trash2,
+  Table,
   ArrowRight,
   ShieldCheck,
   Activity,
   Zap,
-  Loader2,
 } from 'lucide-react';
 import type { DashboardMetrics, TransactionItem } from '../types';
 
@@ -17,12 +14,6 @@ interface OverviewViewProps {
   transactions: TransactionItem[];
   maxRetries?: number;
   onNavigateTab: (tab: string) => void;
-  onSimulateBatch: () => void;
-  onSeedDB: () => void;
-  onClearDB: () => void;
-  simulating: boolean;
-  seeding?: boolean;
-  clearing?: boolean;
 }
 
 export const OverviewView: React.FC<OverviewViewProps> = ({
@@ -30,14 +21,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   transactions,
   maxRetries = 2,
   onNavigateTab,
-  onSimulateBatch,
-  onSeedDB,
-  onClearDB,
-  simulating,
-  seeding = false,
-  clearing = false,
 }) => {
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const activeTxns = transactions.filter((t) => t.status === 'processing');
 
   return (
@@ -53,48 +37,27 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           </p>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
+        {/* Production Action Controls */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto shrink-0">
           <button
             type="button"
-            onClick={onSimulateBatch}
-            disabled={simulating || seeding || clearing}
-            aria-label="Simulate 5 failure dropouts"
-            className="h-9 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all disabled:opacity-50 focus-rzp"
+            onClick={() => onNavigateTab('ingest')}
+            aria-label="Ingest payment dropout event"
+            className="h-9 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all focus-rzp"
           >
-            {simulating ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" aria-hidden="true" />
-            ) : (
-              <Play className="w-3.5 h-3.5 fill-white" aria-hidden="true" />
-            )}
-            <span>{simulating ? 'Processing Batch...' : 'Simulate 5 Failures'}</span>
+            <Zap className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Ingest Payment Dropout</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onSeedDB}
-              disabled={seeding || simulating || clearing}
-              aria-label="Seed realistic demo database transactions"
-              className="h-9 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50 focus-rzp"
-              title="Populate realistic transactions"
-            >
-              <Database className={`w-3.5 h-3.5 text-blue-600 dark:text-blue-400 ${seeding ? 'animate-spin' : ''}`} aria-hidden="true" />
-              <span>{seeding ? 'Seeding...' : 'Seed'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowClearConfirm(true)}
-              disabled={clearing || simulating || seeding}
-              aria-label="Clear all database transaction records"
-              className="h-9 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-white border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50 focus-rzp"
-              title="Clear all database records"
-            >
-              <Trash2 className={`w-3.5 h-3.5 text-rose-500 ${clearing ? 'animate-pulse' : ''}`} aria-hidden="true" />
-              <span>{clearing ? 'Clearing...' : 'Clear'}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => onNavigateTab('transactions')}
+            aria-label="View full transactions recovery ledger"
+            className="h-9 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors focus-rzp"
+          >
+            <Table className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+            <span>View Ledger</span>
+          </button>
         </div>
       </div>
 
@@ -128,7 +91,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           <div className="py-10 text-center text-xs text-zinc-500 dark:text-zinc-400 rounded-md border border-dashed border-zinc-200 dark:border-[#27272a]">
             <Activity className="w-6 h-6 mx-auto text-zinc-400 dark:text-zinc-500 mb-1.5" aria-hidden="true" />
             <p className="font-semibold text-zinc-800 dark:text-zinc-200 font-subheading">No active recovery tasks in flight.</p>
-            <p className="text-zinc-500 dark:text-zinc-400 font-body mt-0.5">Use "Simulate 5 Failures" or Ingestion tab to start.</p>
+            <p className="text-zinc-500 dark:text-zinc-400 font-body mt-0.5">Ingest transaction events or connect live webhooks to monitor active dropouts.</p>
           </div>
         ) : (
           <div className="divide-y divide-zinc-100 dark:divide-[#27272a]/60">
@@ -165,67 +128,10 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             className="text-blue-600 dark:text-blue-400 hover:underline font-subheading font-semibold cursor-pointer inline-flex items-center gap-1 focus-rzp rounded"
           >
             <Zap className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Simulate / CSV &rarr;</span>
+            <span>Ingest Dropout Event &rarr;</span>
           </button>
         </div>
       </div>
-
-      {/* Confirmation Modal for Destructive Clear DB */}
-      {showClearConfirm && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="clear-db-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
-        >
-          <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg max-w-md w-full p-5 space-y-4 shadow-xl">
-            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-              <div className="p-2 rounded bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 shrink-0">
-                <Trash2 className="w-5 h-5" aria-hidden="true" />
-              </div>
-              <div>
-                <h4 id="clear-db-title" className="font-heading font-bold text-base text-zinc-900 dark:text-white">
-                  Clear Database Records?
-                </h4>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-body">
-                  Irreversible administrative operation
-                </p>
-              </div>
-            </div>
-            <p className="text-xs text-zinc-600 dark:text-zinc-300 font-body leading-relaxed">
-              This will permanently delete all transaction recovery states, customer metadata, and audit ledger entries.
-            </p>
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100 dark:border-[#27272a]">
-              <button
-                type="button"
-                disabled={clearing}
-                onClick={() => setShowClearConfirm(false)}
-                className="h-8 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium cursor-pointer transition-colors disabled:opacity-50 focus-rzp"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={clearing}
-                onClick={() => {
-                  setShowClearConfirm(false);
-                  onClearDB();
-                }}
-                className="h-8 px-3.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-xs font-subheading font-semibold cursor-pointer shadow-xs transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 focus-rzp"
-              >
-                {clearing ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-                    <span>Purging...</span>
-                  </>
-                ) : (
-                  <span>Confirm & Purge</span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

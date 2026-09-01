@@ -66,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'ingest',
       label: 'Failure Ingestion',
       icon: Zap,
-      desc: 'CSV & simulation',
+      desc: 'Manual & Batch Ingest',
     },
     ...(debugMode
       ? [
