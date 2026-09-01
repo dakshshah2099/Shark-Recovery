@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   LayoutDashboard,
   Table,
@@ -10,6 +9,9 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
+import sharkRecoveryDark from '../assets/Shark-Recovery-Dark-Theme.png';
+import sharkRecoveryLight from '../assets/Shark-Recovery-Light-Theme.png';
+import faviconImg from '../assets/favicon.png';
 
 interface SidebarProps {
   activeTab: string;
@@ -156,23 +158,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
               collapsed ? 'justify-center px-0' : 'justify-between px-4'
             }`}
           >
-            <div className={`flex items-center overflow-hidden ${collapsed ? 'justify-center w-full' : 'gap-3'}`}>
-              {/* Theme-Adaptive Icon */}
-              <div className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center transition-transform duration-200 hover:scale-105 bg-blue-600 text-white dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:text-blue-400" aria-hidden="true">
-                <svg
-                  className="w-4 h-4 fill-current"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M13.5 2L4 13.5h6.5L9.5 22 20 10.5h-6.5L13.5 2z" />
-                </svg>
+            {collapsed ? (
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <img
+                  src={faviconImg}
+                  alt="Shark Recovery"
+                  className="w-8 h-8 object-contain rounded-md transition-transform duration-200 hover:scale-105"
+                />
               </div>
-
-              {!collapsed && (
-                <span className="font-heading font-extrabold text-base tracking-tight text-zinc-900 dark:text-white whitespace-nowrap overflow-hidden transition-opacity duration-200">
-                  SHARKRECOVERY
-                </span>
-              )}
-            </div>
+            ) : (
+              <div className="flex items-center overflow-hidden">
+                <img
+                  src={sharkRecoveryDark}
+                  alt="Shark Recovery"
+                  className="hidden dark:block h-8 max-w-[180px] object-contain transition-opacity duration-200"
+                />
+                <img
+                  src={sharkRecoveryLight}
+                  alt="Shark Recovery"
+                  className="block dark:hidden h-8 max-w-[180px] object-contain transition-opacity duration-200"
+                />
+              </div>
+            )}
 
             {/* Mobile close button */}
             {!collapsed && (
