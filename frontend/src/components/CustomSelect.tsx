@@ -33,7 +33,9 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   size = 'md',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Normalize options to SelectOption objects
   const normalizedOptions: SelectOption[] = options.map((opt) => {
@@ -43,7 +45,14 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     return opt;
   });
 
-  const selectedOption = normalizedOptions.find((opt) => opt.value === value);
+  const selectedIndex = normalizedOptions.findIndex((opt) => opt.value === value);
+  const selectedOption = normalizedOptions[selectedIndex];
+
+  useEffect(() => {
+    if (isOpen) {
+      setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
+    }
+  }, [isOpen, selectedIndex]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -52,38 +61,79 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       }
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (!isOpen) {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        setIsOpen(true);
+      }
+      return;
+    }
+
+    switch (event.key) {
+      case 'Escape':
+        event.preventDefault();
+        setIsOpen(false);
+        triggerRef.current?.focus();
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+        setHighlightedIndex((prev) => (prev < normalizedOptions.length - 1 ? prev + 1 : 0));
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : normalizedOptions.length - 1));
+        break;
+      case 'Home':
+        event.preventDefault();
+        setHighlightedIndex(0);
+        break;
+      case 'End':
+        event.preventDefault();
+        setHighlightedIndex(normalizedOptions.length - 1);
+        break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < normalizedOptions.length) {
+          handleSelect(normalizedOptions[highlightedIndex].value);
+        }
+        break;
+      case 'Tab':
+        setIsOpen(false);
+        break;
+      default:
+        break;
+    }
+  };
 
   const handleSelect = (val: string) => {
     onChange(val);
     setIsOpen(false);
+    triggerRef.current?.focus();
   };
 
   const heightClasses = size === 'sm' ? 'h-8 px-2.5 text-[11px]' : 'h-9 px-3 text-xs';
 
   return (
-    <div ref={containerRef} className={`relative inline-block text-left ${className}`}>
+    <div ref={containerRef} className={`relative inline-block text-left ${className}`} onKeyDown={handleKeyDown}>
       {/* Trigger Button */}
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`w-full bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] hover:border-zinc-300 dark:hover:border-zinc-600 text-zinc-900 dark:text-white rounded-md font-subheading font-medium inline-flex items-center justify-between gap-2.5 cursor-pointer shadow-xs focus:outline-none focus:border-blue-500 transition-all select-none ${heightClasses} ${buttonClassName} ${
+        aria-label={placeholder}
+        className={`w-full bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] hover:border-zinc-300 dark:hover:border-zinc-600 text-zinc-900 dark:text-white rounded-md font-subheading font-medium inline-flex items-center justify-between gap-2.5 cursor-pointer shadow-xs focus-rzp select-none ${heightClasses} ${buttonClassName} ${
           isOpen ? 'ring-1 ring-blue-500/40 border-blue-500' : ''
         }`}
       >
@@ -95,6 +145,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           className={`w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 transition-transform duration-200 shrink-0 ${
             isOpen ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''
           }`}
+          aria-hidden="true"
         />
       </button>
 
@@ -102,21 +153,28 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       {isOpen && (
         <div
           role="listbox"
+          tabIndex={-1}
+          aria-label={placeholder}
           className={`absolute z-50 mt-1 min-w-[200px] w-full max-h-64 overflow-y-auto rounded-md bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] shadow-lg p-1 space-y-0.5 animate-in fade-in zoom-in-95 duration-100 ${
             align === 'right' ? 'right-0' : 'left-0'
           } ${menuClassName}`}
         >
-          {normalizedOptions.map((opt) => {
+          {normalizedOptions.map((opt, idx) => {
             const isSelected = opt.value === value;
+            const isHighlighted = idx === highlightedIndex;
             return (
               <div
                 key={opt.value}
+                id={`custom-select-option-${opt.value}`}
                 role="option"
                 aria-selected={isSelected}
                 onClick={() => handleSelect(opt.value)}
+                onMouseEnter={() => setHighlightedIndex(idx)}
                 className={`group flex items-center justify-between gap-2 px-2.5 py-1.5 rounded text-xs cursor-pointer select-none transition-colors ${
                   isSelected
                     ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 font-semibold'
+                    : isHighlighted
+                    ? 'bg-zinc-100 dark:bg-[#18181b] text-zinc-900 dark:text-white'
                     : 'text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#18181b] hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
@@ -138,7 +196,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 </div>
 
                 {isSelected && (
-                  <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" aria-hidden="true" />
                 )}
               </div>
             );

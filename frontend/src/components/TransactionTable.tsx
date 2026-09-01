@@ -111,20 +111,21 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       {/* Search & Filter Toolbar */}
       <div className="p-3.5 sm:p-4 border-b border-zinc-200 dark:border-[#27272a] flex flex-col sm:flex-row items-center justify-between gap-3 bg-zinc-50/70 dark:bg-[#0c0c0e]">
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
           <input
             type="text"
             placeholder="Search customer, order ID, failure reason..."
+            aria-label="Search customer, order ID, or failure reason"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-9 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md pl-10 pr-4 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-body"
+            className="w-full h-9 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md pl-10 pr-4 focus-rzp transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-body"
           />
         </div>
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <span className="text-xs font-subheading font-semibold text-zinc-700 dark:text-zinc-300 hidden sm:inline">
+          <label htmlFor="transaction-status-filter" className="text-xs font-subheading font-semibold text-zinc-700 dark:text-zinc-300 hidden sm:inline">
             Status:
-          </span>
+          </label>
           <CustomSelect
             value={statusFilter}
             onChange={setStatusFilter}
@@ -140,12 +141,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         <table className="w-full text-left border-collapse text-xs table-fixed min-w-[700px]">
           <thead>
             <tr className="border-b border-zinc-200 dark:border-[#27272a] bg-zinc-50/80 dark:bg-[#09090b] text-zinc-600 dark:text-zinc-400 uppercase font-mono font-bold text-[10px] tracking-wider">
-              <th className="py-3 px-4 w-[24%]">Customer & Order ID</th>
-              <th className="py-3 px-4 w-[13%]">Amount</th>
-              <th className="py-3 px-4 w-[25%]">Diagnostics</th>
-              <th className="py-3 px-4 w-[13%]">Status</th>
-              <th className="py-3 px-4 w-[13%]">Outreach</th>
-              <th className="py-3 px-4 w-[12%] text-right">Actions</th>
+              <th scope="col" className="py-3 px-4 w-[24%]">Customer & Order ID</th>
+              <th scope="col" className="py-3 px-4 w-[13%]">Amount</th>
+              <th scope="col" className="py-3 px-4 w-[25%]">Diagnostics</th>
+              <th scope="col" className="py-3 px-4 w-[13%]">Status</th>
+              <th scope="col" className="py-3 px-4 w-[13%]">Outreach</th>
+              <th scope="col" className="py-3 px-4 w-[12%] text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-[#27272a]/70 text-zinc-800 dark:text-zinc-200 font-body">
@@ -239,29 +240,33 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                       {txn.status !== 'recovered' && (
                         <>
                           <button
+                            type="button"
                             onClick={() => handleRowPay(txn.id)}
                             disabled={payingIds[txn.id] || retryingIds[txn.id]}
-                            className="h-7 px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-[11px] font-subheading font-semibold inline-flex items-center justify-center gap-1 cursor-pointer shadow-xs transition-colors whitespace-nowrap"
+                            aria-label={`Mark payment for ${txn.customer_name || 'order'} as recovered`}
+                            className="h-8 px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-[11px] font-subheading font-semibold inline-flex items-center justify-center gap-1 cursor-pointer shadow-xs transition-colors whitespace-nowrap focus-rzp"
                             title="Simulate customer completing payment"
                           >
-                            <CheckCircle2 className={`w-3 h-3 ${payingIds[txn.id] ? 'animate-spin' : ''}`} />
+                            <CheckCircle2 className={`w-3.5 h-3.5 ${payingIds[txn.id] ? 'animate-spin' : ''}`} aria-hidden="true" />
                             <span>{payingIds[txn.id] ? 'Saving' : 'Paid'}</span>
                           </button>
 
                           <button
+                            type="button"
                             onClick={() => handleRowRetry(txn.id)}
                             disabled={retryingIds[txn.id] || payingIds[txn.id]}
-                            className="h-7 w-7 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 inline-flex items-center justify-center cursor-pointer border border-zinc-200 dark:border-[#27272a] disabled:opacity-50 transition-colors"
+                            aria-label={`Re-run AI recovery triage for order ${txn.razorpay_order_id}`}
+                            className="h-8 w-8 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 inline-flex items-center justify-center cursor-pointer border border-zinc-200 dark:border-[#27272a] disabled:opacity-50 transition-colors focus-rzp"
                             title="Re-run AI Triage"
                           >
-                            <RotateCw className={`w-3 h-3 ${retryingIds[txn.id] ? 'animate-spin text-blue-500' : ''}`} />
+                            <RotateCw className={`w-3.5 h-3.5 ${retryingIds[txn.id] ? 'animate-spin text-blue-500' : ''}`} aria-hidden="true" />
                           </button>
                         </>
                       )}
 
                       {txn.status === 'recovered' && (
-                        <span className="h-7 px-2 text-[11px] text-emerald-700 dark:text-emerald-400 font-mono font-semibold inline-flex items-center gap-1 whitespace-nowrap">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span className="h-8 px-2 text-[11px] text-emerald-700 dark:text-emerald-400 font-mono font-semibold inline-flex items-center gap-1 whitespace-nowrap">
+                          <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
                           <span>Done</span>
                         </span>
                       )}

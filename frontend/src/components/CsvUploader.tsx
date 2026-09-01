@@ -104,6 +104,15 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
 
       {/* Drag & Drop Zone */}
       <div
+        role="button"
+        tabIndex={0}
+        aria-label="Upload CSV transaction file. Drag and drop file here, or press Enter to browse files."
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -111,7 +120,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-lg p-7 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[170px] ${
+        className={`border-2 border-dashed rounded-lg p-7 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[170px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
           dragOver
             ? 'border-blue-500 bg-blue-500/10'
             : file
@@ -123,6 +132,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
           ref={fileInputRef}
           type="file"
           accept=".csv"
+          aria-hidden="true"
           onChange={handleFileChange}
           className="hidden"
         />
@@ -130,7 +140,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
         {file ? (
           <div className="space-y-1.5">
             <div className="w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800/80">
-              <FileText className="w-4.5 h-4.5" />
+              <FileText className="w-4.5 h-4.5" aria-hidden="true" />
             </div>
             <div className="font-heading font-bold text-xs sm:text-sm text-zinc-900 dark:text-white">{file.name}</div>
             <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">{(file.size / 1024).toFixed(1)} KB • Ready to Ingest</div>
@@ -138,10 +148,10 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
         ) : (
           <div className="space-y-1.5">
             <div className="w-9 h-9 rounded-md bg-zinc-100 dark:bg-[#18181b] text-zinc-600 dark:text-zinc-300 flex items-center justify-center mx-auto border border-zinc-200 dark:border-[#27272a]">
-              <UploadCloud className="w-4.5 h-4.5" />
+              <UploadCloud className="w-4.5 h-4.5" aria-hidden="true" />
             </div>
             <div className="font-heading font-bold text-xs sm:text-sm text-zinc-900 dark:text-white">
-              Drag & Drop your <span className="text-blue-600 dark:text-blue-400">.csv</span> file here, or click to browse
+              Drag & Drop your <span className="text-blue-600 dark:text-blue-400">.csv</span> file here, or press Enter to browse
             </div>
             <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-body">
               Headers: <span className="font-mono text-zinc-800 dark:text-zinc-200 font-medium">name, email, phone, amount, failure_code, failure_reason</span>

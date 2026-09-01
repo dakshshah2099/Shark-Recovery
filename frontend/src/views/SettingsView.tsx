@@ -270,47 +270,50 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             {/* 1. AI & LLM Keys */}
             <div className="space-y-2.5">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                 <span>LiteLLM Multi-Model Engine (Groq & Google Gemini)</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+                  <label htmlFor="settings-groq-key" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
                     GROQ_API_KEY <span className="text-emerald-700 dark:text-emerald-400 font-semibold">(Ultra-fast)</span>
                   </label>
                   <input
+                    id="settings-groq-key"
                     type="password"
                     value={groqKey}
                     onChange={(e) => setGroqKey(e.target.value)}
                     placeholder="gsk_..."
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+                  <label htmlFor="settings-gemini-key" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
                     GEMINI_API_KEY
                   </label>
                   <input
+                    id="settings-gemini-key"
                     type="password"
                     value={geminiKey}
                     onChange={(e) => setGeminiKey(e.target.value)}
                     placeholder="AIzaSy..."
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+                <label htmlFor="settings-llm-model" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
                   LLM_MODEL
                 </label>
                 <div className="flex flex-col sm:flex-row gap-2.5">
                   <input
+                    id="settings-llm-model"
                     type="text"
                     value={llmModel}
                     onChange={(e) => setLlmModel(e.target.value)}
                     placeholder="groq/openai/gpt-oss-120b or gemini/gemini-2.5-flash"
-                    className="flex-1 h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="flex-1 h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                   <CustomSelect
                     value={llmModel}
@@ -330,6 +333,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     key={m}
                     type="button"
                     onClick={() => setLlmModel(m)}
+                    aria-pressed={llmModel === m}
                     className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors cursor-pointer ${
                       llmModel === m
                         ? 'bg-blue-600 text-white font-semibold shadow-xs'
@@ -345,38 +349,41 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             {/* 2. Razorpay Credentials */}
             <div className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <Key className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                 <span>Razorpay API Keys</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">RAZORPAY_KEY_ID</label>
+                  <label htmlFor="settings-rzp-key-id" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">RAZORPAY_KEY_ID</label>
                   <input
+                    id="settings-rzp-key-id"
                     type="text"
                     value={rzpKeyId}
                     onChange={(e) => setRzpKeyId(e.target.value)}
                     placeholder="rzp_test_..."
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">RAZORPAY_KEY_SECRET</label>
+                  <label htmlFor="settings-rzp-key-secret" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">RAZORPAY_KEY_SECRET</label>
                   <input
+                    id="settings-rzp-key-secret"
                     type="password"
                     value={rzpKeySecret}
                     onChange={(e) => setRzpKeySecret(e.target.value)}
                     placeholder="Secret..."
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">WEBHOOK_SECRET</label>
+                  <label htmlFor="settings-rzp-webhook-secret" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">WEBHOOK_SECRET</label>
                   <input
+                    id="settings-rzp-webhook-secret"
                     type="password"
                     value={rzpWebhookSecret}
                     onChange={(e) => setRzpWebhookSecret(e.target.value)}
                     placeholder="Webhook secret..."
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
               </div>
@@ -385,7 +392,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             {/* 3. Twilio WhatsApp */}
             <div className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
-                <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 <span>Twilio WhatsApp API (Trial & Sandbox Template Compatible)</span>
               </div>
 
@@ -400,52 +407,56 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+                  <label htmlFor="settings-twilio-key" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
                     TWILIO_API_KEY <span className="text-emerald-700 dark:text-emerald-400 font-semibold">(SK...)</span>
                   </label>
                   <input
+                    id="settings-twilio-key"
                     type="text"
                     value={twilioApiKey}
                     onChange={(e) => setTwilioApiKey(e.target.value)}
                     placeholder="SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+                  <label htmlFor="settings-twilio-secret" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
                     TWILIO_API_SECRET
                   </label>
                   <input
+                    id="settings-twilio-secret"
                     type="password"
                     value={twilioApiSecret}
                     onChange={(e) => setTwilioApiSecret(e.target.value)}
                     placeholder="API Secret..."
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">TWILIO_WHATSAPP_FROM</label>
+                  <label htmlFor="settings-twilio-from" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">TWILIO_WHATSAPP_FROM</label>
                   <input
+                    id="settings-twilio-from"
                     type="text"
                     value={twilioFrom}
                     onChange={(e) => setTwilioFrom(e.target.value)}
                     placeholder="whatsapp:+14155238886"
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
               </div>
 
               {/* Twilio Pre-approved Template Selector */}
               <div className="pt-1.5 space-y-1.5">
-                <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200">
+                <div id="twilio-template-group-label" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200">
                   Pre-Approved Sandbox Template:
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                </div>
+                <div role="group" aria-labelledby="twilio-template-group-label" className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setTwilioTemplate('appointment')}
+                    aria-pressed={twilioTemplate === 'appointment'}
                     className={`p-2.5 rounded-md border text-left transition-all cursor-pointer ${
                       twilioTemplate === 'appointment'
                         ? 'border-blue-600 bg-blue-50/80 dark:bg-[#18181b] text-blue-900 dark:text-white font-semibold'
@@ -464,6 +475,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   <button
                     type="button"
                     onClick={() => setTwilioTemplate('code')}
+                    aria-pressed={twilioTemplate === 'code'}
                     className={`p-2.5 rounded-md border text-left transition-all cursor-pointer ${
                       twilioTemplate === 'code'
                         ? 'border-blue-600 bg-blue-50/80 dark:bg-[#18181b] text-blue-900 dark:text-white font-semibold'
@@ -482,6 +494,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   <button
                     type="button"
                     onClick={() => setTwilioTemplate('order')}
+                    aria-pressed={twilioTemplate === 'order'}
                     className={`p-2.5 rounded-md border text-left transition-all cursor-pointer ${
                       twilioTemplate === 'order'
                         ? 'border-blue-600 bg-blue-50/80 dark:bg-[#18181b] text-blue-900 dark:text-white font-semibold'
@@ -503,60 +516,65 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             {/* 4. SMTP Email */}
             <div className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <Mail className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                 <span>SMTP Email Gateway</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_HOST</label>
+                  <label htmlFor="settings-smtp-host" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_HOST</label>
                   <input
+                    id="settings-smtp-host"
                     type="text"
                     value={smtpHost}
                     onChange={(e) => setSmtpHost(e.target.value)}
                     placeholder="smtp.gmail.com"
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_PORT</label>
+                  <label htmlFor="settings-smtp-port" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_PORT</label>
                   <input
+                    id="settings-smtp-port"
                     type="number"
                     value={smtpPort}
                     onChange={(e) => setSmtpPort(Number(e.target.value))}
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_USERNAME</label>
+                  <label htmlFor="settings-smtp-user" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_USERNAME</label>
                   <input
+                    id="settings-smtp-user"
                     type="text"
                     value={smtpUser}
                     onChange={(e) => setSmtpUser(e.target.value)}
                     placeholder="user@domain.com"
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_PASSWORD</label>
+                  <label htmlFor="settings-smtp-pass" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_PASSWORD</label>
                   <input
+                    id="settings-smtp-pass"
                     type="password"
                     value={smtpPass}
                     onChange={(e) => setSmtpPass(e.target.value)}
                     placeholder="App password..."
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_FROM</label>
+                  <label htmlFor="settings-smtp-from" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">SMTP_FROM</label>
                   <input
+                    id="settings-smtp-from"
                     type="text"
                     value={smtpFrom}
                     onChange={(e) => setSmtpFrom(e.target.value)}
                     placeholder="recovery@brand.com"
-                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
                   />
                 </div>
               </div>
@@ -566,8 +584,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             <div className="pt-3 border-t border-zinc-100 dark:border-[#27272a] flex items-center justify-between">
               <div>
                 {saveSuccess && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-subheading font-semibold text-emerald-700 dark:text-emerald-300">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-subheading font-semibold text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
                     <span>Environment variables saved & applied to runtime!</span>
                   </span>
                 )}
@@ -576,16 +594,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
               <button
                 type="submit"
                 disabled={savingEnv}
-                className="h-9 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
+                className="h-9 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all focus-rzp"
               >
                 {savingEnv ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                     <span>Applying...</span>
                   </>
                 ) : (
                   <>
-                    <Save className="w-3.5 h-3.5" />
+                    <Save className="w-3.5 h-3.5" aria-hidden="true" />
                     <span>Save & Apply Configuration</span>
                   </>
                 )}

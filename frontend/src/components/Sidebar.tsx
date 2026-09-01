@@ -23,6 +23,45 @@ interface SidebarProps {
   onToggleTheme: () => void;
 }
 
+const MAIN_NAV_ITEMS = [
+  {
+    id: 'overview',
+    label: 'Overview',
+    icon: LayoutDashboard,
+    desc: 'KPIs & funnel',
+  },
+  {
+    id: 'transactions',
+    label: 'Transactions',
+    icon: Table,
+    desc: 'Recovery ledger',
+  },
+];
+
+const AGENT_NAV_ITEMS = [
+  {
+    id: 'ingest',
+    label: 'Failure Ingestion',
+    icon: Zap,
+    desc: 'CSV & simulation',
+  },
+  {
+    id: 'audit',
+    label: 'AI Audit Trail',
+    icon: Activity,
+    desc: 'Trace & telemetry',
+  },
+];
+
+const SYSTEM_NAV_ITEMS = [
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: Settings,
+    desc: 'Keys & Webhooks',
+  },
+];
+
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onTabChange,
@@ -33,46 +72,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   darkMode,
   onToggleTheme,
 }) => {
-  const mainNavItems = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: LayoutDashboard,
-      desc: 'KPIs & funnel',
-    },
-    {
-      id: 'transactions',
-      label: 'Transactions',
-      icon: Table,
-      desc: 'Recovery ledger',
-    },
-  ];
 
-  const agentNavItems = [
-    {
-      id: 'ingest',
-      label: 'Failure Ingestion',
-      icon: Zap,
-      desc: 'CSV & simulation',
-    },
-    {
-      id: 'audit',
-      label: 'AI Audit Trail',
-      icon: Activity,
-      desc: 'Trace & telemetry',
-    },
-  ];
-
-  const systemNavItems = [
-    {
-      id: 'settings',
-      label: 'Settings',
-      icon: Settings,
-      desc: 'Keys & Webhooks',
-    },
-  ];
-
-  const renderNavGroup = (items: typeof mainNavItems, title?: string) => (
+  const renderNavGroup = (items: typeof MAIN_NAV_ITEMS, title?: string) => (
     <div className="space-y-1">
       {!collapsed && title && (
         <div className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -85,11 +86,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return (
           <button
             key={item.id}
+            type="button"
             onClick={() => {
               onTabChange(item.id);
               onCloseMobile();
             }}
             title={collapsed ? item.label : undefined}
+            aria-label={item.label}
+            aria-current={isActive ? 'page' : undefined}
             className={`w-full group flex items-center gap-3 px-3 py-2.5 rounded-md transition-all cursor-pointer relative ${
               collapsed ? 'justify-center' : 'text-left'
             } ${
@@ -99,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             {isActive && !collapsed && (
-              <span className="absolute left-0 top-2 bottom-2 w-1 bg-blue-600 dark:bg-blue-500 rounded-r-full" />
+              <span className="absolute left-0 top-2 bottom-2 w-1 bg-blue-600 dark:bg-blue-500 rounded-r-full" aria-hidden="true" />
             )}
             <Icon
               className={`w-4.5 h-4.5 shrink-0 transition-colors ${
@@ -107,6 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   ? 'text-blue-700 dark:text-blue-400'
                   : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white'
               }`}
+              aria-hidden="true"
             />
             {!collapsed && (
               <div className="flex-1 truncate">
@@ -129,11 +134,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           className="fixed inset-0 bg-zinc-900/60 backdrop-blur-xs z-40 lg:hidden"
           onClick={onCloseMobile}
+          aria-hidden="true"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
+        aria-label="Sidebar navigation"
         className={`fixed top-0 bottom-0 left-0 z-50 bg-white dark:bg-[#09090b] border-r border-zinc-200 dark:border-[#27272a] flex flex-col justify-between transition-all duration-200 ease-out lg:translate-x-0 ${
           collapsed ? 'w-[72px]' : 'w-64'
         } ${mobileOpen ? 'translate-x-0 !w-64' : '-translate-x-full lg:translate-x-0'}`}
@@ -147,7 +154,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <div className="flex items-center gap-3">
               {/* Theme-Adaptive Icon */}
-              <div className="w-8 h-8 rounded-md flex items-center justify-center transition-colors bg-blue-600 text-white dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:text-blue-400">
+              <div className="w-8 h-8 rounded-md flex items-center justify-center transition-colors bg-blue-600 text-white dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:text-blue-400" aria-hidden="true">
                 <svg
                   className="w-4 h-4 fill-current"
                   viewBox="0 0 24 24"
@@ -165,18 +172,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Mobile close button */}
             <button
+              type="button"
               onClick={onCloseMobile}
-              className="lg:hidden p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white rounded-md"
+              aria-label="Close navigation sidebar"
+              className="lg:hidden p-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white rounded-md cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3 space-y-3">
-            {renderNavGroup(mainNavItems, collapsed ? undefined : 'Payments')}
-            {renderNavGroup(agentNavItems, collapsed ? undefined : 'Autonomous Agents')}
-            {renderNavGroup(systemNavItems, collapsed ? undefined : 'System')}
+          <nav aria-label="Main navigation" className="p-3 space-y-3">
+            {renderNavGroup(MAIN_NAV_ITEMS, collapsed ? undefined : 'Payments')}
+            {renderNavGroup(AGENT_NAV_ITEMS, collapsed ? undefined : 'Autonomous Agents')}
+            {renderNavGroup(SYSTEM_NAV_ITEMS, collapsed ? undefined : 'System')}
           </nav>
         </div>
 
@@ -184,17 +193,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-3 border-t border-zinc-200 dark:border-[#27272a] bg-zinc-50/70 dark:bg-[#0c0c0e] space-y-2">
           {/* Sidebar Collapse Toggle Button */}
           <button
+            type="button"
             onClick={onToggleCollapse}
-            className={`hidden lg:flex w-full py-2 px-2.5 rounded-md border border-zinc-200 dark:border-[#27272a] bg-white dark:bg-[#121215] hover:bg-zinc-100 dark:hover:bg-[#18181b] text-zinc-700 dark:text-zinc-300 text-xs font-medium items-center transition-colors cursor-pointer ${
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-expanded={!collapsed}
+            className={`hidden lg:flex w-full py-2 px-2.5 rounded-md border border-zinc-200 dark:border-[#27272a] bg-white dark:bg-[#121215] hover:bg-zinc-100 dark:hover:bg-[#18181b] text-zinc-700 dark:text-zinc-300 text-xs font-medium items-center transition-colors cursor-pointer focus-rzp ${
               collapsed ? 'justify-center' : 'justify-between'
             }`}
             title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
             <span className="inline-flex items-center gap-2">
               {collapsed ? (
-                <ChevronRight className="w-4 h-4 text-zinc-500" />
+                <ChevronRight className="w-4 h-4 text-zinc-500" aria-hidden="true" />
               ) : (
-                <ChevronLeft className="w-4 h-4 text-zinc-500" />
+                <ChevronLeft className="w-4 h-4 text-zinc-500" aria-hidden="true" />
               )}
               {!collapsed && <span className="font-subheading">Collapse Sidebar</span>}
             </span>
@@ -202,17 +214,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Theme Toggle Button */}
           <button
+            type="button"
             onClick={onToggleTheme}
-            className={`w-full py-2 px-2.5 rounded-md border border-zinc-200 dark:border-[#27272a] bg-white dark:bg-[#121215] hover:bg-zinc-100 dark:hover:bg-[#18181b] text-zinc-700 dark:text-zinc-300 text-xs font-medium inline-flex items-center transition-colors cursor-pointer ${
+            aria-label={darkMode ? 'Switch to light theme' : 'Switch to dark theme'}
+            className={`w-full py-2 px-2.5 rounded-md border border-zinc-200 dark:border-[#27272a] bg-white dark:bg-[#121215] hover:bg-zinc-100 dark:hover:bg-[#18181b] text-zinc-700 dark:text-zinc-300 text-xs font-medium inline-flex items-center transition-colors cursor-pointer focus-rzp ${
               collapsed ? 'justify-center' : 'justify-between'
             }`}
             title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
             <span className="inline-flex items-center gap-2">
               {darkMode ? (
-                <Sun className="w-4 h-4 text-amber-500" />
+                <Sun className="w-4 h-4 text-amber-500" aria-hidden="true" />
               ) : (
-                <Moon className="w-4 h-4 text-zinc-700" />
+                <Moon className="w-4 h-4 text-zinc-700" aria-hidden="true" />
               )}
               {!collapsed && <span className="font-subheading">{darkMode ? 'Dark Theme' : 'Light Theme'}</span>}
             </span>

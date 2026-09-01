@@ -6,6 +6,39 @@ interface SingleFailureFormProps {
   showNotification: (msg: string) => void;
 }
 
+const FAILURE_OPTIONS = [
+  {
+    code: 'BAD_REQUEST_ERROR',
+    reason: 'Payment failed due to daily UPI transaction limit exceeded',
+    label: 'UPI Daily Limit Exceeded (BAD_REQUEST_ERROR)',
+  },
+  {
+    code: 'GATEWAY_ERROR',
+    reason: 'OTP timed out on HDFC netbanking authentication',
+    label: 'Netbanking 3DS OTP Timeout (GATEWAY_ERROR)',
+  },
+  {
+    code: 'GATEWAY_ERROR',
+    reason: 'SBI gateway server 503 temporary outage',
+    label: 'SBI Bank 503 Outage (GATEWAY_ERROR)',
+  },
+  {
+    code: 'INSUFFICIENT_FUNDS',
+    reason: 'Insufficient balance in Kotak account',
+    label: 'Insufficient Bank Balance (INSUFFICIENT_FUNDS)',
+  },
+  {
+    code: 'USER_DROPOUT',
+    reason: 'User dropped out during checkout confirmation',
+    label: 'Checkout Modal Abandonment (USER_DROPOUT)',
+  },
+  {
+    code: 'BAD_REQUEST_ERROR',
+    reason: 'Credit card expired or invalid CVV provided',
+    label: 'Expired Card / Auth Failure (EXPIRED_CARD)',
+  },
+];
+
 export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
   onSuccess,
   showNotification,
@@ -21,58 +54,29 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
   const [instantRecovery, setInstantRecovery] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  const failureOptions = [
-    {
-      code: 'BAD_REQUEST_ERROR',
-      reason: 'Payment failed due to daily UPI transaction limit exceeded',
-      label: 'UPI Daily Limit Exceeded (BAD_REQUEST_ERROR)',
-    },
-    {
-      code: 'GATEWAY_ERROR',
-      reason: 'OTP timed out on HDFC netbanking authentication',
-      label: 'Netbanking 3DS OTP Timeout (GATEWAY_ERROR)',
-    },
-    {
-      code: 'GATEWAY_ERROR',
-      reason: 'SBI gateway server 503 temporary outage',
-      label: 'SBI Bank 503 Outage (GATEWAY_ERROR)',
-    },
-    {
-      code: 'INSUFFICIENT_FUNDS',
-      reason: 'Insufficient balance in Kotak account',
-      label: 'Insufficient Bank Balance (INSUFFICIENT_FUNDS)',
-    },
-    {
-      code: 'USER_DROPOUT',
-      reason: 'User dropped out during checkout confirmation',
-      label: 'Checkout Modal Abandonment (USER_DROPOUT)',
-    },
-    {
-      code: 'BAD_REQUEST_ERROR',
-      reason: 'Credit card expired or invalid CVV provided',
-      label: 'Expired Card / Auth Failure (EXPIRED_CARD)',
-    },
-  ];
-
-  const handleSelectPreset = (preset: typeof failureOptions[0]) => {
+  const handleSelectPreset = (preset: typeof FAILURE_OPTIONS[0]) => {
     setFailureCode(preset.code);
     setFailureReason(preset.reason);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim() || !email.trim() || !phone.trim() || amount <= 0) {
+      showNotification('Please fill in all required fields with valid inputs.');
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch('/api/simulate-single', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer_name: name,
-          customer_email: email,
-          customer_phone: phone,
+          customer_name: name.trim(),
+          customer_email: email.trim(),
+          customer_phone: phone.trim(),
           amount: Number(amount),
-          failure_code: failureCode,
-          failure_reason: failureReason,
+          failure_code: failureCode.trim(),
+          failure_reason: failureReason.trim(),
           simulate_instant_recovery: instantRecovery,
         }),
       });
@@ -81,7 +85,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
         showNotification(`⚡ Single failure replicated & recovery orchestrated for ${name}!`);
         onSuccess();
       } else {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         showNotification(`Failed: ${err.detail || 'Could not process transaction'}`);
       }
     } catch (err) {
@@ -97,7 +101,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
       <div className="flex items-center justify-between pb-3.5 border-b border-zinc-200 dark:border-[#27272a]">
         <div>
           <h3 className="font-heading font-extrabold text-base sm:text-lg text-zinc-900 dark:text-white flex items-center gap-2">
-            <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
             <span>Single Payment Failure Replicator</span>
           </h3>
           <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
@@ -108,15 +112,16 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
 
       {/* Preset Quick Fill */}
       <div>
-        <label className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
+        <div id="dropout-scenario-label" className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
           Select Common Indian Payment Dropout Scenario:
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {failureOptions.map((opt, i) => (
+        </div>
+        <div role="group" aria-labelledby="dropout-scenario-label" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {FAILURE_OPTIONS.map((opt, i) => (
             <button
               key={i}
               type="button"
               onClick={() => handleSelectPreset(opt)}
+              aria-pressed={failureReason === opt.reason}
               className={`p-2.5 rounded-md border text-left text-xs transition-all cursor-pointer ${
                 failureReason === opt.reason
                   ? 'bg-blue-50/80 dark:bg-[#18181b] border-blue-600 dark:border-blue-500 text-blue-700 dark:text-blue-400 shadow-xs font-semibold'
@@ -133,73 +138,98 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           <div>
-            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Customer Name</label>
+            <label htmlFor="input-customer-name" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+              Customer Name <span className="text-rose-500" aria-hidden="true">*</span>
+            </label>
             <input
+              id="input-customer-name"
               type="text"
               required
+              aria-required="true"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 transition-colors font-body"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp transition-colors font-body"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Customer Email</label>
+            <label htmlFor="input-customer-email" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+              Customer Email <span className="text-rose-500" aria-hidden="true">*</span>
+            </label>
             <input
+              id="input-customer-email"
               type="email"
               required
+              aria-required="true"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 transition-colors font-body"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp transition-colors font-body"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">WhatsApp Phone (E.164)</label>
+            <label htmlFor="input-customer-phone" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+              WhatsApp Phone (E.164) <span className="text-rose-500" aria-hidden="true">*</span>
+            </label>
             <input
-              type="text"
+              id="input-customer-phone"
+              type="tel"
               required
+              aria-required="true"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 font-mono transition-colors"
+              placeholder="+919876543210"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp font-mono transition-colors"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Order Amount (INR)</label>
+            <label htmlFor="input-order-amount" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+              Order Amount (INR) <span className="text-rose-500" aria-hidden="true">*</span>
+            </label>
             <input
+              id="input-order-amount"
               type="number"
               required
+              aria-required="true"
               min={1}
               step="any"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 font-mono transition-colors"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp font-mono transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Razorpay Failure Code</label>
+            <label htmlFor="input-failure-code" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+              Razorpay Failure Code <span className="text-rose-500" aria-hidden="true">*</span>
+            </label>
             <input
+              id="input-failure-code"
               type="text"
               required
+              aria-required="true"
               value={failureCode}
               onChange={(e) => setFailureCode(e.target.value)}
-              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 font-mono transition-colors"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp font-mono transition-colors"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Failure Reason Description</label>
+          <label htmlFor="input-failure-reason" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+            Failure Reason Description <span className="text-rose-500" aria-hidden="true">*</span>
+          </label>
           <input
+            id="input-failure-reason"
             type="text"
             required
+            aria-required="true"
             value={failureReason}
             onChange={(e) => setFailureReason(e.target.value)}
-            className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 transition-colors font-body"
+            className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus-rzp transition-colors font-body"
           />
         </div>
 
@@ -220,16 +250,16 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
           <button
             type="submit"
             disabled={submitting}
-            className="w-full h-9 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
+            className="w-full h-9 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all focus-rzp"
           >
             {submitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                 <span>Running Multi-Agent Loop...</span>
               </>
             ) : (
               <>
-                <Send className="w-3.5 h-3.5 fill-white" />
+                <Send className="w-3.5 h-3.5 fill-white" aria-hidden="true" />
                 <span>Replicate Failure & Run Recovery Loop</span>
               </>
             )}

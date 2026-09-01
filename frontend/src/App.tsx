@@ -228,11 +228,13 @@ export const App: React.FC = () => {
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col font-body">
       {/* Floating Mobile Trigger on Small Screens */}
       <button
+        type="button"
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 p-2.5 rounded-md bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] text-zinc-700 dark:text-zinc-200 shadow-xs cursor-pointer inline-flex items-center justify-center transition-transform active:scale-95"
+        aria-label="Open navigation menu"
+        className="lg:hidden fixed top-4 left-4 z-40 p-2.5 rounded-md bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] text-zinc-700 dark:text-zinc-200 shadow-xs cursor-pointer inline-flex items-center justify-center transition-transform active:scale-95 focus-rzp"
         title="Open menu"
       >
-        <Menu className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <Menu className="w-5 h-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
       </button>
 
       {/* Enterprise Collapsible Sidebar */}
@@ -255,7 +257,11 @@ export const App: React.FC = () => {
       >
         {/* Floating Flat Notification Toast */}
         {notification && (
-          <div className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white font-subheading font-medium text-xs py-2.5 px-4 rounded-md shadow-lg border border-blue-500 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div
+            role="status"
+            aria-live="polite"
+            className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white font-subheading font-medium text-xs py-2.5 px-4 rounded-md shadow-lg border border-blue-500 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200"
+          >
             <span>{notification}</span>
           </div>
         )}

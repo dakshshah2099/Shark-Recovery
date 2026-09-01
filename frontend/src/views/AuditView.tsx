@@ -8,18 +8,18 @@ interface AuditViewProps {
   logs: AuditLogItem[];
 }
 
+const AGENT_OPTIONS: SelectOption[] = [
+  { value: 'all', label: 'All Agents & Tools' },
+  { value: 'DiagnosticAgent', label: 'Diagnostic Agent', badge: 'Root Cause' },
+  { value: 'StrategyAgent', label: 'Strategy Agent', badge: 'Discounting' },
+  { value: 'RazorpayPaymentLinkTool', label: 'Razorpay Links', badge: 'Payment API' },
+  { value: 'WhatsAppDispatchTool', label: 'WhatsApp Outreach', badge: 'Twilio' },
+  { value: 'SMTPDispatchTool', label: 'Email Outreach', badge: 'SMTP' },
+  { value: 'RecoveryOrchestrator', label: 'Recovery Orchestrator', badge: 'Core Engine' },
+];
+
 export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
-
-  const agentOptions: SelectOption[] = [
-    { value: 'all', label: 'All Agents & Tools' },
-    { value: 'DiagnosticAgent', label: 'Diagnostic Agent', badge: 'Root Cause' },
-    { value: 'StrategyAgent', label: 'Strategy Agent', badge: 'Discounting' },
-    { value: 'RazorpayPaymentLinkTool', label: 'Razorpay Links', badge: 'Payment API' },
-    { value: 'WhatsAppDispatchTool', label: 'WhatsApp Outreach', badge: 'Twilio' },
-    { value: 'SMTPDispatchTool', label: 'Email Outreach', badge: 'SMTP' },
-    { value: 'RecoveryOrchestrator', label: 'Recovery Orchestrator', badge: 'Core Engine' },
-  ];
 
   const filteredLogs = logs.filter((log) => {
     if (selectedAgent === 'all') return true;
@@ -47,7 +47,8 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
           <CustomSelect
             value={selectedAgent}
             onChange={setSelectedAgent}
-            options={agentOptions}
+            options={AGENT_OPTIONS}
+            placeholder="Select Agent..."
             className="w-56"
             align="right"
           />
