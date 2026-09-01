@@ -97,34 +97,11 @@ const AGENT_STEPS: StepNode[] = [
 
 export const AgentStepFlow: React.FC<AgentStepFlowProps> = ({
   maxRetries = 2,
-  onUpdateMaxRetries,
 }) => {
   const [activeStep, setActiveStep] = useState<string | null>(null);
-  const [updating, setUpdating] = useState<boolean>(false);
 
   const toggleStep = (id: string) => {
     setActiveStep(activeStep === id ? null : id);
-  };
-
-  const handleAdjust = async (delta: number) => {
-    const nextVal = Math.max(1, Math.min(10, maxRetries + delta));
-    if (nextVal === maxRetries) return;
-    setUpdating(true);
-    try {
-      if (onUpdateMaxRetries) {
-        await onUpdateMaxRetries(nextVal);
-      } else {
-        await fetch('/api/env-config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ max_retry_attempts: nextVal }),
-        });
-      }
-    } catch (e) {
-      console.error('Failed to update max retries:', e);
-    } finally {
-      setUpdating(false);
-    }
   };
 
   return (
@@ -146,30 +123,6 @@ export const AgentStepFlow: React.FC<AgentStepFlowProps> = ({
             <span className="text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-1 rounded border border-emerald-200 dark:border-emerald-800/60">
               {maxRetries}
             </span>
-          </div>
-
-          <div className="inline-flex items-center rounded border border-zinc-200 dark:border-[#27272a] bg-zinc-50 dark:bg-[#18181b] overflow-hidden">
-            <button
-              type="button"
-              disabled={maxRetries <= 1 || updating}
-              onClick={() => handleAdjust(-1)}
-              title="Decrease MAX_RETRY_ATTEMPTS in environment"
-              aria-label="Decrease maximum bounded retry attempts"
-              className="px-2 py-0.5 text-xs font-mono font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-[#27272a] disabled:opacity-30 cursor-pointer transition-colors focus-rzp"
-            >
-              -
-            </button>
-            <div className="w-[1px] h-4 bg-zinc-200 dark:border-[#27272a]" />
-            <button
-              type="button"
-              disabled={maxRetries >= 10 || updating}
-              onClick={() => handleAdjust(1)}
-              title="Increase MAX_RETRY_ATTEMPTS in environment"
-              aria-label="Increase maximum bounded retry attempts"
-              className="px-2 py-0.5 text-xs font-mono font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-[#27272a] disabled:opacity-30 cursor-pointer transition-colors focus-rzp"
-            >
-              +
-            </button>
           </div>
         </div>
       </div>

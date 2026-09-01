@@ -69,25 +69,6 @@ export const App: React.FC = () => {
     }, 4000);
   };
 
-  const handleUpdateMaxRetries = async (newVal: number) => {
-    setMaxRetries(newVal);
-    try {
-      const res = await fetch('/api/env-config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ max_retry_attempts: newVal }),
-      });
-      if (res.ok) {
-        showNotification(`✓ MAX_RETRY_ATTEMPTS updated to ${newVal} in .env`);
-      } else {
-        showNotification('❌ Failed to update MAX_RETRY_ATTEMPTS');
-      }
-    } catch (err) {
-      console.error('Failed to update MAX_RETRY_ATTEMPTS:', err);
-      showNotification('❌ Failed to update MAX_RETRY_ATTEMPTS');
-    }
-  };
-
   const fetchData = useCallback(async () => {
     try {
       const [metricsRes, txnsRes, auditRes, envRes] = await Promise.all([
@@ -313,7 +294,7 @@ export const App: React.FC = () => {
                   Deterministic step-by-step reasoning pipeline from checkout dropout to revenue capture.
                 </p>
               </div>
-              <AgentStepFlow maxRetries={maxRetries} onUpdateMaxRetries={handleUpdateMaxRetries} />
+              <AgentStepFlow maxRetries={maxRetries} />
             </div>
           )}
 
