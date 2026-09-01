@@ -189,14 +189,14 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f6f9] dark:bg-[#080d1a] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-150">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col font-body transition-colors duration-150">
       {/* Floating Mobile Trigger on Small Screens */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 p-2.5 rounded-xl bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] text-slate-700 dark:text-zinc-200 shadow-md cursor-pointer inline-flex items-center justify-center transition-transform active:scale-95"
+        className="lg:hidden fixed top-4 left-4 z-40 p-2.5 rounded-md bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] text-zinc-700 dark:text-zinc-200 shadow-xs cursor-pointer inline-flex items-center justify-center transition-transform active:scale-95"
         title="Open menu"
       >
-        <Menu className="w-5 h-5 text-[#0c83ff]" />
+        <Menu className="w-5 h-5 text-blue-600 dark:text-blue-400" />
       </button>
 
       {/* Enterprise Collapsible Sidebar */}
@@ -219,7 +219,7 @@ export const App: React.FC = () => {
       >
         {/* Floating Flat Notification Toast */}
         {notification && (
-          <div className="fixed bottom-6 right-6 z-50 bg-[#0c83ff] text-white font-medium text-xs py-2.5 px-4 rounded-lg shadow-lg border border-[#3395ff]/40 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white font-subheading font-medium text-xs py-2.5 px-4 rounded-md shadow-lg border border-blue-500 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
             <span>{notification}</span>
           </div>
         )}

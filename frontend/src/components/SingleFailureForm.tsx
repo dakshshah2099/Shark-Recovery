@@ -93,14 +93,14 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-7 space-y-5 shadow-xs transition-colors">
-      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-[#172a46]">
+    <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-7 space-y-5 shadow-xs transition-colors">
+      <div className="flex items-center justify-between pb-3.5 border-b border-zinc-200 dark:border-[#27272a]">
         <div>
-          <h3 className="font-heading font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
-            <Zap className="w-5 h-5 text-blue-600 dark:text-sky-400" />
+          <h3 className="font-heading font-extrabold text-base sm:text-lg text-zinc-900 dark:text-white flex items-center gap-2">
+            <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <span>Single Payment Failure Replicator</span>
           </h3>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
             Inject a simulated failed checkout transaction to trigger live multi-agent recovery.
           </p>
         </div>
@@ -108,7 +108,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
 
       {/* Preset Quick Fill */}
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+        <label className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
           Select Common Indian Payment Dropout Scenario:
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -119,12 +119,12 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               onClick={() => handleSelectPreset(opt)}
               className={`p-2.5 rounded-md border text-left text-xs transition-all cursor-pointer ${
                 failureReason === opt.reason
-                  ? 'bg-blue-50 dark:bg-blue-950/70 border-blue-200 dark:border-blue-700/60 text-blue-700 dark:text-sky-300 shadow-xs font-semibold'
-                  : 'bg-slate-50 dark:bg-[#080d1a] border-slate-200 dark:border-[#172a46] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-[#223e66]'
+                  ? 'bg-blue-50/80 dark:bg-[#18181b] border-blue-600 dark:border-blue-500 text-blue-700 dark:text-blue-400 shadow-xs font-semibold'
+                  : 'bg-zinc-50 dark:bg-[#09090b] border-zinc-200 dark:border-[#27272a] text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-600'
               }`}
             >
-              <div className="font-semibold text-slate-900 dark:text-white">{opt.label}</div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 line-clamp-1">{opt.reason}</div>
+              <div className="font-semibold font-subheading text-zinc-900 dark:text-white">{opt.label}</div>
+              <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono mt-0.5 line-clamp-1">{opt.reason}</div>
             </button>
           ))}
         </div>
@@ -133,42 +133,42 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           <div>
-            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Customer Name</label>
+            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Customer Name</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] transition-colors"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 transition-colors font-body"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Customer Email</label>
+            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Customer Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] transition-colors"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 transition-colors font-body"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">WhatsApp Phone (E.164)</label>
+            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">WhatsApp Phone (E.164)</label>
             <input
               type="text"
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] font-mono transition-colors"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 font-mono transition-colors"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Order Amount (INR)</label>
+            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Order Amount (INR)</label>
             <input
               type="number"
               required
@@ -176,30 +176,30 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               step="any"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] font-mono transition-colors"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 font-mono transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Razorpay Failure Code</label>
+            <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Razorpay Failure Code</label>
             <input
               type="text"
               required
               value={failureCode}
               onChange={(e) => setFailureCode(e.target.value)}
-              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] font-mono transition-colors"
+              className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 font-mono transition-colors"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Failure Reason Description</label>
+          <label className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">Failure Reason Description</label>
           <input
             type="text"
             required
             value={failureReason}
             onChange={(e) => setFailureReason(e.target.value)}
-            className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] transition-colors"
+            className="w-full h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-blue-500 transition-colors font-body"
           />
         </div>
 
@@ -209,9 +209,9 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
             id="instant-pay"
             checked={instantRecovery}
             onChange={(e) => setInstantRecovery(e.target.checked)}
-            className="rounded border-slate-300 dark:border-[#172a46] text-[#0c83ff] focus:ring-[#0c83ff] bg-white dark:bg-[#080d1a] cursor-pointer"
+            className="rounded border-zinc-300 dark:border-[#27272a] text-blue-600 focus:ring-blue-500 bg-white dark:bg-[#18181b] cursor-pointer"
           />
-          <label htmlFor="instant-pay" className="text-xs text-slate-800 dark:text-slate-200 cursor-pointer select-none font-medium">
+          <label htmlFor="instant-pay" className="text-xs text-zinc-800 dark:text-zinc-200 cursor-pointer select-none font-body font-medium">
             Simulate customer immediately completing payment via recovery link
           </label>
         </div>
@@ -220,7 +220,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
           <button
             type="submit"
             disabled={submitting}
-            className="w-full h-9 px-5 rounded-md bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
+            className="w-full h-9 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
           >
             {submitting ? (
               <>

@@ -14,24 +14,24 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
   return (
     <div className="space-y-6 w-full">
       {/* Mode Switcher Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-6 shadow-xs transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs transition-colors">
         <div>
-          <h2 className="font-heading font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-blue-600 dark:text-sky-400" />
+          <h2 className="font-heading font-extrabold text-lg sm:text-xl text-zinc-900 dark:text-white flex items-center gap-2">
+            <Layers className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <span>Failure Ingestion & Simulation Hub</span>
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
             Trigger autonomous recovery by injecting single failed checkout events or batch CSV logs.
           </p>
         </div>
 
-        <div className="flex items-center bg-slate-100 dark:bg-[#080d1a] p-1 rounded-lg border border-slate-200 dark:border-[#172a46] text-xs">
+        <div className="flex items-center bg-zinc-100 dark:bg-[#09090b] p-1 rounded-md border border-zinc-200 dark:border-[#27272a] text-xs">
           <button
             onClick={() => setActiveTab('single')}
-            className={`px-3.5 py-1.5 rounded-md flex items-center gap-1.5 font-semibold cursor-pointer transition-all ${
+            className={`px-3.5 py-1.5 rounded font-subheading font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
               activeTab === 'single'
-                ? 'bg-[#0c83ff] text-white shadow-xs'
-                : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
             <Zap className="w-3.5 h-3.5" />
@@ -40,10 +40,10 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
 
           <button
             onClick={() => setActiveTab('csv')}
-            className={`px-3.5 py-1.5 rounded-md flex items-center gap-1.5 font-semibold cursor-pointer transition-all ${
+            className={`px-3.5 py-1.5 rounded font-subheading font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
               activeTab === 'csv'
-                ? 'bg-[#0c83ff] text-white shadow-xs'
-                : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
             <UploadCloud className="w-3.5 h-3.5" />

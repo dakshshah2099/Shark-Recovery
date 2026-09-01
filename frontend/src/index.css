@@ -4,62 +4,76 @@
 
 @layer base {
   :root {
-    --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-heading: 'Parkinsans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-subheading: 'Montserrat', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-body: 'DM Sans', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Razorpay Design System Tokens */
-    --rzp-blue: #0c83ff;
-    --rzp-blue-hover: #006fdf;
-    --rzp-navy: #0c2340;
-    --rzp-dark-bg: #080d1a;
-    --rzp-dark-surface: #0c182b;
-    --rzp-dark-surface-elevated: #0f1e36;
-    --rzp-dark-border: #172a46;
+    /* Obsidian Ledger & Minimalist Precision Tokens */
+    --canvas-dark: #09090b;
+    --surface-dark: #121215;
+    --surface-dark-elevated: #18181b;
+    --border-dark: #27272a;
+    --border-dark-subtle: #1f1f23;
   }
 
   body {
     font-family: var(--font-body);
-    letter-spacing: -0.011em;
+    font-weight: 400;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6, .font-heading {
     font-family: var(--font-heading);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
+  }
+
+  .font-subheading {
+    font-family: var(--font-subheading);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
   }
 }
 
-/* Razorpay branded focus rings */
+/* Precision focus rings */
 .focus-rzp {
   outline: none;
   transition: all 0.15s ease-in-out;
 }
 .focus-rzp:focus {
-  border-color: #0c83ff;
-  box-shadow: 0 0 0 3px rgba(12, 131, 255, 0.25);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 /* Crisp minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #172a46;
+  background: #27272a;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #e4e4e7;
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #223e66;
+  background: #3f3f46;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #d4d4d8;
 }

@@ -20,28 +20,28 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
       {/* 1. Total Recovered Revenue */}
-      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
+      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-blue-500/50 dark:hover:border-zinc-700 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               Recovered Revenue
             </span>
-            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-700/60 font-mono">
+            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 font-mono">
               <ArrowUpRight className="w-3 h-3" />
               {recoveryRate}%
             </span>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-zinc-900 dark:text-white mt-2.5 tracking-tight">
             ₹{recoveredRev.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
         <div>
-          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 mb-1.5 font-mono text-[11px]">
-            <span>Recovery Efficiency</span>
-            <span className="text-emerald-700 dark:text-emerald-300 font-bold">{recoveryRate}%</span>
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1.5 font-mono text-[11px]">
+            <span className="font-body">Recovery Efficiency</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-bold">{recoveryRate}%</span>
           </div>
-          <div className="w-full bg-slate-100 dark:bg-[#132238] h-1.5 rounded-full overflow-hidden">
+          <div className="w-full bg-zinc-100 dark:bg-[#18181b] h-1.5 rounded-full overflow-hidden">
             <div
               className="bg-emerald-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.min(recoveryRate, 100)}%` }}
@@ -51,35 +51,35 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
       </div>
 
       {/* 2. Active Revenue At Risk */}
-      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
+      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-blue-500/50 dark:hover:border-zinc-700 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               Revenue At Risk
             </span>
-            <div className="p-1.5 bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 rounded-md border border-rose-200 dark:border-rose-800/60">
+            <div className="p-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 rounded border border-rose-200 dark:border-rose-800/60">
               <AlertCircle className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-zinc-900 dark:text-white mt-2.5 tracking-tight">
             ₹{revAtRisk.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-[#172a46] font-mono">
-          <span>Dropouts: <strong className="text-slate-900 dark:text-white font-semibold">{totalCount}</strong></span>
+        <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-[#27272a] font-mono">
+          <span>Dropouts: <strong className="text-zinc-900 dark:text-white font-semibold">{totalCount}</strong></span>
           <span className="text-rose-600 dark:text-rose-400 font-medium">{activeCount} In Pipeline</span>
         </div>
       </div>
 
       {/* 3. Discount Loss Incurred */}
-      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
+      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-blue-500/50 dark:hover:border-zinc-700 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               Incentive Loss
             </span>
-            <div className="p-1.5 bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800/60">
+            <div className="p-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded border border-amber-200 dark:border-amber-800/60">
               <Percent className="w-3.5 h-3.5" />
             </div>
           </div>
@@ -88,31 +88,31 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-[#172a46] font-mono">
-          <span>AI Discount Range</span>
+        <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-[#27272a] font-mono">
+          <span className="font-body">AI Discount Range</span>
           <span className="text-amber-700 dark:text-amber-400 font-semibold">0% – 15%</span>
         </div>
       </div>
 
       {/* 4. Live Outreach Dispatched */}
-      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
+      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-blue-500/50 dark:hover:border-zinc-700 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               Outreach Sent
             </span>
-            <div className="p-1.5 bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-sky-300 rounded-md border border-blue-200 dark:border-blue-800/60">
+            <div className="p-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 rounded border border-blue-200 dark:border-blue-800/60">
               <MessageSquare className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-zinc-900 dark:text-white mt-2.5 tracking-tight">
             {whatsappCount + emailCount}
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-[#172a46] font-mono">
-          <span className="text-blue-700 dark:text-sky-400 font-semibold">{whatsappCount} WhatsApp</span>
-          <span className="text-slate-700 dark:text-slate-200 font-medium">{emailCount} Email</span>
+        <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-[#27272a] font-mono">
+          <span className="text-blue-700 dark:text-blue-400 font-semibold">{whatsappCount} WhatsApp</span>
+          <span className="text-zinc-700 dark:text-zinc-200 font-medium">{emailCount} Email</span>
         </div>
       </div>
     </div>

@@ -81,23 +81,23 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
   };
 
   return (
-    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-7 space-y-5 shadow-xs transition-colors">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-200 dark:border-[#172a46]">
+    <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-7 space-y-5 shadow-xs transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-zinc-200 dark:border-[#27272a]">
         <div>
-          <h3 className="font-heading font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
-            <UploadCloud className="w-5 h-5 text-blue-600 dark:text-sky-400" />
+          <h3 className="font-heading font-extrabold text-base sm:text-lg text-zinc-900 dark:text-white flex items-center gap-2">
+            <UploadCloud className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <span>Bulk CSV Payment Ingestion</span>
           </h3>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
             Upload checkout transaction logs to trigger automated multi-agent triage.
           </p>
         </div>
 
         <button
           onClick={handleDownloadSample}
-          className="h-8.5 px-3 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#172a46] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto transition-colors"
+          className="h-8 px-3 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto transition-colors"
         >
-          <Download className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400" />
+          <Download className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
           <span>Download Sample CSV</span>
         </button>
       </div>
@@ -113,10 +113,10 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
         onClick={() => fileInputRef.current?.click()}
         className={`border-2 border-dashed rounded-lg p-7 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[170px] ${
           dragOver
-            ? 'border-[#0c83ff] bg-[#0c83ff]/10'
+            ? 'border-blue-500 bg-blue-500/10'
             : file
             ? 'border-emerald-500/60 bg-emerald-50/40 dark:bg-emerald-950/20'
-            : 'border-slate-200 hover:border-slate-300 dark:border-[#172a46] dark:hover:border-[#223e66] bg-slate-50/50 dark:bg-[#080d1a]'
+            : 'border-zinc-200 hover:border-zinc-300 dark:border-[#27272a] dark:hover:border-zinc-600 bg-zinc-50/50 dark:bg-[#09090b]'
         }`}
       >
         <input
@@ -129,22 +129,22 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
 
         {file ? (
           <div className="space-y-1.5">
-            <div className="w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800/80">
+            <div className="w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800/80">
               <FileText className="w-4.5 h-4.5" />
             </div>
-            <div className="font-heading font-bold text-xs sm:text-sm text-slate-900 dark:text-white">{file.name}</div>
-            <div className="text-[11px] text-slate-600 dark:text-slate-300 font-mono">{(file.size / 1024).toFixed(1)} KB • Ready to Ingest</div>
+            <div className="font-heading font-bold text-xs sm:text-sm text-zinc-900 dark:text-white">{file.name}</div>
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">{(file.size / 1024).toFixed(1)} KB • Ready to Ingest</div>
           </div>
         ) : (
           <div className="space-y-1.5">
-            <div className="w-9 h-9 rounded-md bg-slate-100 dark:bg-[#132238] text-slate-600 dark:text-slate-300 flex items-center justify-center mx-auto border border-slate-200 dark:border-[#172a46]">
+            <div className="w-9 h-9 rounded-md bg-zinc-100 dark:bg-[#18181b] text-zinc-600 dark:text-zinc-300 flex items-center justify-center mx-auto border border-zinc-200 dark:border-[#27272a]">
               <UploadCloud className="w-4.5 h-4.5" />
             </div>
-            <div className="font-heading font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-              Drag & Drop your <span className="text-blue-600 dark:text-sky-400">.csv</span> file here, or click to browse
+            <div className="font-heading font-bold text-xs sm:text-sm text-zinc-900 dark:text-white">
+              Drag & Drop your <span className="text-blue-600 dark:text-blue-400">.csv</span> file here, or click to browse
             </div>
-            <div className="text-[11px] text-slate-600 dark:text-slate-300">
-              Headers: <span className="font-mono text-slate-800 dark:text-slate-200 font-medium">name, email, phone, amount, failure_code, failure_reason</span>
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-body">
+              Headers: <span className="font-mono text-zinc-800 dark:text-zinc-200 font-medium">name, email, phone, amount, failure_code, failure_reason</span>
             </div>
           </div>
         )}
@@ -155,7 +155,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
           <button
             type="button"
             onClick={() => setFile(null)}
-            className="h-8.5 px-3.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-[#8ea5c8] dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] inline-flex items-center justify-center cursor-pointer transition-colors"
+            className="h-8 px-3.5 rounded-md text-xs font-subheading font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] inline-flex items-center justify-center cursor-pointer transition-colors"
           >
             Cancel
           </button>
@@ -164,7 +164,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
             type="button"
             onClick={handleUpload}
             disabled={uploading}
-            className="h-8.5 px-4 rounded-md bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
+            className="h-8 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
           >
             {uploading ? (
               <>
