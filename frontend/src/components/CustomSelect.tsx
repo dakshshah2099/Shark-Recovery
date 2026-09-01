@@ -38,12 +38,14 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Normalize options to SelectOption objects
-  const normalizedOptions: SelectOption[] = options.map((opt) => {
-    if (typeof opt === 'string') {
-      return { value: opt, label: opt };
-    }
-    return opt;
-  });
+  const normalizedOptions: SelectOption[] = React.useMemo(() => {
+    return options.map((opt) => {
+      if (typeof opt === 'string') {
+        return { value: opt, label: opt };
+      }
+      return opt;
+    });
+  }, [options]);
 
   const selectedIndex = normalizedOptions.findIndex((opt) => opt.value === value);
   const selectedOption = normalizedOptions[selectedIndex];
@@ -81,7 +83,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       case 'Escape':
         event.preventDefault();
         setIsOpen(false);
-        triggerRef.current?.focus();
+        requestAnimationFrame(() => triggerRef.current?.focus());
         break;
       case 'ArrowDown':
         event.preventDefault();
@@ -117,7 +119,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   const handleSelect = (val: string) => {
     onChange(val);
     setIsOpen(false);
-    triggerRef.current?.focus();
+    requestAnimationFrame(() => triggerRef.current?.focus());
   };
 
   const heightClasses = size === 'sm' ? 'h-8 px-2.5 text-[11px]' : 'h-9 px-3 text-xs';

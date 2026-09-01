@@ -130,8 +130,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
     fetchGroqModels();
   }, [fetchEnvConfig, fetchGroqModels]);
 
-  const handleSaveEnv = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveEnv = async (e?: React.SyntheticEvent) => {
+    if (e) e.preventDefault();
     setSavingEnv(true);
     try {
       const res = await fetch('/api/env-config', {
@@ -267,7 +267,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
           </div>
         ) : envConfig?.debug_mode ? (
           /* Editable Live Form */
-          <form onSubmit={handleSaveEnv} className="space-y-4">
+          <div className="space-y-4">
             {/* 1. AI & LLM Keys */}
             <div className="space-y-2.5">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
@@ -638,7 +638,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
               </div>
 
               <button
-                type="submit"
+                type="button"
+                onClick={handleSaveEnv}
                 disabled={savingEnv}
                 className="h-9 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all focus-rzp"
               >
@@ -655,7 +656,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                 )}
               </button>
             </div>
-          </form>
+          </div>
         ) : (
           /* Read-Only Notice when DEBUG_MODE is False */
           <div className="bg-zinc-50 dark:bg-[#09090b] p-5 rounded-md border border-zinc-200/80 dark:border-[#27272a] text-xs space-y-1.5">
