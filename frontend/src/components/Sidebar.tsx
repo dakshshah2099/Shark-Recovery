@@ -154,40 +154,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Top Brand Header */}
         <div>
           <div
-            className={`h-16 flex items-center border-b border-zinc-200 dark:border-[#27272a] transition-all duration-300 ${
-              collapsed ? 'justify-center px-0' : 'justify-between px-4'
+            className={`h-16 flex items-center border-b border-zinc-200 dark:border-[#27272a] transition-all duration-300 relative ${
+              collapsed ? 'justify-center px-0' : 'px-3 justify-center'
             }`}
           >
             {collapsed ? (
-              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+              <div className="w-full flex items-center justify-center shrink-0">
                 <img
                   src={faviconImg}
                   alt="Shark Recovery"
-                  className="w-8 h-8 object-contain rounded-md transition-transform duration-200 hover:scale-105"
+                  className="w-9 h-9 object-contain rounded-md transition-transform duration-200 hover:scale-105"
                 />
               </div>
             ) : (
-              <div className="flex items-center overflow-hidden">
+              <div className="flex-1 flex items-center justify-center overflow-hidden px-1">
                 <img
                   src={sharkRecoveryDark}
                   alt="Shark Recovery"
-                  className="hidden dark:block h-8 max-w-[180px] object-contain transition-opacity duration-200"
+                  className="hidden dark:block h-10 w-auto max-w-[215px] object-contain transition-opacity duration-200"
                 />
                 <img
                   src={sharkRecoveryLight}
                   alt="Shark Recovery"
-                  className="block dark:hidden h-8 max-w-[180px] object-contain transition-opacity duration-200"
+                  className="block dark:hidden h-10 w-auto max-w-[215px] object-contain transition-opacity duration-200"
                 />
               </div>
             )}
 
-            {/* Mobile close button */}
+            {/* Mobile close button positioned absolute to preserve centering */}
             {!collapsed && (
               <button
                 type="button"
                 onClick={onCloseMobile}
                 aria-label="Close navigation sidebar"
-                className="lg:hidden p-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white rounded-md cursor-pointer"
+                className="lg:hidden absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white rounded-md cursor-pointer focus-rzp"
               >
                 <X className="w-5 h-5" />
               </button>
