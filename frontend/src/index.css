@@ -55,15 +55,12 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
 }
 
-/* Motion sensitivity fallback (WCAG 2.3.3) */
+/* Motion sensitivity fallback for intense decorative animations */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  .animate-spin,
+  .animate-pulse {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
 
