@@ -217,8 +217,11 @@ async def orchestrate_revenue_recovery(
         duration_ms=t_strat_ms,
     )
 
-    # 7. Tool Execution 1: Generate Payment Link with dynamic incentive
-    payable_amount = round(txn.amount * (1.0 - (strategy.discount_percentage / 100.0)), 2)
+    # 7. Tool Execution 1: Generate Payment Link with dynamic incentive (Math Audit Verified)
+    discount_pct = max(0.0, min(15.0, float(strategy.discount_percentage)))
+    discount_amount = round(txn.amount * (discount_pct / 100.0), 2)
+    payable_amount = round(txn.amount - discount_amount, 2)
+
     link_create_req = RazorpayPaymentLinkCreate(
         amount=payable_amount,
         currency=txn.currency,
@@ -228,7 +231,8 @@ async def orchestrate_revenue_recovery(
         customer_contact=cust.phone,
         notes={
             "transaction_id": txn.id,
-            "discount_percent": str(strategy.discount_percentage),
+            "discount_percent": str(discount_pct),
+            "discount_amount": str(discount_amount),
             "offer_code": strategy.offer_code or "NONE",
         },
     )
@@ -255,12 +259,17 @@ async def orchestrate_revenue_recovery(
     b2b_plan_data: Optional[Dict[str, Any]] = None
 
     # Vector 1: Voice AI Recovery Agent (triggered for high-value dropouts or voice channel)
-    if txn.loss_vector == LossVector.VOICE_RECOVERY or txn.amount >= 5000.0 or strategy.channel == RecoveryChannel.VOICE_IVR if hasattr(RecoveryChannel, 'VOICE_IVR') else False:
+    is_voice_candidate = (
+        txn.loss_vector == LossVector.VOICE_RECOVERY
+        or txn.amount >= 5000.0
+        or (hasattr(RecoveryChannel, 'VOICE_IVR') and strategy.channel == RecoveryChannel.VOICE_IVR)
+    )
+    if is_voice_candidate:
         t_voice_start = time.perf_counter()
         voice_res = await run_voice_recovery_agent(
             ctx=ctx,
             diag=diagnosis,
-            discount_percent=strategy.discount_percentage,
+            discount_percent=discount_pct,
             payment_link=link_resp.short_url,
         )
         t_voice_ms = round((time.perf_counter() - t_voice_start) * 1000, 2)
@@ -342,10 +351,10 @@ async def orchestrate_revenue_recovery(
     if cust.email and "@" in cust.email and not cust.email.endswith("@example.internal"):
         discount_rows = f"""
         <tr>
-          <td style="padding: 6px 0; color: #059669; font-weight: 600;">Special Recovery Discount ({strategy.discount_percentage}%):</td>
-          <td style="padding: 6px 0; font-family: monospace; font-weight: 600; text-align: right; color: #059669;">-INR {(txn.amount * strategy.discount_percentage / 100.0):.2f}</td>
+          <td style="padding: 6px 0; color: #059669; font-weight: 600;">Special Recovery Discount ({discount_pct:.1f}%):</td>
+          <td style="padding: 6px 0; font-family: monospace; font-weight: 600; text-align: right; color: #059669;">-INR {discount_amount:.2f}</td>
         </tr>
-        """ if strategy.discount_percentage > 0 else ""
+        """ if discount_pct > 0 else ""
 
         email_html = f"""
         <!DOCTYPE html>
