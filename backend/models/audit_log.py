@@ -6,13 +6,20 @@ from sqlmodel import Field, SQLModel
 
 
 class ActionType(str, enum.Enum):
+    SENTINEL_ANOMALY_DETECTED = "sentinel_anomaly_detected"
     DIAGNOSIS_COMPLETED = "diagnosis_completed"
+    COMPLIANCE_GATING_PASSED = "compliance_gating_passed"
+    COMPLIANCE_GATING_BLOCKED = "compliance_gating_blocked"
     STRATEGY_DECIDED = "strategy_decided"
     PAYMENT_LINK_GENERATED = "payment_link_generated"
     EMAIL_DISPATCHED = "email_dispatched"
     WHATSAPP_DISPATCHED = "whatsapp_dispatched"
+    VOICE_CALL_DISPATCHED = "voice_call_dispatched"
+    MANDATE_RETRY_SCHEDULED = "mandate_retry_scheduled"
+    PROMISE_TO_PAY_RECORDED = "promise_to_pay_recorded"
     GATING_RULE_BLOCKED = "gating_rule_blocked"
     RECOVERY_VERIFIED = "recovery_verified"
+    SETTLEMENT_RECOVERED = "settlement_recovered"
     SYSTEM_ERROR = "system_error"
 
 

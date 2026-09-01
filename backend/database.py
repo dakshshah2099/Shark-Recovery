@@ -1,5 +1,6 @@
 import logging
 from typing import AsyncGenerator
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
 try:
@@ -31,9 +32,21 @@ async_session_maker = async_sessionmaker(
 
 
 async def init_db() -> None:
-    """Initialize database tables defined in SQLModel metadata."""
+    """Initialize database tables defined in SQLModel metadata and run auto-migrations."""
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+        # Auto-migrate newly added columns if table already existed
+        for col_def in [
+            "ALTER TABLE transaction ADD COLUMN loss_vector VARCHAR DEFAULT 'checkout_dropoff'",
+            "ALTER TABLE transaction ADD COLUMN escalation_level INTEGER DEFAULT 1",
+            "ALTER TABLE transaction ADD COLUMN promise_to_pay_date VARCHAR",
+            "ALTER TABLE transaction ADD COLUMN mandate_retry_schedule TEXT",
+            "ALTER TABLE transaction ADD COLUMN voice_call_transcript TEXT",
+        ]:
+            try:
+                await conn.execute(text(col_def))
+            except Exception:
+                pass
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:

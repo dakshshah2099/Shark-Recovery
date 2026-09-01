@@ -6,8 +6,12 @@ from typing import Any, Dict, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 try:
+    from backend.agents.compliance_agent import verify_compliance_and_stopping_rules
     from backend.agents.diagnostic_agent import run_diagnostic_agent
+    from backend.agents.mandate_agent import compute_b2b_promise_to_pay, compute_mandate_retry_schedule
+    from backend.agents.sentinel_agent import run_sentinel_monitor
     from backend.agents.strategy_agent import run_strategy_agent
+    from backend.agents.voice_agent import run_voice_recovery_agent
     from backend.models.audit_log import ActionType, AuditLog, AuditStatus
     from backend.models.customer import Customer
     from backend.models.schemas import (
@@ -17,13 +21,17 @@ try:
         RecoveryChannel,
         WhatsAppPayload,
     )
-    from backend.models.transaction import Transaction, TransactionStatus
+    from backend.models.transaction import LossVector, Transaction, TransactionStatus
     from backend.tools.razorpay_tool import create_payment_link
     from backend.tools.smtp_tool import send_recovery_email
     from backend.tools.whatsapp_tool import send_whatsapp_message
 except ImportError:
+    from agents.compliance_agent import verify_compliance_and_stopping_rules
     from agents.diagnostic_agent import run_diagnostic_agent
+    from agents.mandate_agent import compute_b2b_promise_to_pay, compute_mandate_retry_schedule
+    from agents.sentinel_agent import run_sentinel_monitor
     from agents.strategy_agent import run_strategy_agent
+    from agents.voice_agent import run_voice_recovery_agent
     from models.audit_log import ActionType, AuditLog, AuditStatus
     from models.customer import Customer
     from models.schemas import (
@@ -33,7 +41,7 @@ except ImportError:
         RecoveryChannel,
         WhatsAppPayload,
     )
-    from models.transaction import Transaction, TransactionStatus
+    from models.transaction import LossVector, Transaction, TransactionStatus
     from tools.razorpay_tool import create_payment_link
     from tools.smtp_tool import send_recovery_email
     from tools.whatsapp_tool import send_whatsapp_message
@@ -78,8 +86,14 @@ async def orchestrate_revenue_recovery(
     force: bool = False,
 ) -> Dict[str, Any]:
     """
-    Master autonomous recovery workflow orchestrator.
-    Executes: Guardrail Gating -> Diagnostics -> Strategy -> Payment Link Tool -> Dispatch Tool -> Audit Logging.
+    Master Autonomous Multi-Agent Revenue Recovery Pipeline:
+    1. Sentinel Telemetry Agent -> Gateway Anomaly Detection
+    2. Diagnostic Root Cause Agent -> Risk & Churn Modeling
+    3. Guardian Compliance Agent -> RBI Fair Practices & Stopping Rules
+    4. Master Strategist Agent -> Dynamic Matrix & Discount Optimization
+    5. Specialized Agents -> Voice AI Dialogue / Mandate Sequencer / B2B Promise-to-Pay
+    6. Tool Dispatchers -> Razorpay Links + SMTP Gateway + WhatsApp Outreach
+    7. Settlement & Audit Ledger -> Telemetry Audit Trail
     """
     # 1. Fetch Transaction and Customer records
     result = await session.execute(select(Transaction).where(Transaction.id == transaction_id))
@@ -92,30 +106,22 @@ async def orchestrate_revenue_recovery(
     if not cust:
         return {"status": "error", "message": f"Customer for transaction {transaction_id} not found."}
 
-    # 2. Stopping Rules & Gating Check (bypassed if force=True on manual operator action)
-    if not force and txn.retry_count >= txn.max_retries:
-        await record_audit_log(
-            session=session,
-            agent_name="RecoveryOrchestrator",
-            action_type=ActionType.GATING_RULE_BLOCKED,
-            status=AuditStatus.SKIPPED,
-            transaction_id=txn.id,
-            customer_id=cust.id,
-            input_payload=json.dumps({"retry_count": txn.retry_count, "max_retries": txn.max_retries}),
-            output_payload="Max retry threshold exceeded. Automated recovery stopped.",
-        )
-        txn.status = TransactionStatus.ABANDONED
-        session.add(txn)
-        await session.commit()
-        return {
-            "status": "blocked",
-            "reason": "Max retry bound exceeded",
-            "retry_count": txn.retry_count,
-        }
+    # 2. Agent 1: Sentinel Telemetry Monitor Agent
+    t_sent_start = time.perf_counter()
+    sentinel_report = await run_sentinel_monitor(txn.failure_code or "", txn.failure_reason or "")
+    t_sent_ms = round((time.perf_counter() - t_sent_start) * 1000, 2)
 
-    if force and txn.retry_count >= txn.max_retries:
-        # Operator override: expand threshold by 1 to record clean attempt
-        txn.max_retries = txn.retry_count + 1
+    await record_audit_log(
+        session=session,
+        agent_name="SentinelMonitorAgent",
+        action_type=ActionType.SENTINEL_ANOMALY_DETECTED,
+        status=AuditStatus.SUCCESS,
+        transaction_id=txn.id,
+        customer_id=cust.id,
+        input_payload=json.dumps({"error_code": txn.failure_code, "reason": txn.failure_reason}),
+        output_payload=sentinel_report.model_dump_json(),
+        duration_ms=t_sent_ms,
+    )
 
     # 3. Build Diagnostic Context
     ctx = DiagnosticContext(
@@ -132,10 +138,10 @@ async def orchestrate_revenue_recovery(
         total_spent=cust.total_spent,
     )
 
-    # 4. Invoke Diagnostic Agent
-    t_start = time.perf_counter()
+    # 4. Agent 2: Diagnostic Root Cause Agent
+    t_diag_start = time.perf_counter()
     diagnosis = await run_diagnostic_agent(ctx)
-    t_diag_ms = round((time.perf_counter() - t_start) * 1000, 2)
+    t_diag_ms = round((time.perf_counter() - t_diag_start) * 1000, 2)
 
     await record_audit_log(
         session=session,
@@ -152,18 +158,49 @@ async def orchestrate_revenue_recovery(
     txn.failure_category = diagnosis.failure_category
     cust.risk_score = diagnosis.risk_score
 
-    if not diagnosis.can_retry:
+    # 5. Agent 3: Guardian Compliance & Stopping Rules Agent
+    compliance = await verify_compliance_and_stopping_rules(
+        ctx=ctx,
+        diag=diagnosis,
+        retry_count=txn.retry_count if not force else 0,
+        max_retries=txn.max_retries,
+    )
+
+    if not compliance.is_compliant:
+        await record_audit_log(
+            session=session,
+            agent_name="GuardianComplianceAgent",
+            action_type=ActionType.COMPLIANCE_GATING_BLOCKED,
+            status=AuditStatus.SKIPPED,
+            transaction_id=txn.id,
+            customer_id=cust.id,
+            input_payload=json.dumps({"retry_count": txn.retry_count, "max_retries": txn.max_retries}),
+            output_payload=compliance.model_dump_json(),
+        )
         txn.status = TransactionStatus.ABANDONED
         session.add(txn)
         session.add(cust)
         await session.commit()
         return {
-            "status": "abandoned",
-            "diagnosis": diagnosis.model_dump(),
-            "reason": "Transaction flagged non-recoverable by Diagnostic Agent",
+            "status": "blocked",
+            "reason": compliance.rejection_reason or "Stopping rule triggered by Compliance Agent",
+            "compliance": compliance.model_dump(),
+            "retry_count": txn.retry_count,
         }
 
-    # 5. Invoke Strategy Agent
+    await record_audit_log(
+        session=session,
+        agent_name="GuardianComplianceAgent",
+        action_type=ActionType.COMPLIANCE_GATING_PASSED,
+        status=AuditStatus.SUCCESS,
+        transaction_id=txn.id,
+        customer_id=cust.id,
+        input_payload=json.dumps({"retry_count": txn.retry_count, "max_retries": txn.max_retries}),
+        output_payload=compliance.model_dump_json(),
+    )
+    txn.escalation_level = compliance.escalation_stage
+
+    # 6. Agent 4: Master Strategist Agent
     t_strat_start = time.perf_counter()
     strategy = await run_strategy_agent(ctx, diagnosis)
     t_strat_ms = round((time.perf_counter() - t_strat_start) * 1000, 2)
@@ -180,7 +217,7 @@ async def orchestrate_revenue_recovery(
         duration_ms=t_strat_ms,
     )
 
-    # 6. Tool Execution 1: Generate Payment Link with dynamic discount
+    # 7. Tool Execution 1: Generate Payment Link with dynamic incentive
     payable_amount = round(txn.amount * (1.0 - (strategy.discount_percentage / 100.0)), 2)
     link_create_req = RazorpayPaymentLinkCreate(
         amount=payable_amount,
@@ -212,10 +249,96 @@ async def orchestrate_revenue_recovery(
         duration_ms=t_link_ms,
     )
 
-    # 7. Tool Execution 2: Channel Dispatch (Guaranteed Email + WhatsApp Outreach)
+    # 8. Specialized Multi-Vector Autonomous Agent Flows
+    voice_session_data: Optional[Dict[str, Any]] = None
+    mandate_schedule_data: Optional[Dict[str, Any]] = None
+    b2b_plan_data: Optional[Dict[str, Any]] = None
+
+    # Vector 1: Voice AI Recovery Agent (triggered for high-value dropouts or voice channel)
+    if txn.loss_vector == LossVector.VOICE_RECOVERY or txn.amount >= 5000.0 or strategy.channel == RecoveryChannel.VOICE_IVR if hasattr(RecoveryChannel, 'VOICE_IVR') else False:
+        t_voice_start = time.perf_counter()
+        voice_res = await run_voice_recovery_agent(
+            ctx=ctx,
+            diag=diagnosis,
+            discount_percent=strategy.discount_percentage,
+            payment_link=link_resp.short_url,
+        )
+        t_voice_ms = round((time.perf_counter() - t_voice_start) * 1000, 2)
+        voice_session_data = voice_res.model_dump()
+        txn.voice_call_transcript = json.dumps(voice_session_data)
+        txn.promise_to_pay_date = voice_res.promise_to_pay_date
+
+        await record_audit_log(
+            session=session,
+            agent_name="HinglishVoiceAgent",
+            action_type=ActionType.VOICE_CALL_DISPATCHED,
+            status=AuditStatus.SUCCESS,
+            transaction_id=txn.id,
+            customer_id=cust.id,
+            input_payload=json.dumps({"customer": cust.name, "amount": txn.amount}),
+            output_payload=json.dumps(voice_session_data),
+            duration_ms=t_voice_ms,
+        )
+
+        if voice_res.promise_to_pay_date:
+            await record_audit_log(
+                session=session,
+                agent_name="PromiseToPayTracker",
+                action_type=ActionType.PROMISE_TO_PAY_RECORDED,
+                status=AuditStatus.SUCCESS,
+                transaction_id=txn.id,
+                customer_id=cust.id,
+                input_payload=json.dumps({"promise_date": voice_res.promise_to_pay_date}),
+                output_payload=f"Promise to pay recorded for {voice_res.promise_to_pay_date}",
+            )
+
+    # Vector 2: Mandate Retry Sequencer Agent (for recurring auto-debit failures)
+    if txn.loss_vector in [LossVector.FAILED_SUBSCRIPTION, LossVector.MANDATE_DEGRADATION]:
+        mandate_plan = compute_mandate_retry_schedule(
+            mandate_id=f"man_{txn.razorpay_order_id[:10]}",
+            customer_id=cust.id,
+            failure_reason=txn.failure_reason or "Mandate rejected",
+            amount=txn.amount,
+        )
+        mandate_schedule_data = mandate_plan.model_dump()
+        txn.mandate_retry_schedule = json.dumps(mandate_schedule_data)
+
+        await record_audit_log(
+            session=session,
+            agent_name="MandateSequencerAgent",
+            action_type=ActionType.MANDATE_RETRY_SCHEDULED,
+            status=AuditStatus.SUCCESS,
+            transaction_id=txn.id,
+            customer_id=cust.id,
+            input_payload=json.dumps({"mandate_id": mandate_plan.mandate_id}),
+            output_payload=json.dumps(mandate_schedule_data),
+        )
+
+    # Vector 3: B2B Receivables Chaser & Installment Restructuring
+    if txn.loss_vector == LossVector.B2B_RECEIVABLE:
+        b2b_plan = compute_b2b_promise_to_pay(
+            invoice_id=f"inv_{txn.razorpay_order_id[:8]}",
+            client_name=cust.name,
+            amount=txn.amount,
+        )
+        b2b_plan_data = b2b_plan.model_dump()
+        txn.promise_to_pay_date = b2b_plan.promise_date
+
+        await record_audit_log(
+            session=session,
+            agent_name="B2BReceivablesAgent",
+            action_type=ActionType.PROMISE_TO_PAY_RECORDED,
+            status=AuditStatus.SUCCESS,
+            transaction_id=txn.id,
+            customer_id=cust.id,
+            input_payload=json.dumps({"invoice_id": b2b_plan.invoice_id}),
+            output_payload=json.dumps(b2b_plan_data),
+        )
+
+    # 9. Tool Execution 2: Channel Dispatch (Guaranteed Email + WhatsApp Outreach)
     dispatch_results: Dict[str, Any] = {}
 
-    # 7a. Primary / Guaranteed Email Dispatch whenever customer email exists
+    # 9a. Guaranteed Email Dispatch whenever customer email exists
     if cust.email and "@" in cust.email and not cust.email.endswith("@example.internal"):
         discount_rows = f"""
         <tr>
@@ -297,8 +420,8 @@ async def orchestrate_revenue_recovery(
         )
         dispatch_results["email"] = email_result
 
-    # 7b. WhatsApp Outreach Dispatch if mobile phone available
-    if cust.phone and (strategy.channel == RecoveryChannel.WHATSAPP or strategy.channel == RecoveryChannel.OMNICHANNEL if hasattr(RecoveryChannel, 'OMNICHANNEL') else strategy.channel == RecoveryChannel.WHATSAPP):
+    # 9b. WhatsApp Outreach Dispatch if mobile phone available
+    if cust.phone and strategy.channel == RecoveryChannel.WHATSAPP:
         wa_payload = WhatsAppPayload(
             transaction_id=txn.id,
             recipient_phone=cust.phone,
@@ -333,7 +456,7 @@ async def orchestrate_revenue_recovery(
     else:
         txn.recovery_channel = "whatsapp" if cust.phone else "email"
 
-    # 8. Update Transaction State
+    # 10. Update Transaction State
     txn.retry_count += 1
     txn.status = TransactionStatus.PROCESSING
     txn.recovery_link = link_resp.short_url
@@ -348,11 +471,18 @@ async def orchestrate_revenue_recovery(
     return {
         "status": "success",
         "transaction_id": txn.id,
+        "loss_vector": txn.loss_vector,
+        "escalation_level": txn.escalation_level,
         "retry_count": txn.retry_count,
         "max_retries": txn.max_retries,
+        "sentinel": sentinel_report.model_dump(),
         "diagnosis": diagnosis.model_dump(),
+        "compliance": compliance.model_dump(),
         "strategy": strategy.model_dump(),
         "payment_link": link_resp.short_url,
         "payable_amount": payable_amount,
+        "voice_session": voice_session_data,
+        "mandate_schedule": mandate_schedule_data,
+        "b2b_plan": b2b_plan_data,
         "dispatch": dispatch_results,
     }

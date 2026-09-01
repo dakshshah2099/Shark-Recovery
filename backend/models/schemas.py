@@ -3,13 +3,15 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from .audit_log import ActionType, AuditStatus
-from .transaction import FailureCategory, TransactionStatus
+from .transaction import FailureCategory, LossVector, TransactionStatus
 
 
 class RecoveryChannel(str, enum.Enum):
     EMAIL = "email"
     WHATSAPP = "whatsapp"
     SMS = "sms"
+    VOICE_IVR = "voice_ivr"
+    OMNICHANNEL = "omnichannel"
     NONE = "none"
 
 
@@ -176,6 +178,8 @@ class TransactionRead(BaseModel):
     amount: float
     currency: str
     status: TransactionStatus
+    loss_vector: LossVector = LossVector.CHECKOUT_DROPOFF
+    escalation_level: int = 1
     failure_code: Optional[str]
     failure_reason: Optional[str]
     failure_category: FailureCategory
@@ -185,6 +189,9 @@ class TransactionRead(BaseModel):
     recovery_channel: Optional[str]
     discount_applied_percent: float
     recovered_amount: float
+    promise_to_pay_date: Optional[str] = None
+    mandate_retry_schedule: Optional[str] = None
+    voice_call_transcript: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -222,6 +229,7 @@ class SimulateBatchItem(BaseModel):
     amount: float
     failure_code: str
     failure_reason: str
+    loss_vector: Optional[LossVector] = LossVector.CHECKOUT_DROPOFF
     simulate_instant_recovery: bool = Field(
         default=False,
         description="If true, simulate customer completing payment via link",
