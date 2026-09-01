@@ -212,9 +212,93 @@ async def orchestrate_revenue_recovery(
         duration_ms=t_link_ms,
     )
 
-    # 7. Tool Execution 2: Channel Dispatch (Email vs WhatsApp)
-    dispatch_result: Dict[str, Any] = {}
-    if strategy.channel == RecoveryChannel.WHATSAPP:
+    # 7. Tool Execution 2: Channel Dispatch (Guaranteed Email + WhatsApp Outreach)
+    dispatch_results: Dict[str, Any] = {}
+
+    # 7a. Primary / Guaranteed Email Dispatch whenever customer email exists
+    if cust.email and "@" in cust.email and not cust.email.endswith("@example.internal"):
+        discount_rows = f"""
+        <tr>
+          <td style="padding: 6px 0; color: #059669; font-weight: 600;">Special Recovery Discount ({strategy.discount_percentage}%):</td>
+          <td style="padding: 6px 0; font-family: monospace; font-weight: 600; text-align: right; color: #059669;">-INR {(txn.amount * strategy.discount_percentage / 100.0):.2f}</td>
+        </tr>
+        """ if strategy.discount_percentage > 0 else ""
+
+        email_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"></head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #1e293b;">
+          <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="background: #0c2340; padding: 24px; text-align: center;">
+              <h1 style="color: #ffffff; font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">Shark Recovery</h1>
+              <p style="color: #94a3b8; font-size: 12px; margin: 4px 0 0 0;">Autonomous Payment Recovery Engine</p>
+            </div>
+            <div style="padding: 28px 24px;">
+              <h2 style="color: #0f172a; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">{strategy.custom_headline}</h2>
+              <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 20px 0;">{strategy.message_content}</p>
+
+              <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 0 0 24px 0;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                  <tr>
+                    <td style="padding: 6px 0; color: #64748b;">Order Reference:</td>
+                    <td style="padding: 6px 0; font-family: monospace; font-weight: 600; text-align: right; color: #0f172a;">{txn.razorpay_order_id}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #64748b;">Original Order Total:</td>
+                    <td style="padding: 6px 0; font-family: monospace; text-align: right; color: #64748b;">INR {txn.amount:.2f}</td>
+                  </tr>
+                  {discount_rows}
+                  <tr style="border-top: 1px solid #cbd5e1;">
+                    <td style="padding: 10px 0 0 0; font-weight: 700; color: #0f172a;">Payable Now:</td>
+                    <td style="padding: 10px 0 0 0; font-family: monospace; font-weight: 700; font-size: 16px; text-align: right; color: #2563eb;">INR {payable_amount:.2f}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="text-align: center; margin: 28px 0 20px 0;">
+                <a href="{link_resp.short_url}" style="background-color: #2563eb; color: #ffffff; padding: 14px 32px; font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 6px; display: inline-block; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">Complete Payment Securely &rarr;</a>
+              </div>
+              <p style="text-align: center; font-size: 11px; color: #94a3b8; margin: 0;">Secured by Razorpay. 1-click retry with UPI, Cards, Netbanking.</p>
+            </div>
+            <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8;">
+              &copy; Shark Recovery • Autonomous Revenue Recovery
+            </div>
+          </div>
+        </body>
+        </html>
+        """
+        email_payload = EmailPayload(
+            transaction_id=txn.id,
+            recipient_email=cust.email,
+            recipient_name=cust.name,
+            subject=strategy.custom_headline,
+            body_html=email_html,
+            body_text=f"{strategy.message_content}\n\nPay Now (INR {payable_amount:.2f}): {link_resp.short_url}",
+            payment_link=link_resp.short_url,
+            discount_applied=strategy.discount_percentage,
+            original_amount=txn.amount,
+            final_amount=payable_amount,
+        )
+        t_em_start = time.perf_counter()
+        email_result = await send_recovery_email(email_payload)
+        t_em_ms = round((time.perf_counter() - t_em_start) * 1000, 2)
+
+        await record_audit_log(
+            session=session,
+            agent_name="SMTPDispatchTool",
+            action_type=ActionType.EMAIL_DISPATCHED,
+            status=AuditStatus.SUCCESS if email_result.get("delivered") else AuditStatus.WARNING,
+            transaction_id=txn.id,
+            customer_id=cust.id,
+            input_payload=email_payload.model_dump_json(),
+            output_payload=json.dumps(email_result),
+            duration_ms=t_em_ms,
+        )
+        dispatch_results["email"] = email_result
+
+    # 7b. WhatsApp Outreach Dispatch if mobile phone available
+    if cust.phone and (strategy.channel == RecoveryChannel.WHATSAPP or strategy.channel == RecoveryChannel.OMNICHANNEL if hasattr(RecoveryChannel, 'OMNICHANNEL') else strategy.channel == RecoveryChannel.WHATSAPP):
         wa_payload = WhatsAppPayload(
             transaction_id=txn.id,
             recipient_phone=cust.phone,
@@ -225,62 +309,29 @@ async def orchestrate_revenue_recovery(
             params={"discount": strategy.discount_percentage, "code": strategy.offer_code or ""},
         )
         t_wa_start = time.perf_counter()
-        dispatch_result = await send_whatsapp_message(wa_payload)
+        wa_result = await send_whatsapp_message(wa_payload)
         t_wa_ms = round((time.perf_counter() - t_wa_start) * 1000, 2)
 
         await record_audit_log(
             session=session,
             agent_name="WhatsAppDispatchTool",
             action_type=ActionType.WHATSAPP_DISPATCHED,
-            status=AuditStatus.SUCCESS,
+            status=AuditStatus.SUCCESS if wa_result.get("delivered") else AuditStatus.WARNING,
             transaction_id=txn.id,
             customer_id=cust.id,
             input_payload=wa_payload.model_dump_json(),
-            output_payload=json.dumps(dispatch_result),
+            output_payload=json.dumps(wa_result),
             duration_ms=t_wa_ms,
         )
-        txn.recovery_channel = "whatsapp"
-    else:
-        email_html = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-            <h2 style="color: #0d6efd;">{strategy.custom_headline}</h2>
-            <p>{strategy.message_content}</p>
-            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <p><strong>Original Amount:</strong> INR {txn.amount:.2f}</p>
-                {f'<p style="color: #198754;"><strong>Discount:</strong> {strategy.discount_percentage}% (Code: {strategy.offer_code})</p>' if strategy.discount_percentage > 0 else ''}
-                <p><strong>Payable Now:</strong> INR {payable_amount:.2f}</p>
-            </div>
-            <a href="{link_resp.short_url}" style="background-color: #0d6efd; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">Complete Checkout</a>
-        </div>
-        """
-        email_payload = EmailPayload(
-            transaction_id=txn.id,
-            recipient_email=cust.email,
-            recipient_name=cust.name,
-            subject=strategy.custom_headline,
-            body_html=email_html,
-            body_text=f"{strategy.message_content}\n\nPay Now: {link_resp.short_url}",
-            payment_link=link_resp.short_url,
-            discount_applied=strategy.discount_percentage,
-            original_amount=txn.amount,
-            final_amount=payable_amount,
-        )
-        t_em_start = time.perf_counter()
-        dispatch_result = await send_recovery_email(email_payload)
-        t_em_ms = round((time.perf_counter() - t_em_start) * 1000, 2)
+        dispatch_results["whatsapp"] = wa_result
 
-        await record_audit_log(
-            session=session,
-            agent_name="SMTPDispatchTool",
-            action_type=ActionType.EMAIL_DISPATCHED,
-            status=AuditStatus.SUCCESS,
-            transaction_id=txn.id,
-            customer_id=cust.id,
-            input_payload=email_payload.model_dump_json(),
-            output_payload=json.dumps(dispatch_result),
-            duration_ms=t_em_ms,
-        )
+    # Primary channel tag
+    if strategy.channel == RecoveryChannel.WHATSAPP and "whatsapp" in dispatch_results:
+        txn.recovery_channel = "whatsapp"
+    elif "email" in dispatch_results:
         txn.recovery_channel = "email"
+    else:
+        txn.recovery_channel = "whatsapp" if cust.phone else "email"
 
     # 8. Update Transaction State
     txn.retry_count += 1
@@ -303,5 +354,5 @@ async def orchestrate_revenue_recovery(
         "strategy": strategy.model_dump(),
         "payment_link": link_resp.short_url,
         "payable_amount": payable_amount,
-        "dispatch": dispatch_result,
+        "dispatch": dispatch_results,
     }
