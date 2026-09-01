@@ -87,13 +87,13 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           isOpen ? 'ring-1 ring-[#0c83ff]/40 border-[#0c83ff]' : ''
         }`}
       >
-        <span className="truncate flex items-center gap-1.5">
+        <span className="truncate flex items-center gap-1.5 font-medium">
           {selectedOption?.icon}
           <span>{selectedOption ? selectedOption.label : placeholder}</span>
         </span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-400 dark:text-[#52719c] transition-transform duration-200 shrink-0 ${
-            isOpen ? 'rotate-180 text-[#0c83ff]' : ''
+          className={`w-3.5 h-3.5 text-slate-500 dark:text-slate-400 transition-transform duration-200 shrink-0 ${
+            isOpen ? 'rotate-180 text-blue-600 dark:text-sky-400' : ''
           }`}
         />
       </button>
@@ -116,8 +116,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 onClick={() => handleSelect(opt.value)}
                 className={`group flex items-center justify-between gap-2 px-2.5 py-1.5 rounded text-xs cursor-pointer select-none transition-colors ${
                   isSelected
-                    ? 'bg-[#0c83ff]/10 dark:bg-[#0c83ff]/20 text-[#0c83ff] dark:text-[#3395ff] font-semibold'
-                    : 'text-slate-700 dark:text-[#cad8ec] hover:bg-slate-100 dark:hover:bg-[#132238] hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-sky-300 font-semibold'
+                    : 'text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#132238] hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <div className="flex flex-col truncate">
@@ -125,20 +125,20 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                     {opt.icon}
                     <span className="truncate">{opt.label}</span>
                     {opt.badge && (
-                      <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-slate-100 dark:bg-[#182a44] text-slate-600 dark:text-[#8ea5c8] border border-slate-200/80 dark:border-[#223e66]">
+                      <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-slate-100 dark:bg-[#182a44] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#223e66]">
                         {opt.badge}
                       </span>
                     )}
                   </div>
                   {opt.description && (
-                    <span className="text-[10px] text-slate-400 dark:text-[#52719c] font-normal truncate mt-0.5">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal truncate mt-0.5">
                       {opt.description}
                     </span>
                   )}
                 </div>
 
                 {isSelected && (
-                  <Check className="w-3.5 h-3.5 text-[#0c83ff] dark:text-[#3395ff] shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-blue-600 dark:text-sky-400 shrink-0" />
                 )}
               </div>
             );

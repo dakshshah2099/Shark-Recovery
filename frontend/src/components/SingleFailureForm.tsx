@@ -97,10 +97,10 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
       <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-[#172a46]">
         <div>
           <h3 className="font-heading font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
-            <Zap className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
+            <Zap className="w-5 h-5 text-blue-600 dark:text-sky-400" />
             <span>Single Payment Failure Replicator</span>
           </h3>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7a95b8] mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
             Inject a simulated failed checkout transaction to trigger live multi-agent recovery.
           </p>
         </div>
@@ -108,7 +108,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
 
       {/* Preset Quick Fill */}
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8] mb-2">
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
           Select Common Indian Payment Dropout Scenario:
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -119,12 +119,12 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               onClick={() => handleSelectPreset(opt)}
               className={`p-2.5 rounded-md border text-left text-xs transition-all cursor-pointer ${
                 failureReason === opt.reason
-                  ? 'bg-[#0c83ff]/10 border-[#0c83ff] text-[#0c83ff] dark:text-[#3395ff] shadow-xs font-semibold'
-                  : 'bg-slate-50 dark:bg-[#080d1a] border-slate-200 dark:border-[#172a46] text-slate-600 dark:text-[#8ea5c8] hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-[#223e66]'
+                  ? 'bg-blue-50 dark:bg-blue-950/70 border-blue-200 dark:border-blue-700/60 text-blue-700 dark:text-sky-300 shadow-xs font-semibold'
+                  : 'bg-slate-50 dark:bg-[#080d1a] border-slate-200 dark:border-[#172a46] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-[#223e66]'
               }`}
             >
-              <div className="font-semibold text-slate-900 dark:text-zinc-200">{opt.label}</div>
-              <div className="text-[11px] text-slate-500 dark:text-[#6a87aa] font-mono mt-0.5 line-clamp-1">{opt.reason}</div>
+              <div className="font-semibold text-slate-900 dark:text-white">{opt.label}</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 line-clamp-1">{opt.reason}</div>
             </button>
           ))}
         </div>
@@ -133,7 +133,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Customer Name</label>
+            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Customer Name</label>
             <input
               type="text"
               required
@@ -144,7 +144,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Customer Email</label>
+            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Customer Email</label>
             <input
               type="email"
               required
@@ -155,7 +155,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">WhatsApp Phone (E.164)</label>
+            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">WhatsApp Phone (E.164)</label>
             <input
               type="text"
               required
@@ -168,7 +168,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Order Amount (INR)</label>
+            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Order Amount (INR)</label>
             <input
               type="number"
               required
@@ -181,7 +181,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Razorpay Failure Code</label>
+            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Razorpay Failure Code</label>
             <input
               type="text"
               required
@@ -193,7 +193,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Failure Reason Description</label>
+          <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">Failure Reason Description</label>
           <input
             type="text"
             required
@@ -211,7 +211,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
             onChange={(e) => setInstantRecovery(e.target.checked)}
             className="rounded border-slate-300 dark:border-[#172a46] text-[#0c83ff] focus:ring-[#0c83ff] bg-white dark:bg-[#080d1a] cursor-pointer"
           />
-          <label htmlFor="instant-pay" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer select-none font-medium">
+          <label htmlFor="instant-pay" className="text-xs text-slate-800 dark:text-slate-200 cursor-pointer select-none font-medium">
             Simulate customer immediately completing payment via recovery link
           </label>
         </div>

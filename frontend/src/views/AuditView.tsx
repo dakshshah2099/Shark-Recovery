@@ -32,16 +32,16 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-6 shadow-xs transition-colors">
         <div>
           <h2 className="font-heading font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
+            <Activity className="w-5 h-5 text-blue-600 dark:text-sky-400" />
             <span>Autonomous Agent Audit Ledger</span>
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7a95b8] mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
             Immutable chronological trace of LLM reasoning chains, tool inputs/outputs, and guardrail decisions.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
-          <span className="text-xs font-medium text-slate-500 dark:text-[#7a95b8] hidden sm:inline">
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline">
             Agent:
           </span>
           <CustomSelect

@@ -71,35 +71,35 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     switch (status) {
       case 'recovered':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/60 font-mono">
             <CheckCircle2 className="w-3 h-3" />
             <span>Captured</span>
           </span>
         );
       case 'processing':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#0c83ff]/10 text-[#0c83ff] dark:text-[#3395ff] border border-[#0c83ff]/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0c83ff] animate-pulse" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-sky-300 border border-blue-200 dark:border-blue-700/60 font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-sky-400 animate-pulse" />
             <span>Active Triage</span>
           </span>
         );
       case 'failed':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700/60 font-mono">
             <AlertCircle className="w-3 h-3" />
             <span>Failed</span>
           </span>
         );
       case 'abandoned':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-[#132238] text-slate-600 dark:text-[#8ea5c8] border border-slate-200 dark:border-[#172a46]">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 font-mono">
             <Clock className="w-3 h-3" />
             <span>Dropped</span>
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-[#132238] text-slate-700 dark:text-[#8ea5c8]">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">
             {status}
           </span>
         );
@@ -111,18 +111,18 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       {/* Search & Filter Toolbar */}
       <div className="p-3.5 sm:p-4 border-b border-slate-200 dark:border-[#172a46] flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50 dark:bg-[#09111e]/40">
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 text-slate-400 dark:text-[#52719c] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search customer, order ID, failure reason..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-9 bg-white dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md pl-10 pr-4 focus:outline-none focus:border-[#0c83ff] transition-colors"
+            className="w-full h-9 bg-white dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md pl-10 pr-4 focus:outline-none focus:border-[#0c83ff] transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
         </div>
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <span className="text-xs font-medium text-slate-500 dark:text-[#7a95b8] hidden sm:inline">
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline">
             Status:
           </span>
           <CustomSelect
@@ -139,7 +139,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       <div className="w-full overflow-x-auto">
         <table className="w-full text-left border-collapse text-xs table-fixed min-w-[700px]">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-[#172a46] bg-slate-50/80 dark:bg-[#080d1a]/80 text-slate-500 dark:text-[#7a95b8] uppercase font-bold text-[10px] tracking-wider">
+            <tr className="border-b border-slate-200 dark:border-[#172a46] bg-slate-50/80 dark:bg-[#080d1a]/80 text-slate-700 dark:text-slate-300 uppercase font-bold text-[10px] tracking-wider">
               <th className="py-3 px-4 w-[24%]">Customer & Order ID</th>
               <th className="py-3 px-4 w-[13%]">Amount</th>
               <th className="py-3 px-4 w-[25%]">Diagnostics</th>
@@ -148,16 +148,16 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               <th className="py-3 px-4 w-[12%] text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-[#172a46]/70 text-slate-700 dark:text-[#cad8ec]">
+          <tbody className="divide-y divide-slate-100 dark:divide-[#172a46]/70 text-slate-800 dark:text-slate-200">
             {loading ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-slate-400 dark:text-[#52719c] font-medium">
+                <td colSpan={6} className="py-12 text-center text-slate-500 dark:text-slate-400 font-medium">
                   Loading transaction ledger...
                 </td>
               </tr>
             ) : filteredTransactions.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-slate-400 dark:text-[#52719c] font-medium">
+                <td colSpan={6} className="py-12 text-center text-slate-500 dark:text-slate-400 font-medium">
                   No matching transactions found.
                 </td>
               </tr>
@@ -172,10 +172,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     <div className="font-semibold text-slate-900 dark:text-white text-xs truncate">
                       {txn.customer_name}
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-[#7a95b8] font-mono truncate mt-0.5">
+                    <div className="text-[11px] text-slate-600 dark:text-slate-400 font-mono truncate mt-0.5">
                       {txn.customer_email}
                     </div>
-                    <div className="text-[10px] text-[#0c83ff] dark:text-[#3395ff] font-mono truncate mt-0.5">
+                    <div className="text-[11px] text-blue-600 dark:text-sky-400 font-mono truncate mt-0.5 font-medium">
                       {txn.razorpay_order_id}
                     </div>
                   </td>
@@ -186,7 +186,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                       ₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
                     {txn.status === 'recovered' && (
-                      <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono mt-0.5 whitespace-nowrap font-medium">
+                      <div className="text-[11px] text-emerald-700 dark:text-emerald-300 font-mono mt-0.5 whitespace-nowrap font-medium">
                         Paid: ₹{txn.recovered_amount.toFixed(2)}
                       </div>
                     )}
@@ -197,7 +197,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     <div className="font-mono text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-tight truncate">
                       {txn.failure_category.replace(/_/g, ' ')}
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-[#7a95b8] truncate mt-0.5" title={txn.failure_reason || ''}>
+                    <div className="text-[11px] text-slate-600 dark:text-slate-300 truncate mt-0.5" title={txn.failure_reason || ''}>
                       {txn.failure_reason || 'No description provided'}
                     </div>
                   </td>
@@ -209,10 +209,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
                   {/* Outreach Channel & Link */}
                   <td className="py-3 px-4">
-                    <div className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 truncate">
+                    <div className="text-[11px] font-medium text-slate-900 dark:text-slate-100 truncate">
                       {txn.recovery_channel === 'whatsapp' ? '💬 WhatsApp' : '✉️ Email'}
                       {txn.discount_applied_percent > 0 && (
-                        <span className="ml-1 text-amber-600 dark:text-amber-400 font-mono font-semibold">
+                        <span className="ml-1 text-amber-700 dark:text-amber-400 font-mono font-semibold">
                           ({txn.discount_applied_percent}%)
                         </span>
                       )}
@@ -223,13 +223,13 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                         href={txn.recovery_link}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[10px] text-[#0c83ff] dark:text-[#3395ff] hover:underline inline-flex items-center gap-1 mt-0.5 font-mono"
+                        className="text-[11px] text-blue-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1 mt-0.5 font-mono font-medium"
                       >
                         <span>Razorpay Link</span>
                         <ExternalLink className="w-2.5 h-2.5" />
                       </a>
                     ) : (
-                      <span className="text-[10px] text-slate-400 dark:text-[#52719c]">—</span>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">—</span>
                     )}
                   </td>
 
@@ -251,7 +251,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                           <button
                             onClick={() => handleRowRetry(txn.id)}
                             disabled={retryingIds[txn.id] || payingIds[txn.id]}
-                            className="h-7.5 w-7.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] text-slate-700 dark:text-[#8ea5c8] inline-flex items-center justify-center cursor-pointer border border-slate-200 dark:border-[#172a46] disabled:opacity-50 transition-colors"
+                            className="h-7.5 w-7.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] text-slate-700 dark:text-slate-200 inline-flex items-center justify-center cursor-pointer border border-slate-200 dark:border-[#172a46] disabled:opacity-50 transition-colors"
                             title="Re-run AI Triage"
                           >
                             <RotateCw className={`w-3 h-3 ${retryingIds[txn.id] ? 'animate-spin text-[#0c83ff]' : ''}`} />
@@ -260,7 +260,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                       )}
 
                       {txn.status === 'recovered' && (
-                        <span className="h-7.5 px-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold inline-flex items-center gap-1 whitespace-nowrap">
+                        <span className="h-7.5 px-2 text-[11px] text-emerald-700 dark:text-emerald-300 font-mono font-semibold inline-flex items-center gap-1 whitespace-nowrap">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Done</span>
                         </span>

@@ -75,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const renderNavGroup = (items: typeof mainNavItems, title?: string) => (
     <div className="space-y-1">
       {!collapsed && title && (
-        <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-[#52719c]">
+        <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
           {title}
         </div>
       )}
@@ -94,8 +94,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               collapsed ? 'justify-center' : 'text-left'
             } ${
               isActive
-                ? 'bg-blue-50/90 dark:bg-[#0c83ff]/15 text-[#0c83ff] dark:text-[#3395ff] font-semibold border border-blue-200/70 dark:border-[#0c83ff]/30 shadow-xs'
-                : 'text-slate-600 dark:text-[#8ea5c8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#132238]/60'
+                ? 'bg-blue-50/90 dark:bg-[#0c83ff]/15 text-[#0066cc] dark:text-sky-400 font-semibold border border-blue-200 dark:border-[#0c83ff]/40 shadow-xs'
+                : 'text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#132238]/70'
             }`}
           >
             {isActive && !collapsed && (
@@ -104,14 +104,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Icon
               className={`w-4.5 h-4.5 shrink-0 transition-colors ${
                 isActive
-                  ? 'text-[#0c83ff] dark:text-[#3395ff]'
-                  : 'text-slate-400 dark:text-[#627d9f] group-hover:text-slate-700 dark:group-hover:text-[#b8cde8]'
+                  ? 'text-[#0066cc] dark:text-sky-400'
+                  : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'
               }`}
             />
             {!collapsed && (
               <div className="flex-1 truncate">
                 <div className="text-xs font-semibold truncate">{item.label}</div>
-                <div className="text-[10px] text-slate-400 dark:text-[#627d9f] font-normal truncate">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 font-normal truncate">
                   {item.desc}
                 </div>
               </div>
@@ -203,21 +203,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Theme Toggle Button */}
           <button
             onClick={onToggleTheme}
-            className={`w-full py-2 px-2.5 rounded-lg border border-slate-200 dark:border-[#172a46] bg-white dark:bg-[#0c182b] hover:bg-slate-50 dark:hover:bg-[#132238] text-slate-700 dark:text-[#cad8ec] text-xs font-medium inline-flex items-center transition-colors cursor-pointer ${
+            className={`w-full py-2 px-2.5 rounded-lg border border-slate-200 dark:border-[#172a46] bg-white dark:bg-[#0c182b] hover:bg-slate-50 dark:hover:bg-[#132238] text-slate-700 dark:text-slate-200 text-xs font-medium inline-flex items-center transition-colors cursor-pointer ${
               collapsed ? 'justify-center' : 'justify-between'
             }`}
             title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
             <span className="inline-flex items-center gap-2">
               {darkMode ? (
-                <Sun className="w-4 h-4 text-amber-400" />
+                <Sun className="w-4 h-4 text-amber-500" />
               ) : (
-                <Moon className="w-4 h-4 text-slate-600" />
+                <Moon className="w-4 h-4 text-slate-700" />
               )}
               {!collapsed && <span>{darkMode ? 'Dark Theme' : 'Light Theme'}</span>}
             </span>
             {!collapsed && (
-              <span className="text-[10px] text-slate-400 dark:text-[#6a87aa] font-mono">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                 {darkMode ? 'Dark' : 'Light'}
               </span>
             )}
@@ -227,7 +227,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed ? (
             <div className="flex items-center gap-2 text-xs px-1 pt-1">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-mono text-slate-600 dark:text-[#7a95b8]">
+              <span className="text-[11px] font-mono text-slate-700 dark:text-slate-300 font-medium">
                 rzp_live_mode
               </span>
             </div>

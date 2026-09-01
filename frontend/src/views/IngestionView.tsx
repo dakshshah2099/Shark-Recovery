@@ -17,10 +17,10 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-6 shadow-xs transition-colors">
         <div>
           <h2 className="font-heading font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
+            <Layers className="w-5 h-5 text-blue-600 dark:text-sky-400" />
             <span>Failure Ingestion & Simulation Hub</span>
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#7a95b8] mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
             Trigger autonomous recovery by injecting single failed checkout events or batch CSV logs.
           </p>
         </div>
@@ -31,7 +31,7 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
             className={`px-3.5 py-1.5 rounded-md flex items-center gap-1.5 font-semibold cursor-pointer transition-all ${
               activeTab === 'single'
                 ? 'bg-[#0c83ff] text-white shadow-xs'
-                : 'text-slate-600 dark:text-[#8ea5c8] hover:text-slate-900 dark:hover:text-white'
+                : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Zap className="w-3.5 h-3.5" />
@@ -43,7 +43,7 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
             className={`px-3.5 py-1.5 rounded-md flex items-center gap-1.5 font-semibold cursor-pointer transition-all ${
               activeTab === 'csv'
                 ? 'bg-[#0c83ff] text-white shadow-xs'
-                : 'text-slate-600 dark:text-[#8ea5c8] hover:text-slate-900 dark:hover:text-white'
+                : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <UploadCloud className="w-3.5 h-3.5" />

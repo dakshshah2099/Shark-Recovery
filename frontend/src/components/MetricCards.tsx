@@ -23,10 +23,10 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
       <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
               Recovered Revenue
             </span>
-            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/60 font-mono">
+            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-700/60 font-mono">
               <ArrowUpRight className="w-3 h-3" />
               {recoveryRate}%
             </span>
@@ -37,9 +37,9 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
         </div>
 
         <div>
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#7a95b8] mb-1.5 font-mono text-[11px]">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 mb-1.5 font-mono text-[11px]">
             <span>Recovery Efficiency</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold">{recoveryRate}%</span>
+            <span className="text-emerald-700 dark:text-emerald-300 font-bold">{recoveryRate}%</span>
           </div>
           <div className="w-full bg-slate-100 dark:bg-[#132238] h-1.5 rounded-full overflow-hidden">
             <div
@@ -54,10 +54,10 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
       <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
               Revenue At Risk
             </span>
-            <div className="p-1.5 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 rounded-md border border-rose-200 dark:border-rose-800/40">
+            <div className="p-1.5 bg-rose-50 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 rounded-md border border-rose-200 dark:border-rose-800/60">
               <AlertCircle className="w-3.5 h-3.5" />
             </div>
           </div>
@@ -66,8 +66,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#7a95b8] pt-2 border-t border-slate-100 dark:border-[#172a46] font-mono">
-          <span>Dropouts: <strong className="text-slate-800 dark:text-zinc-200 font-semibold">{totalCount}</strong></span>
+        <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-[#172a46] font-mono">
+          <span>Dropouts: <strong className="text-slate-900 dark:text-white font-semibold">{totalCount}</strong></span>
           <span className="text-rose-600 dark:text-rose-400 font-medium">{activeCount} In Pipeline</span>
         </div>
       </div>
@@ -76,21 +76,21 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
       <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
               Incentive Loss
             </span>
-            <div className="p-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-md border border-amber-200 dark:border-amber-800/40">
+            <div className="p-1.5 bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 rounded-md border border-amber-200 dark:border-amber-800/60">
               <Percent className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-amber-600 dark:text-amber-400 mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-amber-700 dark:text-amber-400 mt-2.5 tracking-tight">
             ₹{discountLoss.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#7a95b8] pt-2 border-t border-slate-100 dark:border-[#172a46] font-mono">
+        <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-[#172a46] font-mono">
           <span>AI Discount Range</span>
-          <span className="text-amber-600 dark:text-amber-400 font-medium">0% – 15%</span>
+          <span className="text-amber-700 dark:text-amber-400 font-semibold">0% – 15%</span>
         </div>
       </div>
 
@@ -98,10 +98,10 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
       <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-[#0c83ff]/40 transition-colors">
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
               Outreach Sent
             </span>
-            <div className="p-1.5 bg-[#0c83ff]/10 text-[#0c83ff] dark:text-[#3395ff] rounded-md border border-[#0c83ff]/20">
+            <div className="p-1.5 bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-sky-300 rounded-md border border-blue-200 dark:border-blue-800/60">
               <MessageSquare className="w-3.5 h-3.5" />
             </div>
           </div>
@@ -110,9 +110,9 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#7a95b8] pt-2 border-t border-slate-100 dark:border-[#172a46] font-mono">
-          <span className="text-[#0c83ff] dark:text-[#3395ff] font-semibold">{whatsappCount} WhatsApp</span>
-          <span className="text-slate-600 dark:text-zinc-300">{emailCount} Email</span>
+        <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-[#172a46] font-mono">
+          <span className="text-blue-700 dark:text-sky-400 font-semibold">{whatsappCount} WhatsApp</span>
+          <span className="text-slate-700 dark:text-slate-200 font-medium">{emailCount} Email</span>
         </div>
       </div>
     </div>
