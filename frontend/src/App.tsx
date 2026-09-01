@@ -50,7 +50,7 @@ export const App: React.FC = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, []);
+  }, [darkMode]);
 
   const toggleTheme = () => {
     setDarkMode((prev) => {

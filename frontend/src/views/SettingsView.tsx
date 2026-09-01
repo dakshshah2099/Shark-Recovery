@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Settings,
   Copy,
@@ -78,12 +78,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   const [smtpFrom, setSmtpFrom] = useState('');
   const [maxRetries, setMaxRetries] = useState(2);
 
-  useEffect(() => {
-    fetchEnvConfig();
-    fetchGroqModels();
-  }, []);
-
-  const fetchGroqModels = async () => {
+  const fetchGroqModels = useCallback(async () => {
     try {
       const res = await fetch('/api/groq-models');
       if (res.ok) {
@@ -95,9 +90,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
     } catch {
       // Keep defaults
     }
-  };
+  }, []);
 
-  const fetchEnvConfig = async () => {
+  const fetchEnvConfig = useCallback(async () => {
     setLoadingEnv(true);
     try {
       const res = await fetch('/api/env-config');
@@ -128,7 +123,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
     } finally {
       setLoadingEnv(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchEnvConfig();
+    fetchGroqModels();
+  }, [fetchEnvConfig, fetchGroqModels]);
 
   const handleSaveEnv = async (e: React.FormEvent) => {
     e.preventDefault();

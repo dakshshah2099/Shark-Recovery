@@ -100,21 +100,15 @@ export const AgentStepFlow: React.FC<AgentStepFlowProps> = ({
   onUpdateMaxRetries,
 }) => {
   const [activeStep, setActiveStep] = useState<string | null>(null);
-  const [localRetries, setLocalRetries] = useState<number>(maxRetries);
   const [updating, setUpdating] = useState<boolean>(false);
-
-  React.useEffect(() => {
-    setLocalRetries(maxRetries);
-  }, [maxRetries]);
 
   const toggleStep = (id: string) => {
     setActiveStep(activeStep === id ? null : id);
   };
 
   const handleAdjust = async (delta: number) => {
-    const nextVal = Math.max(1, Math.min(10, localRetries + delta));
-    if (nextVal === localRetries) return;
-    setLocalRetries(nextVal);
+    const nextVal = Math.max(1, Math.min(10, maxRetries + delta));
+    if (nextVal === maxRetries) return;
     setUpdating(true);
     try {
       if (onUpdateMaxRetries) {
@@ -150,14 +144,14 @@ export const AgentStepFlow: React.FC<AgentStepFlowProps> = ({
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
             <span>Bounded Retries:</span>
             <span className="text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-1 rounded border border-emerald-200 dark:border-emerald-800/60">
-              {localRetries}
+              {maxRetries}
             </span>
           </div>
 
           <div className="inline-flex items-center rounded border border-zinc-200 dark:border-[#27272a] bg-zinc-50 dark:bg-[#18181b] overflow-hidden">
             <button
               type="button"
-              disabled={localRetries <= 1 || updating}
+              disabled={maxRetries <= 1 || updating}
               onClick={() => handleAdjust(-1)}
               title="Decrease MAX_RETRY_ATTEMPTS in environment"
               aria-label="Decrease maximum bounded retry attempts"
@@ -168,7 +162,7 @@ export const AgentStepFlow: React.FC<AgentStepFlowProps> = ({
             <div className="w-[1px] h-4 bg-zinc-200 dark:border-[#27272a]" />
             <button
               type="button"
-              disabled={localRetries >= 10 || updating}
+              disabled={maxRetries >= 10 || updating}
               onClick={() => handleAdjust(1)}
               title="Increase MAX_RETRY_ATTEMPTS in environment"
               aria-label="Increase maximum bounded retry attempts"

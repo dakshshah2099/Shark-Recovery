@@ -48,11 +48,10 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   const selectedIndex = normalizedOptions.findIndex((opt) => opt.value === value);
   const selectedOption = normalizedOptions[selectedIndex];
 
-  useEffect(() => {
-    if (isOpen) {
-      setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
-    }
-  }, [isOpen, selectedIndex]);
+  const openSelect = () => {
+    setIsOpen(true);
+    setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -73,7 +72,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     if (!isOpen) {
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        setIsOpen(true);
+        openSelect();
       }
       return;
     }
@@ -129,7 +128,13 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) {
+            openSelect();
+          } else {
+            setIsOpen(false);
+          }
+        }}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={placeholder}
