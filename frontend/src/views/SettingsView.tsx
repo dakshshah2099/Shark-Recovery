@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Sparkles,
 } from 'lucide-react';
+import { CustomSelect } from '../components/CustomSelect';
 
 interface SettingsViewProps {
   onClearDB: () => void;
@@ -187,7 +188,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
       </div>
 
       {/* Razorpay Webhook Configuration */}
-      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 sm:p-8 space-y-5 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-7 space-y-4 shadow-xs transition-colors">
         <div>
           <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2">
             <Key className="w-4 h-4 text-[#0c83ff] dark:text-[#3395ff]" />
@@ -203,11 +204,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             type="text"
             readOnly
             value={webhookUrl}
-            className="flex-1 h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-zinc-300 px-3.5 rounded-lg font-mono select-all focus:outline-none transition-colors"
+            className="flex-1 h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-zinc-300 px-3 rounded-md font-mono select-all focus:outline-none transition-colors"
           />
           <button
             onClick={handleCopy}
-            className="h-10 px-4 rounded-lg bg-[#0c83ff] hover:bg-[#006fdf] text-white text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all"
+            className="h-9 px-4 rounded-md bg-[#0c83ff] hover:bg-[#006fdf] text-white text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all"
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? 'Copied' : 'Copy Endpoint'}</span>
@@ -215,15 +216,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         </div>
 
         <div className="pt-3 border-t border-slate-100 dark:border-[#172a46] grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-          <div className="bg-slate-50 dark:bg-[#080d1a] p-3 rounded-lg border border-slate-200/60 dark:border-[#172a46]">
+          <div className="bg-slate-50 dark:bg-[#080d1a] p-3 rounded-md border border-slate-200/60 dark:border-[#172a46]">
             <div className="text-slate-500 dark:text-[#7a95b8] text-[11px] font-semibold">Subscribed Events:</div>
             <div className="text-slate-900 dark:text-zinc-200 font-mono text-[11px] mt-0.5 font-semibold">payment.failed, payment_link.paid</div>
           </div>
-          <div className="bg-slate-50 dark:bg-[#080d1a] p-3 rounded-lg border border-slate-200/60 dark:border-[#172a46]">
+          <div className="bg-slate-50 dark:bg-[#080d1a] p-3 rounded-md border border-slate-200/60 dark:border-[#172a46]">
             <div className="text-slate-500 dark:text-[#7a95b8] text-[11px] font-semibold">Security Signature:</div>
             <div className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px] mt-0.5 font-bold">HMAC-SHA256 Verified</div>
           </div>
-          <div className="bg-slate-50 dark:bg-[#080d1a] p-3 rounded-lg border border-slate-200/60 dark:border-[#172a46]">
+          <div className="bg-slate-50 dark:bg-[#080d1a] p-3 rounded-md border border-slate-200/60 dark:border-[#172a46]">
             <div className="text-slate-500 dark:text-[#7a95b8] text-[11px] font-semibold">Payload Ingestion:</div>
             <div className="text-[#0c83ff] dark:text-[#3395ff] font-mono text-[11px] mt-0.5 font-bold">Pydantic Agent Loop</div>
           </div>
@@ -231,7 +232,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
       </div>
 
       {/* Environment Variables Management */}
-      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 sm:p-8 space-y-5 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-7 space-y-5 shadow-xs transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-[#172a46]">
           <div>
             <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center gap-2">
@@ -245,12 +246,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
             {envConfig?.debug_mode ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 font-mono">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 font-mono">
                 <Unlock className="w-3 h-3" />
                 <span>DEBUG_MODE</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-slate-100 dark:bg-[#132238] text-slate-600 dark:text-[#8ea5c8] border border-slate-200 dark:border-[#172a46] font-mono">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-[#132238] text-slate-600 dark:text-[#8ea5c8] border border-slate-200 dark:border-[#172a46] font-mono">
                 <Lock className="w-3 h-3" />
                 <span>Locked</span>
               </span>
@@ -265,7 +266,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
           </div>
         ) : envConfig?.debug_mode ? (
           /* Editable Live Form */
-          <form onSubmit={handleSaveEnv} className="space-y-5">
+          <form onSubmit={handleSaveEnv} className="space-y-4">
             {/* 1. AI & LLM Keys */}
             <div className="space-y-2.5">
               <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8] flex items-center gap-1.5">
@@ -282,7 +283,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={groqKey}
                     onChange={(e) => setGroqKey(e.target.value)}
                     placeholder="gsk_..."
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -294,7 +295,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={geminiKey}
                     onChange={(e) => setGeminiKey(e.target.value)}
                     placeholder="AIzaSy..."
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
@@ -309,20 +310,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={llmModel}
                     onChange={(e) => setLlmModel(e.target.value)}
                     placeholder="groq/openai/gpt-oss-120b or gemini/gemini-2.5-flash"
-                    className="flex-1 h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="flex-1 h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
-                  <select
+                  <CustomSelect
                     value={llmModel}
-                    onChange={(e) => setLlmModel(e.target.value)}
-                    className="h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3 font-mono focus:outline-none focus:border-[#0c83ff] cursor-pointer"
-                  >
-                    <option value="" disabled className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Select Model Preset</option>
-                    {groqModelsList.map((m) => (
-                      <option key={m} value={m} className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">
-                        {m}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setLlmModel}
+                    options={groqModelsList}
+                    placeholder="Select Model Preset"
+                    className="w-full sm:w-64"
+                    align="right"
+                  />
                 </div>
               </div>
 
@@ -359,7 +356,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={rzpKeyId}
                     onChange={(e) => setRzpKeyId(e.target.value)}
                     placeholder="rzp_test_..."
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -369,7 +366,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={rzpKeySecret}
                     onChange={(e) => setRzpKeySecret(e.target.value)}
                     placeholder="Secret..."
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -379,7 +376,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={rzpWebhookSecret}
                     onChange={(e) => setRzpWebhookSecret(e.target.value)}
                     placeholder="Webhook secret..."
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
@@ -392,7 +389,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                 <span>Twilio WhatsApp API (Trial & Sandbox Template Compatible)</span>
               </div>
 
-              <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 rounded-lg p-3 text-xs text-emerald-800 dark:text-emerald-300">
+              <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 rounded-md p-3 text-xs text-emerald-800 dark:text-emerald-300">
                 <p className="font-semibold flex items-center gap-1.5">
                   <span>💡 Twilio Trial Sandbox Template:</span>
                 </p>
@@ -411,7 +408,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={twilioApiKey}
                     onChange={(e) => setTwilioApiKey(e.target.value)}
                     placeholder="SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
 
@@ -424,7 +421,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={twilioApiSecret}
                     onChange={(e) => setTwilioApiSecret(e.target.value)}
                     placeholder="API Secret..."
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
 
@@ -435,7 +432,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={twilioFrom}
                     onChange={(e) => setTwilioFrom(e.target.value)}
                     placeholder="whatsapp:+14155238886"
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
@@ -449,7 +446,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   <button
                     type="button"
                     onClick={() => setTwilioTemplate('appointment')}
-                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-md border text-left transition-all cursor-pointer ${
                       twilioTemplate === 'appointment'
                         ? 'border-[#0c83ff] bg-[#0c83ff]/10 text-blue-900 dark:text-white'
                         : 'border-slate-200 dark:border-[#172a46] bg-slate-50 dark:bg-[#080d1a] text-slate-700 dark:text-[#8ea5c8] hover:border-slate-300'
@@ -467,7 +464,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   <button
                     type="button"
                     onClick={() => setTwilioTemplate('code')}
-                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-md border text-left transition-all cursor-pointer ${
                       twilioTemplate === 'code'
                         ? 'border-[#0c83ff] bg-[#0c83ff]/10 text-blue-900 dark:text-white'
                         : 'border-slate-200 dark:border-[#172a46] bg-slate-50 dark:bg-[#080d1a] text-slate-700 dark:text-[#8ea5c8] hover:border-slate-300'
@@ -485,7 +482,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                   <button
                     type="button"
                     onClick={() => setTwilioTemplate('order')}
-                    className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-md border text-left transition-all cursor-pointer ${
                       twilioTemplate === 'order'
                         ? 'border-[#0c83ff] bg-[#0c83ff]/10 text-blue-900 dark:text-white'
                         : 'border-slate-200 dark:border-[#172a46] bg-slate-50 dark:bg-[#080d1a] text-slate-700 dark:text-[#8ea5c8] hover:border-slate-300'
@@ -517,7 +514,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={smtpHost}
                     onChange={(e) => setSmtpHost(e.target.value)}
                     placeholder="smtp.gmail.com"
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -526,7 +523,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     type="number"
                     value={smtpPort}
                     onChange={(e) => setSmtpPort(Number(e.target.value))}
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -536,7 +533,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={smtpUser}
                     onChange={(e) => setSmtpUser(e.target.value)}
                     placeholder="user@domain.com"
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
@@ -549,7 +546,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={smtpPass}
                     onChange={(e) => setSmtpPass(e.target.value)}
                     placeholder="App password..."
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
                 <div>
@@ -559,7 +556,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
                     value={smtpFrom}
                     onChange={(e) => setSmtpFrom(e.target.value)}
                     placeholder="recovery@brand.com"
-                    className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
+                    className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 font-mono focus:outline-none focus:border-[#0c83ff] transition-colors"
                   />
                 </div>
               </div>
@@ -579,7 +576,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
               <button
                 type="submit"
                 disabled={savingEnv}
-                className="h-10 px-5 rounded-lg bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
+                className="h-9 px-5 rounded-md bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
               >
                 {savingEnv ? (
                   <>
@@ -597,7 +594,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
           </form>
         ) : (
           /* Read-Only Notice when DEBUG_MODE is False */
-          <div className="bg-slate-50 dark:bg-[#080d1a] p-5 rounded-xl border border-slate-200/80 dark:border-[#172a46] text-xs space-y-1.5">
+          <div className="bg-slate-50 dark:bg-[#080d1a] p-5 rounded-md border border-slate-200/80 dark:border-[#172a46] text-xs space-y-1.5">
             <div className="font-semibold text-slate-800 dark:text-white flex items-center gap-1.5">
               <Lock className="w-4 h-4 text-amber-500" />
               <span>Environment Variable Editing is Locked</span>
@@ -610,7 +607,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
       </div>
 
       {/* Database State Management */}
-      <div className="bg-white dark:bg-[#0c182b] border border-rose-200 dark:border-rose-900/30 rounded-xl p-6 sm:p-8 space-y-3 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-[#0c182b] border border-rose-200 dark:border-rose-900/30 rounded-lg p-5 sm:p-7 space-y-3 shadow-xs transition-colors">
         <h3 className="font-heading font-bold text-sm sm:text-base text-rose-600 dark:text-rose-400 flex items-center gap-2">
           <Shield className="w-4 h-4 text-rose-600 dark:text-rose-400" />
           <span>Database State Management</span>
@@ -622,7 +619,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         <div className="flex flex-wrap items-center gap-2.5 pt-1">
           <button
             onClick={onSeedDB}
-            className="h-10 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] text-slate-700 dark:text-[#cad8ec] border border-slate-200 dark:border-[#172a46] text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
+            className="h-9 px-4 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] text-slate-700 dark:text-[#cad8ec] border border-slate-200 dark:border-[#172a46] text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             <Database className="w-3.5 h-3.5 text-[#0c83ff]" />
             <span>Seed 6 Sample Transactions</span>
@@ -630,7 +627,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
 
           <button
             onClick={onClearDB}
-            className="h-10 px-4 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
+            className="h-9 px-4 rounded-md bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>Clear All Database Records</span>

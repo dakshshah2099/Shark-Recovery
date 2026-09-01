@@ -33,8 +33,8 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({ logs }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 sm:p-8 shadow-xs transition-colors">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#172a46] mb-5">
+    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-7 shadow-xs transition-colors">
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-[#172a46] mb-5">
         <div>
           <h3 className="font-heading font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
             <Activity className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
@@ -44,7 +44,7 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({ logs }) => {
             Deterministic audit trail of diagnostic and strategy agents with payload inspection.
           </p>
         </div>
-        <div className="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#080d1a] text-slate-700 dark:text-[#cad8ec] border border-slate-200 dark:border-[#172a46]">
+        <div className="text-xs font-mono font-semibold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-[#080d1a] text-slate-700 dark:text-[#cad8ec] border border-slate-200 dark:border-[#172a46]">
           {logs.length} Steps Recorded
         </div>
       </div>
@@ -54,7 +54,7 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({ logs }) => {
           No audit logs recorded yet. Ingest a payment failure to see the live trace.
         </div>
       ) : (
-        <div className="relative pl-5 space-y-4 before:absolute before:left-2 before:top-2.5 before:bottom-2.5 before:w-0.5 before:bg-slate-200 dark:before:bg-[#172a46]">
+        <div className="relative pl-5 space-y-3.5 before:absolute before:left-2 before:top-2.5 before:bottom-2.5 before:w-0.5 before:bg-slate-200 dark:before:bg-[#172a46]">
           {logs.map((log) => {
             const isExpanded = expandedId === log.id;
             return (
@@ -66,7 +66,7 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({ logs }) => {
 
                 <div
                   onClick={() => toggleExpand(log.id)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                  className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
                     isExpanded
                       ? 'bg-slate-50 dark:bg-[#080d1a] border-[#0c83ff]/60 shadow-xs'
                       : 'bg-slate-50/50 dark:bg-[#09111e]/60 border-slate-200/80 dark:border-[#172a46] hover:border-slate-300 dark:hover:border-[#223e66]'
@@ -109,14 +109,14 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({ logs }) => {
 
                   {/* Expanded JSON Inspector */}
                   {isExpanded && (
-                    <div className="mt-3.5 pt-3.5 border-t border-slate-200 dark:border-[#172a46] space-y-2.5">
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-[#172a46] space-y-2.5">
                       {log.input_payload && (
                         <div>
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8] flex items-center gap-1.5 mb-1">
                             <Code className="w-3.5 h-3.5 text-[#0c83ff]" />
                             <span>Input Payload</span>
                           </div>
-                          <pre className="p-3 rounded-lg bg-slate-900 dark:bg-[#050811] text-slate-100 font-mono text-[11px] overflow-x-auto border border-slate-800 dark:border-[#172a46]">
+                          <pre className="p-3 rounded-md bg-slate-900 dark:bg-[#050811] text-slate-100 font-mono text-[11px] overflow-x-auto border border-slate-800 dark:border-[#172a46]">
                             {log.input_payload}
                           </pre>
                         </div>
@@ -128,7 +128,7 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({ logs }) => {
                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                             <span>Execution Metadata</span>
                           </div>
-                          <pre className="p-3 rounded-lg bg-slate-900 dark:bg-[#050811] text-slate-100 font-mono text-[11px] overflow-x-auto border border-slate-800 dark:border-[#172a46]">
+                          <pre className="p-3 rounded-md bg-slate-900 dark:bg-[#050811] text-slate-100 font-mono text-[11px] overflow-x-auto border border-slate-800 dark:border-[#172a46]">
                             {log.metadata_json}
                           </pre>
                         </div>

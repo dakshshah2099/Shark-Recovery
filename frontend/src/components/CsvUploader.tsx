@@ -81,8 +81,8 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
   };
 
   return (
-    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 sm:p-8 space-y-6 shadow-xs transition-colors">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-[#172a46]">
+    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-7 space-y-5 shadow-xs transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-200 dark:border-[#172a46]">
         <div>
           <h3 className="font-heading font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
             <UploadCloud className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
@@ -95,7 +95,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
 
         <button
           onClick={handleDownloadSample}
-          className="h-9 px-3.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] text-slate-700 dark:text-[#cad8ec] border border-slate-200 dark:border-[#172a46] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto transition-colors"
+          className="h-8.5 px-3 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] text-slate-700 dark:text-[#cad8ec] border border-slate-200 dark:border-[#172a46] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto transition-colors"
         >
           <Download className="w-3.5 h-3.5 text-[#0c83ff]" />
           <span>Download Sample CSV</span>
@@ -111,7 +111,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[180px] ${
+        className={`border-2 border-dashed rounded-lg p-7 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[170px] ${
           dragOver
             ? 'border-[#0c83ff] bg-[#0c83ff]/10'
             : file
@@ -129,16 +129,16 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
 
         {file ? (
           <div className="space-y-1.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800/80">
-              <FileText className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800/80">
+              <FileText className="w-4.5 h-4.5" />
             </div>
             <div className="font-heading font-bold text-xs sm:text-sm text-slate-900 dark:text-white">{file.name}</div>
             <div className="text-[11px] text-slate-500 dark:text-[#7a95b8] font-mono">{(file.size / 1024).toFixed(1)} KB • Ready to Ingest</div>
           </div>
         ) : (
           <div className="space-y-1.5">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#132238] text-slate-500 dark:text-[#7a95b8] flex items-center justify-center mx-auto border border-slate-200 dark:border-[#172a46]">
-              <UploadCloud className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-md bg-slate-100 dark:bg-[#132238] text-slate-500 dark:text-[#7a95b8] flex items-center justify-center mx-auto border border-slate-200 dark:border-[#172a46]">
+              <UploadCloud className="w-4.5 h-4.5" />
             </div>
             <div className="font-heading font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
               Drag & Drop your <span className="text-[#0c83ff] dark:text-[#3395ff]">.csv</span> file here, or click to browse
@@ -155,7 +155,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
           <button
             type="button"
             onClick={() => setFile(null)}
-            className="h-9 px-3.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-[#8ea5c8] dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] inline-flex items-center justify-center cursor-pointer transition-colors"
+            className="h-8.5 px-3.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-[#8ea5c8] dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-[#132238] dark:hover:bg-[#1c3252] inline-flex items-center justify-center cursor-pointer transition-colors"
           >
             Cancel
           </button>
@@ -164,7 +164,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
             type="button"
             onClick={handleUpload}
             disabled={uploading}
-            className="h-9 px-4 rounded-lg bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
+            className="h-8.5 px-4 rounded-md bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
           >
             {uploading ? (
               <>

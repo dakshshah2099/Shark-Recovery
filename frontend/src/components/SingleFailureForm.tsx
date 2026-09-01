@@ -93,8 +93,8 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-6 sm:p-8 space-y-6 shadow-xs transition-colors">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#172a46]">
+    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-7 space-y-5 shadow-xs transition-colors">
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-[#172a46]">
         <div>
           <h3 className="font-heading font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
             <Zap className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
@@ -108,16 +108,16 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
 
       {/* Preset Quick Fill */}
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8] mb-2.5">
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#7a95b8] mb-2">
           Select Common Indian Payment Dropout Scenario:
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {failureOptions.map((opt, i) => (
             <button
               key={i}
               type="button"
               onClick={() => handleSelectPreset(opt)}
-              className={`p-3 rounded-lg border text-left text-xs transition-all cursor-pointer ${
+              className={`p-2.5 rounded-md border text-left text-xs transition-all cursor-pointer ${
                 failureReason === opt.reason
                   ? 'bg-[#0c83ff]/10 border-[#0c83ff] text-[#0c83ff] dark:text-[#3395ff] shadow-xs font-semibold'
                   : 'bg-slate-50 dark:bg-[#080d1a] border-slate-200 dark:border-[#172a46] text-slate-600 dark:text-[#8ea5c8] hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-[#223e66]'
@@ -130,8 +130,8 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Customer Name</label>
             <input
@@ -139,7 +139,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 focus:outline-none focus:border-[#0c83ff] transition-colors"
+              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] transition-colors"
             />
           </div>
 
@@ -150,7 +150,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 focus:outline-none focus:border-[#0c83ff] transition-colors"
+              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] transition-colors"
             />
           </div>
 
@@ -161,12 +161,12 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 focus:outline-none focus:border-[#0c83ff] font-mono transition-colors"
+              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] font-mono transition-colors"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Order Amount (INR)</label>
             <input
@@ -176,7 +176,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               step="any"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 focus:outline-none focus:border-[#0c83ff] font-mono transition-colors"
+              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] font-mono transition-colors"
             />
           </div>
 
@@ -187,7 +187,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
               required
               value={failureCode}
               onChange={(e) => setFailureCode(e.target.value)}
-              className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 focus:outline-none focus:border-[#0c83ff] font-mono transition-colors"
+              className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] font-mono transition-colors"
             />
           </div>
         </div>
@@ -199,7 +199,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
             required
             value={failureReason}
             onChange={(e) => setFailureReason(e.target.value)}
-            className="w-full h-10 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg px-3.5 focus:outline-none focus:border-[#0c83ff] transition-colors"
+            className="w-full h-9 bg-slate-50 dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md px-3 focus:outline-none focus:border-[#0c83ff] transition-colors"
           />
         </div>
 
@@ -220,7 +220,7 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
           <button
             type="submit"
             disabled={submitting}
-            className="w-full h-10 px-5 rounded-lg bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
+            className="w-full h-9 px-5 rounded-md bg-[#0c83ff] hover:bg-[#006fdf] text-white font-heading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all"
           >
             {submitting ? (
               <>

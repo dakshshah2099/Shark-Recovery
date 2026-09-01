@@ -144,16 +144,24 @@ Failure Diagnosis:
     if parsed:
         try:
             chan_str = str(parsed.get("channel", "")).strip().lower()
-            if chan_str in RecoveryChannel.__members__:
-                parsed["channel"] = RecoveryChannel[chan_str]
-            else:
-                parsed["channel"] = RecoveryChannel.WHATSAPP if ctx.customer_phone else RecoveryChannel.EMAIL
+            try:
+                parsed["channel"] = RecoveryChannel(chan_str)
+            except ValueError:
+                chan_upper = chan_str.upper()
+                if chan_upper in RecoveryChannel.__members__:
+                    parsed["channel"] = RecoveryChannel[chan_upper]
+                else:
+                    parsed["channel"] = RecoveryChannel.EMAIL if (ctx.amount >= 3000 or not ctx.customer_phone) else RecoveryChannel.WHATSAPP
 
             tone_str = str(parsed.get("tone", "")).strip().lower().replace(" ", "_")
-            if tone_str in CommunicationTone.__members__:
-                parsed["tone"] = CommunicationTone[tone_str]
-            else:
-                parsed["tone"] = CommunicationTone.CASUAL_HINGLISH
+            try:
+                parsed["tone"] = CommunicationTone(tone_str)
+            except ValueError:
+                tone_upper = tone_str.upper()
+                if tone_upper in CommunicationTone.__members__:
+                    parsed["tone"] = CommunicationTone[tone_upper]
+                else:
+                    parsed["tone"] = CommunicationTone.PROFESSIONAL if parsed["channel"] == RecoveryChannel.EMAIL else CommunicationTone.CASUAL_HINGLISH
 
             parsed["transaction_id"] = ctx.transaction_id
             return RecoveryStrategy(**parsed)

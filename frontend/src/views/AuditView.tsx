@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuditLogTimeline } from '../components/AuditLogTimeline';
-import { Activity, ChevronDown } from 'lucide-react';
+import { CustomSelect, type SelectOption } from '../components/CustomSelect';
+import { Activity } from 'lucide-react';
 import type { AuditLogItem } from '../types';
 
 interface AuditViewProps {
@@ -10,14 +11,14 @@ interface AuditViewProps {
 export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
 
-  const agents = [
-    'all',
-    'DiagnosticAgent',
-    'StrategyAgent',
-    'RazorpayPaymentLinkTool',
-    'WhatsAppDispatchTool',
-    'SMTPDispatchTool',
-    'RecoveryOrchestrator',
+  const agentOptions: SelectOption[] = [
+    { value: 'all', label: 'All Agents & Tools' },
+    { value: 'DiagnosticAgent', label: 'Diagnostic Agent', badge: 'Root Cause' },
+    { value: 'StrategyAgent', label: 'Strategy Agent', badge: 'Discounting' },
+    { value: 'RazorpayPaymentLinkTool', label: 'Razorpay Links', badge: 'Payment API' },
+    { value: 'WhatsAppDispatchTool', label: 'WhatsApp Outreach', badge: 'Twilio' },
+    { value: 'SMTPDispatchTool', label: 'Email Outreach', badge: 'SMTP' },
+    { value: 'RecoveryOrchestrator', label: 'Recovery Orchestrator', badge: 'Core Engine' },
   ];
 
   const filteredLogs = logs.filter((log) => {
@@ -28,7 +29,7 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
   return (
     <div className="space-y-6 w-full">
       {/* Header & Filter Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-5 sm:p-6 shadow-xs transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-6 shadow-xs transition-colors">
         <div>
           <h2 className="font-heading font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white flex items-center gap-2">
             <Activity className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />
@@ -43,24 +44,13 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs }) => {
           <span className="text-xs font-medium text-slate-500 dark:text-[#7a95b8] hidden sm:inline">
             Agent:
           </span>
-          <div className="relative">
-            <select
-              value={selectedAgent}
-              onChange={(e) => setSelectedAgent(e.target.value)}
-              className="bg-white dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white font-medium rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-[#0c83ff] appearance-none cursor-pointer transition-colors shadow-xs"
-            >
-              {agents.map((ag) => (
-                <option
-                  key={ag}
-                  value={ag}
-                  className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white py-1.5"
-                >
-                  {ag === 'all' ? 'All Agents & Tools' : ag}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-4 h-4 text-slate-400 dark:text-[#52719c] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          <CustomSelect
+            value={selectedAgent}
+            onChange={setSelectedAgent}
+            options={agentOptions}
+            className="w-56"
+            align="right"
+          />
         </div>
       </div>
 

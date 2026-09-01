@@ -6,8 +6,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  ChevronDown,
 } from 'lucide-react';
+import { CustomSelect, type SelectOption } from './CustomSelect';
 import type { TransactionItem, TransactionStatus } from '../types';
 
 interface TransactionTableProps {
@@ -27,6 +27,14 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [retryingIds, setRetryingIds] = useState<Record<string, boolean>>({});
   const [payingIds, setPayingIds] = useState<Record<string, boolean>>({});
+
+  const statusOptions: SelectOption[] = [
+    { value: 'ALL', label: `All Dispositions (${transactions.length})` },
+    { value: 'PROCESSING', label: 'Active Triage', badge: 'In-Flight' },
+    { value: 'RECOVERED', label: 'Captured / Recovered', badge: 'Paid' },
+    { value: 'FAILED', label: 'Failed Recovery', badge: 'Exhausted' },
+    { value: 'ABANDONED', label: 'Dropped / Abandoned', badge: 'Dismissed' },
+  ];
 
   const handleRowRetry = async (id: string) => {
     setRetryingIds((prev) => ({ ...prev, [id]: true }));
@@ -99,9 +107,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl overflow-hidden shadow-xs transition-colors w-full">
+    <div className="bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg overflow-hidden shadow-xs transition-colors w-full">
       {/* Search & Filter Toolbar */}
-      <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-[#172a46] flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50 dark:bg-[#09111e]/40">
+      <div className="p-3.5 sm:p-4 border-b border-slate-200 dark:border-[#172a46] flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50 dark:bg-[#09111e]/40">
         <div className="relative w-full sm:w-96">
           <Search className="w-4 h-4 text-slate-400 dark:text-[#52719c] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -109,7 +117,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             placeholder="Search customer, order ID, failure reason..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10 bg-white dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg pl-10 pr-4 focus:outline-none focus:border-[#0c83ff] transition-colors"
+            className="w-full h-9 bg-white dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-md pl-10 pr-4 focus:outline-none focus:border-[#0c83ff] transition-colors"
           />
         </div>
 
@@ -117,20 +125,13 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           <span className="text-xs font-medium text-slate-500 dark:text-[#7a95b8] hidden sm:inline">
             Status:
           </span>
-          <div className="relative flex-1 sm:flex-initial">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-auto h-10 bg-white dark:bg-[#080d1a] border border-slate-200 dark:border-[#172a46] text-xs text-slate-900 dark:text-white rounded-lg pl-3 pr-8 focus:outline-none focus:border-[#0c83ff] appearance-none font-medium cursor-pointer"
-            >
-              <option value="ALL" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">All Dispositions ({transactions.length})</option>
-              <option value="PROCESSING" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Active Triage</option>
-              <option value="RECOVERED" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Captured / Recovered</option>
-              <option value="FAILED" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Failed</option>
-              <option value="ABANDONED" className="bg-white dark:bg-[#0c182b] text-slate-900 dark:text-white">Dropped</option>
-            </select>
-            <ChevronDown className="w-4 h-4 text-slate-400 dark:text-[#52719c] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          <CustomSelect
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={statusOptions}
+            className="w-full sm:w-56"
+            align="right"
+          />
         </div>
       </div>
 

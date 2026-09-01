@@ -14,7 +14,7 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
   return (
     <div className="space-y-6 w-full">
       {/* Mode Switcher Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-xl p-5 sm:p-6 shadow-xs transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0c182b] border border-slate-200 dark:border-[#172a46] rounded-lg p-5 sm:p-6 shadow-xs transition-colors">
         <div>
           <h2 className="font-heading font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white flex items-center gap-2">
             <Layers className="w-5 h-5 text-[#0c83ff] dark:text-[#3395ff]" />

@@ -90,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onCloseMobile();
             }}
             title={collapsed ? item.label : undefined}
-            className={`w-full group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer relative ${
+            className={`w-full group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer relative ${
               collapsed ? 'justify-center' : 'text-left'
             } ${
               isActive
@@ -146,8 +146,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <div className="flex items-center gap-3">
-              {/* Theme-Adaptive Razorpay Thunder Icon */}
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors shadow-xs bg-[#0c83ff] text-white dark:bg-[#0c2340] dark:border dark:border-[#0c83ff]/40 dark:text-[#3395ff]">
+              {/* Theme-Adaptive Shark/Thunder Icon */}
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors shadow-xs bg-[#0c83ff] text-white dark:bg-[#0c2340] dark:border dark:border-[#0c83ff]/40 dark:text-[#3395ff]">
                 <svg
                   className="w-5 h-5 fill-current"
                   viewBox="0 0 24 24"
@@ -157,19 +157,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
 
               {!collapsed && (
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-heading font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
-                      Razorpay
-                    </span>
-                    <span className="text-[10px] font-bold bg-[#0c83ff] text-white px-1.5 py-0.2 rounded font-mono uppercase tracking-wider">
-                      Recovery
-                    </span>
-                  </div>
-                  <div className="text-[10px] font-medium text-slate-500 dark:text-[#7a95b8]">
-                    AI Revenue Engine
-                  </div>
-                </div>
+                <span className="font-heading font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
+                  SHARKRECOVERY
+                </span>
               )}
             </div>
 
@@ -180,31 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <X className="w-5 h-5" />
             </button>
-
-            {/* Desktop Collapse/Expand Trigger */}
-            {!collapsed && (
-              <button
-                onClick={onToggleCollapse}
-                className="hidden lg:inline-flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:text-[#52719c] dark:hover:text-[#cad8ec] hover:bg-slate-100 dark:hover:bg-[#132238] transition-colors cursor-pointer"
-                title="Collapse sidebar"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            )}
           </div>
-
-          {/* Collapsed re-expand button */}
-          {collapsed && (
-            <div className="hidden lg:flex justify-center pt-2">
-              <button
-                onClick={onToggleCollapse}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:text-[#52719c] dark:hover:text-[#cad8ec] hover:bg-slate-100 dark:hover:bg-[#132238] transition-colors cursor-pointer"
-                title="Expand sidebar"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
 
           {/* Navigation Links */}
           <nav className="p-3 space-y-3">
@@ -214,12 +180,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* Bottom Bar: Theme Switcher & Status */}
+        {/* Bottom Bar: Controls (Collapse, Theme & Status) */}
         <div className="p-3 border-t border-slate-200 dark:border-[#172a46] bg-slate-50/50 dark:bg-[#070e1a]/80 space-y-2">
+          {/* Sidebar Collapse Toggle Button placed at bottom */}
+          <button
+            onClick={onToggleCollapse}
+            className={`hidden lg:flex w-full py-2 px-2.5 rounded-lg border border-slate-200 dark:border-[#172a46] bg-white dark:bg-[#0c182b] hover:bg-slate-50 dark:hover:bg-[#132238] text-slate-700 dark:text-[#cad8ec] text-xs font-medium items-center transition-colors cursor-pointer ${
+              collapsed ? 'justify-center' : 'justify-between'
+            }`}
+            title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            <span className="inline-flex items-center gap-2">
+              {collapsed ? (
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              ) : (
+                <ChevronLeft className="w-4 h-4 text-slate-500" />
+              )}
+              {!collapsed && <span>Collapse Sidebar</span>}
+            </span>
+          </button>
+
           {/* Theme Toggle Button */}
           <button
             onClick={onToggleTheme}
-            className={`w-full py-2 px-2.5 rounded-xl border border-slate-200 dark:border-[#172a46] bg-white dark:bg-[#0c182b] hover:bg-slate-50 dark:hover:bg-[#132238] text-slate-700 dark:text-[#cad8ec] text-xs font-medium inline-flex items-center transition-colors cursor-pointer ${
+            className={`w-full py-2 px-2.5 rounded-lg border border-slate-200 dark:border-[#172a46] bg-white dark:bg-[#0c182b] hover:bg-slate-50 dark:hover:bg-[#132238] text-slate-700 dark:text-[#cad8ec] text-xs font-medium inline-flex items-center transition-colors cursor-pointer ${
               collapsed ? 'justify-center' : 'justify-between'
             }`}
             title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -239,21 +223,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {/* Gateway Status Indicator */}
+          {/* Clean Status Indicator */}
           {!collapsed ? (
-            <div className="flex items-center justify-between text-xs px-1 pt-1">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-mono text-slate-600 dark:text-[#7a95b8]">
-                  rzp_live_mode
-                </span>
-              </div>
-              <span className="text-[10px] font-bold bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded font-mono">
-                TEST
+            <div className="flex items-center gap-2 text-xs px-1 pt-1">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-mono text-slate-600 dark:text-[#7a95b8]">
+                rzp_live_mode
               </span>
             </div>
           ) : (
-            <div className="flex justify-center pt-1" title="Razorpay Test Mode Active">
+            <div className="flex justify-center pt-1" title="Razorpay Webhook Active">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
           )}
