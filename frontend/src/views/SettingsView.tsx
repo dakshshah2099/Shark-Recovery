@@ -11,6 +11,8 @@ import {
   Lock,
   Unlock,
   CheckCircle2,
+  AlertCircle,
+  X,
   Loader2,
   Mail,
   MessageSquare,
@@ -22,6 +24,9 @@ import { CustomSelect } from '../components/CustomSelect';
 interface SettingsViewProps {
   onClearDB: () => void;
   onSeedDB: () => void;
+  showNotification?: (msg: string, type?: 'success' | 'error' | 'info' | 'loading', duration?: number) => void;
+  seeding?: boolean;
+  clearing?: boolean;
 }
 
 interface EnvConfig {
@@ -44,14 +49,20 @@ interface EnvConfig {
   max_retry_attempts?: number;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({
+  onClearDB,
+  onSeedDB,
+  showNotification,
+  seeding = false,
+  clearing = false,
+}) => {
   const [copied, setCopied] = useState<boolean>(false);
   const webhookUrl = `${window.location.origin}/webhook/razorpay`;
 
   const [envConfig, setEnvConfig] = useState<EnvConfig | null>(null);
   const [loadingEnv, setLoadingEnv] = useState<boolean>(true);
   const [savingEnv, setSavingEnv] = useState<boolean>(false);
-  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [groqModelsList, setGroqModelsList] = useState<string[]>([
     'groq/openai/gpt-oss-120b',
     'groq/openai/gpt-oss-20b',
@@ -133,6 +144,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   const handleSaveEnv = async (e?: React.SyntheticEvent) => {
     if (e) e.preventDefault();
     setSavingEnv(true);
+    setSaveStatus(null);
+    showNotification?.('Saving environment configuration & reloading runtime singleton...', 'loading', 0);
     try {
       const res = await fetch('/api/env-config', {
         method: 'POST',
@@ -160,11 +173,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
       if (res.ok) {
         const updated: EnvConfig = await res.json();
         setEnvConfig(updated);
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+        setSaveStatus({
+          type: 'success',
+          message: 'Environment configuration successfully saved to .env and applied to live runtime singleton!',
+        });
+        showNotification?.('✓ Environment configuration saved & runtime reloaded!', 'success', 4500);
+        setTimeout(() => setSaveStatus(null), 6000);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.detail || 'Failed to persist environment configuration.';
+        setSaveStatus({ type: 'error', message: errMsg });
+        showNotification?.(`❌ ${errMsg}`, 'error', 5000);
       }
     } catch (err) {
       console.error('Error saving env config:', err);
+      const errMsg = 'Network error occurred while applying configuration.';
+      setSaveStatus({ type: 'error', message: errMsg });
+      showNotification?.(`❌ ${errMsg}`, 'error', 5000);
     } finally {
       setSavingEnv(false);
     }
@@ -173,6 +198,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
   const handleCopy = () => {
     navigator.clipboard.writeText(webhookUrl);
     setCopied(true);
+    showNotification?.('📋 Webhook URL copied to clipboard!', 'info', 2500);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -268,6 +294,36 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
         ) : envConfig?.debug_mode ? (
           /* Editable Live Form */
           <div className="space-y-4">
+            {/* Inline Dynamic Status Feedback Banner */}
+            {saveStatus && (
+              <div
+                role="status"
+                aria-live="polite"
+                className={`p-3.5 rounded-md border text-xs flex items-center justify-between gap-3 animate-in fade-in duration-200 ${
+                  saveStatus.type === 'success'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800'
+                    : 'bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 border-rose-300 dark:border-rose-800'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {saveStatus.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                  )}
+                  <span className="font-medium font-subheading">{saveStatus.message}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSaveStatus(null)}
+                  className="p-1 rounded text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white cursor-pointer focus-rzp"
+                  aria-label="Close notification banner"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
             {/* 1. AI & LLM Keys */}
             <div className="space-y-2.5">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
@@ -629,10 +685,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
             {/* Submit Bar */}
             <div className="pt-3 border-t border-zinc-100 dark:border-[#27272a] flex items-center justify-between">
               <div>
-                {saveSuccess && (
+                {saveStatus?.type === 'success' && (
                   <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-subheading font-semibold text-emerald-700 dark:text-emerald-300">
                     <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>Environment variables saved & applied to runtime!</span>
+                    <span>Configuration saved & applied!</span>
+                  </span>
+                )}
+                {saveStatus?.type === 'error' && (
+                  <span role="status" aria-live="polite" className="inline-flex items-center gap-1.5 text-xs font-subheading font-semibold text-rose-700 dark:text-rose-400">
+                    <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Failed to apply configuration</span>
                   </span>
                 )}
               </div>
@@ -683,19 +745,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClearDB, onSeedDB 
 
         <div className="flex flex-wrap items-center gap-2.5 pt-1">
           <button
+            type="button"
             onClick={onSeedDB}
-            className="h-9 px-4 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
+            disabled={seeding || clearing}
+            className="h-9 px-4 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50 focus-rzp"
           >
-            <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-            <span>Seed 6 Sample Transactions</span>
+            <Database className={`w-3.5 h-3.5 text-blue-600 dark:text-blue-400 ${seeding ? 'animate-spin' : ''}`} />
+            <span>{seeding ? 'Seeding Database...' : 'Seed 6 Sample Transactions'}</span>
           </button>
 
           <button
+            type="button"
             onClick={onClearDB}
-            className="h-9 px-4 rounded-md bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 text-xs font-subheading font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-all"
+            disabled={clearing || seeding}
+            className="h-9 px-4 rounded-md bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 text-xs font-subheading font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50 focus-rzp"
           >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Clear All Database Records</span>
+            <Trash2 className={`w-3.5 h-3.5 text-rose-500 ${clearing ? 'animate-pulse' : ''}`} />
+            <span>{clearing ? 'Purging Database...' : 'Clear All Database Records'}</span>
           </button>
         </div>
       </div>

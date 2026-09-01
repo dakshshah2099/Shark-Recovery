@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { OverviewView } from './views/OverviewView';
 import { TransactionsView } from './views/TransactionsView';
@@ -6,12 +6,18 @@ import { IngestionView } from './views/IngestionView';
 import { AuditView } from './views/AuditView';
 import { SettingsView } from './views/SettingsView';
 import { AgentStepFlow } from './components/AgentStepFlow';
-import { Menu, Cpu } from 'lucide-react';
+import { Menu, Cpu, CheckCircle2, AlertCircle, Info, Loader2, X } from 'lucide-react';
 import type {
   AuditLogItem,
   DashboardMetrics,
   TransactionItem,
 } from './types';
+
+export interface ToastNotification {
+  id: string;
+  type: 'success' | 'error' | 'info' | 'loading';
+  message: string;
+}
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('overview');
@@ -20,7 +26,10 @@ export const App: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [simulating, setSimulating] = useState<boolean>(false);
-  const [notification, setNotification] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState<boolean>(false);
+  const [clearing, setClearing] = useState<boolean>(false);
+  const [toast, setToast] = useState<ToastNotification | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
   const [maxRetries, setMaxRetries] = useState<number>(2);
   const [debugMode, setDebugMode] = useState<boolean>(true);
@@ -62,12 +71,21 @@ export const App: React.FC = () => {
     });
   }, []);
 
-  const showNotification = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => {
-      setNotification(null);
-    }, 4000);
-  };
+  const showNotification = useCallback(
+    (msg: string, type: 'success' | 'error' | 'info' | 'loading' = 'success', duration = 4000) => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+      const id = `${Date.now()}-${Math.random()}`;
+      setToast({ id, type, message: msg });
+      if (duration > 0 && type !== 'loading') {
+        toastTimerRef.current = setTimeout(() => {
+          setToast((curr) => (curr?.id === id ? null : curr));
+        }, duration);
+      }
+    },
+    []
+  );
 
   const fetchData = useCallback(async () => {
     try {
@@ -127,6 +145,7 @@ export const App: React.FC = () => {
 
   const handleSimulateBatch = async () => {
     setSimulating(true);
+    showNotification('⚡ Interception Engine: Ingesting & triaging 5 synthetic payment failures...', 'loading', 0);
     try {
       const res = await fetch('/api/simulate-batch', {
         method: 'POST',
@@ -134,41 +153,62 @@ export const App: React.FC = () => {
         body: JSON.stringify({ count: 5 }),
       });
       if (res.ok) {
-        showNotification('⚡ Synthetic payment failures ingested and processed autonomously!');
+        showNotification('⚡ 5 synthetic payment failures ingested and processed autonomously!', 'success', 4000);
         await fetchData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showNotification(`❌ Batch simulation failed: ${err.detail || 'Could not ingest failures'}`, 'error', 5000);
       }
     } catch (err) {
       console.error('Failed to simulate batch:', err);
+      showNotification('❌ Network error while simulating failure batch.', 'error', 5000);
     } finally {
       setSimulating(false);
     }
   };
 
   const handleSeedDB = async () => {
+    setSeeding(true);
+    showNotification('🌱 Seeding database with realistic transactions & recovery traces...', 'loading', 0);
     try {
       const res = await fetch('/api/db/seed', { method: 'POST' });
       if (res.ok) {
-        showNotification('🌱 Database seeded with realistic customer & payment records.');
+        showNotification('🌱 Database seeded with realistic customer & payment records!', 'success', 4000);
         await fetchData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showNotification(`❌ Seed DB failed: ${err.detail || 'Could not seed database'}`, 'error', 5000);
       }
     } catch (err) {
       console.error('Seed DB error:', err);
+      showNotification('❌ Network error while seeding database.', 'error', 5000);
+    } finally {
+      setSeeding(false);
     }
   };
 
   const handleClearDB = async () => {
+    setClearing(true);
+    showNotification('🗑️ Purging database records and audit ledger...', 'loading', 0);
     try {
       const res = await fetch('/api/db/clear', { method: 'POST' });
       if (res.ok) {
-        showNotification('🗑️ Database and audit logs cleared completely.');
+        showNotification('🗑️ Database and audit logs cleared completely.', 'success', 4000);
         await fetchData();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showNotification(`❌ Clear DB failed: ${err.detail || 'Could not clear database'}`, 'error', 5000);
       }
     } catch (err) {
       console.error('Clear DB error:', err);
+      showNotification('❌ Network error while clearing database.', 'error', 5000);
+    } finally {
+      setClearing(false);
     }
   };
 
   const handleRetry = async (transactionId: string) => {
+    showNotification(`⚡ Triaging AI recovery loop for txn ${transactionId.slice(0, 8)}...`, 'loading', 0);
     try {
       const res = await fetch(`/api/transactions/${transactionId}/retry`, {
         method: 'POST',
@@ -176,36 +216,37 @@ export const App: React.FC = () => {
       if (res.ok) {
         const data = await res.json();
         if (data.status === 'success') {
-          showNotification(`⚡ AI recovery executed for txn ${transactionId.slice(0, 8)}! (Link generated & outreach dispatched)`);
+          showNotification(`⚡ AI recovery executed for txn ${transactionId.slice(0, 8)}! (Link generated & outreach dispatched)`, 'success', 4500);
         } else if (data.status === 'blocked') {
-          showNotification(`⚠️ Gating guardrail: ${data.reason}`);
+          showNotification(`⚠️ Guardrail: ${data.reason}`, 'info', 5000);
         } else {
-          showNotification(`🔄 Re-executed AI recovery loop for txn ${transactionId.slice(0, 8)}`);
+          showNotification(`🔄 Re-executed AI recovery loop for txn ${transactionId.slice(0, 8)}`, 'info', 4000);
         }
         await fetchData();
       } else {
-        showNotification(`❌ Retry request failed (${res.status})`);
+        showNotification(`❌ Retry request failed (${res.status})`, 'error', 5000);
       }
     } catch (err) {
       console.error('Retry error:', err);
-      showNotification('❌ Failed to execute recovery retry.');
+      showNotification('❌ Failed to execute recovery retry.', 'error', 5000);
     }
   };
 
   const handleSimulatePay = async (transactionId: string) => {
+    showNotification(`Verifying payment settlement for txn ${transactionId.slice(0, 8)}...`, 'loading', 0);
     try {
       const res = await fetch(`/api/transactions/${transactionId}/mark-recovered`, {
         method: 'POST',
       });
       if (res.ok) {
-        showNotification(`🎉 Customer completed payment! Revenue recovered for txn ${transactionId.slice(0, 8)}`);
+        showNotification(`🎉 Customer completed payment! Revenue recovered for txn ${transactionId.slice(0, 8)}`, 'success', 4500);
         await fetchData();
       } else {
-        showNotification(`❌ Failed to mark as paid (${res.status})`);
+        showNotification(`❌ Failed to mark as paid (${res.status})`, 'error', 5000);
       }
     } catch (err) {
       console.error('Mark recovered error:', err);
-      showNotification('❌ Error updating payment status.');
+      showNotification('❌ Error updating payment status.', 'error', 5000);
     }
   };
 
@@ -241,14 +282,40 @@ export const App: React.FC = () => {
           sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
         }`}
       >
-        {/* Floating Flat Notification Toast */}
-        {notification && (
+        {/* Floating Toast with Semantic Feedback */}
+        {toast && (
           <div
             role="status"
             aria-live="polite"
-            className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white font-subheading font-medium text-xs py-2.5 px-4 rounded-md shadow-lg border border-blue-500 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200"
+            className={`fixed bottom-6 right-6 z-50 max-w-md w-auto py-3 px-4 rounded-lg shadow-xl border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-3 duration-200 ${
+              toast.type === 'success'
+                ? 'bg-emerald-900/95 text-emerald-50 border-emerald-500 shadow-emerald-950/40'
+                : toast.type === 'error'
+                ? 'bg-rose-900/95 text-rose-50 border-rose-500 shadow-rose-950/40'
+                : toast.type === 'loading'
+                ? 'bg-zinc-900/95 text-zinc-100 border-blue-500 shadow-blue-950/30'
+                : 'bg-blue-900/95 text-blue-50 border-blue-500 shadow-blue-950/40'
+            }`}
           >
-            <span>{notification}</span>
+            <div className="shrink-0">
+              {toast.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-300" aria-hidden="true" />}
+              {toast.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-300" aria-hidden="true" />}
+              {toast.type === 'loading' && <Loader2 className="w-4 h-4 text-blue-400 animate-spin" aria-hidden="true" />}
+              {toast.type === 'info' && <Info className="w-4 h-4 text-blue-300" aria-hidden="true" />}
+            </div>
+            <p className="text-xs font-subheading font-medium leading-snug flex-1 pr-2">
+              {toast.message}
+            </p>
+            {toast.type !== 'loading' && (
+              <button
+                type="button"
+                onClick={() => setToast(null)}
+                className="p-1 rounded hover:bg-white/10 text-white/70 hover:text-white cursor-pointer transition-colors focus-rzp"
+                aria-label="Dismiss notification"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         )}
 
@@ -264,6 +331,8 @@ export const App: React.FC = () => {
               onSeedDB={handleSeedDB}
               onClearDB={handleClearDB}
               simulating={simulating}
+              seeding={seeding}
+              clearing={clearing}
             />
           )}
 
@@ -306,6 +375,9 @@ export const App: React.FC = () => {
             <SettingsView
               onClearDB={handleClearDB}
               onSeedDB={handleSeedDB}
+              showNotification={showNotification}
+              seeding={seeding}
+              clearing={clearing}
             />
           )}
         </main>

@@ -3,7 +3,7 @@ import { UploadCloud, FileText, Download, Loader2 } from 'lucide-react';
 
 interface CsvUploaderProps {
   onSuccess: () => void;
-  showNotification: (msg: string) => void;
+  showNotification: (msg: string, type?: 'success' | 'error' | 'info' | 'loading', duration?: number) => void;
 }
 
 export const CsvUploader: React.FC<CsvUploaderProps> = ({ onSuccess, showNotification }) => {
@@ -28,7 +28,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showNotification('Sample CSV template downloaded!');
+    showNotification('Sample CSV template downloaded!', 'info', 2500);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +45,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
       if (droppedFile.name.endsWith('.csv')) {
         setFile(droppedFile);
       } else {
-        showNotification('Please upload a valid .csv file.');
+        showNotification('Please upload a valid .csv file.', 'error', 4000);
       }
     }
   };
@@ -53,6 +53,7 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
   const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
+    showNotification(`Parsing & orchestrating recovery from ${file.name}...`, 'loading', 0);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -64,17 +65,17 @@ Sneha Reddy,sneha.r@example.com,+919886098765,2799,INSUFFICIENT_FUNDS,Insufficie
 
       if (res.ok) {
         const data = await res.json();
-        showNotification(`⚡ Successfully ingested & orchestrated ${data.processed_count} transactions from CSV!`);
+        showNotification(`⚡ Successfully ingested & orchestrated ${data.processed_count} transactions from CSV!`, 'success', 4500);
         setFile(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
         onSuccess();
       } else {
-        const err = await res.json();
-        showNotification(`CSV Ingestion Error: ${err.detail || 'Could not parse file'}`);
+        const err = await res.json().catch(() => ({}));
+        showNotification(`❌ CSV Ingestion Error: ${err.detail || 'Could not parse file'}`, 'error', 5000);
       }
     } catch (err) {
       console.error('CSV upload error:', err);
-      showNotification('Network error while uploading CSV.');
+      showNotification('❌ Network error while uploading CSV.', 'error', 5000);
     } finally {
       setUploading(false);
     }

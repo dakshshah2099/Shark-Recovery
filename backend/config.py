@@ -81,6 +81,8 @@ def save_settings_to_env(updates: Dict[str, Optional[str]]) -> None:
     if os.path.exists(target_env):
         with open(target_env, "r", encoding="utf-8") as f:
             existing_lines = f.readlines()
+        if existing_lines and not existing_lines[-1].endswith("\n"):
+            existing_lines[-1] = existing_lines[-1] + "\n"
 
     # Parse existing keys
     key_line_map: Dict[str, int] = {}

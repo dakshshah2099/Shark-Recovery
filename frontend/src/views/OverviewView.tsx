@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Activity,
   Zap,
+  Loader2,
 } from 'lucide-react';
 import type { DashboardMetrics, TransactionItem } from '../types';
 
@@ -20,6 +21,8 @@ interface OverviewViewProps {
   onSeedDB: () => void;
   onClearDB: () => void;
   simulating: boolean;
+  seeding?: boolean;
+  clearing?: boolean;
 }
 
 export const OverviewView: React.FC<OverviewViewProps> = ({
@@ -31,6 +34,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   onSeedDB,
   onClearDB,
   simulating,
+  seeding = false,
+  clearing = false,
 }) => {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const activeTxns = transactions.filter((t) => t.status === 'processing');
@@ -53,11 +58,15 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           <button
             type="button"
             onClick={onSimulateBatch}
-            disabled={simulating}
+            disabled={simulating || seeding || clearing}
             aria-label="Simulate 5 failure dropouts"
             className="h-9 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all disabled:opacity-50 focus-rzp"
           >
-            <Play className="w-3.5 h-3.5 fill-white" aria-hidden="true" />
+            {simulating ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" aria-hidden="true" />
+            ) : (
+              <Play className="w-3.5 h-3.5 fill-white" aria-hidden="true" />
+            )}
             <span>{simulating ? 'Processing Batch...' : 'Simulate 5 Failures'}</span>
           </button>
 
@@ -65,23 +74,25 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             <button
               type="button"
               onClick={onSeedDB}
+              disabled={seeding || simulating || clearing}
               aria-label="Seed realistic demo database transactions"
-              className="h-9 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors focus-rzp"
+              className="h-9 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50 focus-rzp"
               title="Populate realistic transactions"
             >
-              <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-              <span>Seed</span>
+              <Database className={`w-3.5 h-3.5 text-blue-600 dark:text-blue-400 ${seeding ? 'animate-spin' : ''}`} aria-hidden="true" />
+              <span>{seeding ? 'Seeding...' : 'Seed'}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowClearConfirm(true)}
+              disabled={clearing || simulating || seeding}
               aria-label="Clear all database transaction records"
-              className="h-9 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-white border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors focus-rzp"
+              className="h-9 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-white border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50 focus-rzp"
               title="Clear all database records"
             >
-              <Trash2 className="w-3.5 h-3.5 text-rose-500" aria-hidden="true" />
-              <span>Clear</span>
+              <Trash2 className={`w-3.5 h-3.5 text-rose-500 ${clearing ? 'animate-pulse' : ''}`} aria-hidden="true" />
+              <span>{clearing ? 'Clearing...' : 'Clear'}</span>
             </button>
           </div>
         </div>
@@ -187,20 +198,29 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100 dark:border-[#27272a]">
               <button
                 type="button"
+                disabled={clearing}
                 onClick={() => setShowClearConfirm(false)}
-                className="h-8 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium cursor-pointer transition-colors focus-rzp"
+                className="h-8 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium cursor-pointer transition-colors disabled:opacity-50 focus-rzp"
               >
                 Cancel
               </button>
               <button
                 type="button"
+                disabled={clearing}
                 onClick={() => {
                   setShowClearConfirm(false);
                   onClearDB();
                 }}
-                className="h-8 px-3.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-xs font-subheading font-semibold cursor-pointer shadow-xs transition-colors focus-rzp"
+                className="h-8 px-3.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-xs font-subheading font-semibold cursor-pointer shadow-xs transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 focus-rzp"
               >
-                Confirm & Purge
+                {clearing ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                    <span>Purging...</span>
+                  </>
+                ) : (
+                  <span>Confirm & Purge</span>
+                )}
               </button>
             </div>
           </div>

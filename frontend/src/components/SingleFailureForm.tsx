@@ -3,7 +3,7 @@ import { Zap, Send, Loader2 } from 'lucide-react';
 
 interface SingleFailureFormProps {
   onSuccess: () => void;
-  showNotification: (msg: string) => void;
+  showNotification: (msg: string, type?: 'success' | 'error' | 'info' | 'loading', duration?: number) => void;
 }
 
 const FAILURE_OPTIONS = [
@@ -62,10 +62,11 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim() || amount <= 0) {
-      showNotification('Please fill in all required fields with valid inputs.');
+      showNotification('Please fill in all required customer and transaction fields.', 'error', 4000);
       return;
     }
     setSubmitting(true);
+    showNotification(`Replicating payment failure & initiating multi-agent triage for ${name}...`, 'loading', 0);
     try {
       const res = await fetch('/api/simulate-single', {
         method: 'POST',
@@ -82,15 +83,15 @@ export const SingleFailureForm: React.FC<SingleFailureFormProps> = ({
       });
 
       if (res.ok) {
-        showNotification(`⚡ Single failure replicated & recovery orchestrated for ${name}!`);
+        showNotification(`⚡ Single failure replicated & recovery orchestrated for ${name}!`, 'success', 4500);
         onSuccess();
       } else {
         const err = await res.json().catch(() => ({}));
-        showNotification(`Failed: ${err.detail || 'Could not process transaction'}`);
+        showNotification(`❌ Ingestion failed: ${err.detail || 'Could not process transaction'}`, 'error', 5000);
       }
     } catch (err) {
       console.error('Error simulating single failure:', err);
-      showNotification('Network error while replicating failure.');
+      showNotification('❌ Network error while replicating failure.', 'error', 5000);
     } finally {
       setSubmitting(false);
     }

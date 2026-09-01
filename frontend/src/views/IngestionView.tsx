@@ -5,7 +5,7 @@ import { Zap, UploadCloud, Layers } from 'lucide-react';
 
 interface IngestionViewProps {
   onSuccess: () => void;
-  showNotification: (msg: string) => void;
+  showNotification: (msg: string, type?: 'success' | 'error' | 'info' | 'loading', duration?: number) => void;
 }
 
 export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNotification }) => {
