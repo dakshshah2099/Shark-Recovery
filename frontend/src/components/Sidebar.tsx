@@ -9,8 +9,8 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
-import sharkRecoveryDark from '../assets/Shark-Recovery-Dark-Theme.png';
-import sharkRecoveryLight from '../assets/Shark-Recovery-Light-Theme.png';
+import sharkRecoveryDark from '../assets/Shark-Recovery-Dark-Theme.svg';
+import sharkRecoveryLight from '../assets/Shark-Recovery-Light-Theme.svg';
 import faviconImg from '../assets/favicon.png';
 
 interface SidebarProps {
