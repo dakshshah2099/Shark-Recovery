@@ -52,22 +52,6 @@ export const App: React.FC = () => {
   }, []);
 
   const toggleTheme = () => {
-    // Inject zero-transition style block to prevent harsh color cross-fade flickering
-    const css = document.createElement('style');
-    css.type = 'text/css';
-    css.appendChild(
-      document.createTextNode(
-        `*, *::before, *::after {
-           -webkit-transition: none !important;
-           -moz-transition: none !important;
-           -o-transition: none !important;
-           -ms-transition: none !important;
-           transition: none !important;
-        }`
-      )
-    );
-    document.head.appendChild(css);
-
     setDarkMode((prev) => {
       const next = !prev;
       if (next) {
@@ -78,18 +62,6 @@ export const App: React.FC = () => {
         localStorage.setItem('theme', 'light');
       }
       return next;
-    });
-
-    // Force reflow
-    (() => window.getComputedStyle(document.body))();
-
-    // Re-enable component hover transitions cleanly
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (document.head.contains(css)) {
-          document.head.removeChild(css);
-        }
-      });
     });
   };
 
