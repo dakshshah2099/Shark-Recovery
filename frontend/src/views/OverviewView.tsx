@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MetricCards } from '../components/MetricCards';
 import { AgentStepFlow } from '../components/AgentStepFlow';
 import {
@@ -35,6 +35,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   onClearDB,
   simulating,
 }) => {
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const activeTxns = transactions.filter((t) => t.status === 'processing');
 
   return (
@@ -77,7 +78,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
             <button
               type="button"
-              onClick={onClearDB}
+              onClick={() => setShowClearConfirm(true)}
               aria-label="Clear all database transaction records"
               className="h-9 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 hover:text-zinc-900 dark:text-zinc-200 dark:hover:text-white border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors focus-rzp"
               title="Clear all database records"
@@ -163,6 +164,54 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Confirmation Modal for Destructive Clear DB */}
+      {showClearConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="clear-db-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+        >
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg max-w-md w-full p-5 space-y-4 shadow-xl">
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div className="p-2 rounded bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 shrink-0">
+                <Trash2 className="w-5 h-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h4 id="clear-db-title" className="font-heading font-bold text-base text-zinc-900 dark:text-white">
+                  Clear Database Records?
+                </h4>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-body">
+                  Irreversible administrative operation
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-zinc-600 dark:text-zinc-300 font-body leading-relaxed">
+              This will permanently delete all transaction recovery states, customer metadata, and audit ledger entries.
+            </p>
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100 dark:border-[#27272a]">
+              <button
+                type="button"
+                onClick={() => setShowClearConfirm(false)}
+                className="h-8 px-3.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium cursor-pointer transition-colors focus-rzp"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowClearConfirm(false);
+                  onClearDB();
+                }}
+                className="h-8 px-3.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-xs font-subheading font-semibold cursor-pointer shadow-xs transition-colors focus-rzp"
+              >
+                Confirm & Purge
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

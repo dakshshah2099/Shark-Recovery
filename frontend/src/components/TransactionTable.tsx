@@ -136,8 +136,122 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         </div>
       </div>
 
-      {/* High Density Minimalist Enterprise Table */}
-      <div className="w-full overflow-x-auto">
+      {/* Mobile Stacked Card View (< 640px) */}
+      <div className="block sm:hidden divide-y divide-zinc-200 dark:divide-[#27272a]">
+        {loading ? (
+          <div className="py-10 text-center text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+            Loading transaction ledger...
+          </div>
+        ) : filteredTransactions.length === 0 ? (
+          <div className="py-10 text-center text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+            No matching transactions found.
+          </div>
+        ) : (
+          filteredTransactions.map((txn) => (
+            <div key={txn.id} className="p-4 space-y-3 bg-white dark:bg-[#121215]">
+              {/* Top Row: Customer, Amount, Status */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold font-subheading text-zinc-900 dark:text-white text-xs truncate">
+                    {txn.customer_name}
+                  </div>
+                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                    {txn.customer_email}
+                  </div>
+                  <div className="text-[11px] text-blue-600 dark:text-blue-400 font-mono truncate font-medium">
+                    {txn.razorpay_order_id}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="font-heading font-extrabold text-zinc-900 dark:text-white text-sm">
+                    ₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </div>
+                  <div className="mt-1">{getStatusBadge(txn.status)}</div>
+                </div>
+              </div>
+
+              {/* Middle Row: Failure Diagnostics */}
+              <div className="bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-[#27272a] rounded p-2.5 space-y-1 text-xs">
+                <div className="flex items-center justify-between text-[10px] font-mono">
+                  <span className="font-bold text-rose-600 dark:text-rose-400 uppercase tracking-tight">
+                    {txn.failure_category.replace(/_/g, ' ')}
+                  </span>
+                  {txn.status === 'recovered' && (
+                    <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
+                      Paid: ₹{txn.recovered_amount.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-body leading-relaxed line-clamp-2">
+                  {txn.failure_reason || 'No description provided'}
+                </p>
+              </div>
+
+              {/* Bottom Row: Outreach & Actions */}
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+                    {txn.recovery_channel === 'whatsapp' ? '💬 WhatsApp' : '✉️ Email'}
+                    {txn.discount_applied_percent > 0 && (
+                      <span className="ml-1 text-amber-700 dark:text-amber-400 font-mono font-bold">
+                        ({txn.discount_applied_percent}%)
+                      </span>
+                    )}
+                  </span>
+                  {txn.recovery_link && (
+                    <a
+                      href={txn.recovery_link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-0.5 font-mono"
+                    >
+                      <span>Link</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {txn.status !== 'recovered' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleRowPay(txn.id)}
+                        disabled={payingIds[txn.id] || retryingIds[txn.id]}
+                        aria-label={`Mark payment for ${txn.customer_name || 'order'} as recovered`}
+                        className="h-8 px-3 rounded-md bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-subheading font-semibold inline-flex items-center justify-center gap-1 cursor-pointer shadow-xs transition-colors focus-rzp"
+                      >
+                        <CheckCircle2 className={`w-3.5 h-3.5 ${payingIds[txn.id] ? 'animate-spin' : ''}`} aria-hidden="true" />
+                        <span>{payingIds[txn.id] ? 'Saving' : 'Mark Paid'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRowRetry(txn.id)}
+                        disabled={retryingIds[txn.id] || payingIds[txn.id]}
+                        aria-label={`Re-run AI recovery triage for order ${txn.razorpay_order_id}`}
+                        className="h-8 w-8 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 inline-flex items-center justify-center cursor-pointer border border-zinc-200 dark:border-[#27272a] disabled:opacity-50 transition-colors focus-rzp"
+                      >
+                        <RotateCw className={`w-3.5 h-3.5 ${retryingIds[txn.id] ? 'animate-spin text-blue-500' : ''}`} aria-hidden="true" />
+                      </button>
+                    </>
+                  )}
+
+                  {txn.status === 'recovered' && (
+                    <span className="h-8 px-2 text-xs text-emerald-700 dark:text-emerald-400 font-mono font-semibold inline-flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>Captured</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop & Tablet Table (>= 640px) */}
+      <div className="hidden sm:block w-full overflow-x-auto">
         <table className="w-full text-left border-collapse text-xs table-fixed min-w-[700px]">
           <thead>
             <tr className="border-b border-zinc-200 dark:border-[#27272a] bg-zinc-50/80 dark:bg-[#09090b] text-zinc-600 dark:text-zinc-400 uppercase font-mono font-bold text-[10px] tracking-wider">
