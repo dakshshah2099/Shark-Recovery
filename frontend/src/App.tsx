@@ -189,7 +189,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col font-body transition-colors duration-150">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col font-body">
       {/* Floating Mobile Trigger on Small Screens */}
       <button
         onClick={() => setMobileOpen(true)}
