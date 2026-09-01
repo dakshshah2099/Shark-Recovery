@@ -188,33 +188,37 @@ export const AgentStepFlow: React.FC<AgentStepFlowProps> = ({
               aria-expanded={isSelected}
               aria-controls={isSelected ? `step-inspector-${step.id}` : undefined}
               aria-label={`Inspect step ${idx + 1}: ${step.title}, ${step.subtitle}`}
-              className={`p-3 rounded-md border text-left transition-all cursor-pointer flex flex-col justify-between h-28 relative focus-rzp ${
+              className={`p-3 rounded-md border text-left transition-all cursor-pointer flex flex-col justify-between h-30 relative focus-rzp ${
                 isSelected
-                  ? 'bg-blue-50/70 dark:bg-[#18181b] border-blue-600 dark:border-blue-500 ring-1 ring-blue-600/30 dark:ring-blue-500/40 text-blue-950 dark:text-white shadow-xs'
-                  : 'bg-zinc-50/60 dark:bg-[#121215] border-zinc-200 dark:border-[#27272a] hover:bg-zinc-100/80 dark:hover:bg-[#18181b] hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-700 dark:text-zinc-300'
+                  ? 'bg-blue-50/80 dark:bg-[#18181b] border-blue-600 dark:border-blue-500 ring-1 ring-blue-600/40 text-blue-950 dark:text-white shadow-xs'
+                  : 'bg-zinc-50/60 dark:bg-[#121215] border-zinc-200 dark:border-[#27272a] hover:bg-zinc-100/90 dark:hover:bg-[#18181b] hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-700 dark:text-zinc-300'
               }`}
             >
               <div className="flex items-center justify-between w-full">
                 <div className={`w-7 h-7 rounded flex items-center justify-center border transition-colors ${
                   isSelected
-                    ? 'bg-blue-600 text-white border-blue-600 dark:bg-blue-600 dark:border-blue-500'
-                    : 'bg-white dark:bg-[#1c1c21] border-zinc-200 dark:border-[#27272a] text-zinc-600 dark:text-zinc-200'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                    : 'bg-white dark:bg-[#1c1c21] border-zinc-200 dark:border-[#27272a] text-zinc-700 dark:text-zinc-300'
                 }`} aria-hidden="true">
                   <Icon className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 font-semibold" aria-hidden="true">
+                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border ${
+                  isSelected
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-zinc-200/70 dark:bg-[#1c1c21] text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-[#27272a]'
+                }`} aria-hidden="true">
                   0{idx + 1}
                 </span>
               </div>
 
-              <div>
-                <div className="text-xs font-semibold font-subheading text-zinc-900 dark:text-zinc-100 truncate">{step.title}</div>
+              <div className="my-1">
+                <div className="text-xs font-bold font-subheading text-zinc-900 dark:text-white truncate">{step.title}</div>
                 <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-body truncate mt-0.5">{step.subtitle}</div>
               </div>
 
-              <div className="flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500 pt-1 border-t border-zinc-200/60 dark:border-[#27272a]/60">
-                <span className="font-mono text-[9px] uppercase tracking-wider">{step.agentRole}</span>
-                {isSelected ? <ChevronUp className="w-3 h-3 text-blue-600 dark:text-blue-400" aria-hidden="true" /> : <ChevronDown className="w-3 h-3 text-zinc-400 dark:text-zinc-500" aria-hidden="true" />}
+              <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400 pt-1.5 border-t border-zinc-200/70 dark:border-[#27272a]/80">
+                <span className="font-mono text-[9px] uppercase tracking-wider font-semibold truncate max-w-[75%]">{step.agentRole}</span>
+                {isSelected ? <ChevronUp className="w-3 h-3 text-blue-600 dark:text-blue-400 shrink-0" aria-hidden="true" /> : <ChevronDown className="w-3 h-3 text-zinc-400 dark:text-zinc-500 shrink-0" aria-hidden="true" />}
               </div>
             </button>
           );

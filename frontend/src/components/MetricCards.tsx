@@ -20,7 +20,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
       {/* 1. Total Recovered Revenue */}
-      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-blue-500/50 dark:hover:border-zinc-700 transition-colors">
+      <div className="bg-white dark:bg-[#121215] border border-emerald-500/30 dark:border-emerald-500/20 hover:border-emerald-500/60 rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs transition-all relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-emerald-500" />
         <div>
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -31,7 +32,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               {recoveryRate}%
             </span>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-zinc-900 dark:text-white mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight">
             ₹{recoveredRev.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
@@ -51,7 +52,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
       </div>
 
       {/* 2. Active Revenue At Risk */}
-      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-blue-500/50 dark:hover:border-zinc-700 transition-colors">
+      <div className="bg-white dark:bg-[#121215] border border-rose-500/30 dark:border-rose-500/20 hover:border-rose-500/60 rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs transition-all relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-rose-500" />
         <div>
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -61,19 +63,20 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               <AlertCircle className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-zinc-900 dark:text-white mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight">
             ₹{revAtRisk.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
         <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-[#27272a] font-mono">
           <span>Dropouts: <strong className="text-zinc-900 dark:text-white font-semibold">{totalCount}</strong></span>
-          <span className="text-rose-600 dark:text-rose-400 font-medium">{activeCount} In Pipeline</span>
+          <span className="text-rose-600 dark:text-rose-400 font-semibold">{activeCount} In Pipeline</span>
         </div>
       </div>
 
       {/* 3. Discount Loss Incurred */}
-      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-blue-500/50 dark:hover:border-zinc-700 transition-colors">
+      <div className="bg-white dark:bg-[#121215] border border-amber-500/30 dark:border-amber-500/20 hover:border-amber-500/60 rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs transition-all relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-amber-500" />
         <div>
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -83,7 +86,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               <Percent className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-amber-700 dark:text-amber-400 mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-amber-700 dark:text-amber-400 mt-2.5 tracking-tight">
             ₹{discountLoss.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
@@ -95,7 +98,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
       </div>
 
       {/* 4. Live Outreach Dispatched */}
-      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs hover:border-blue-500/50 dark:hover:border-zinc-700 transition-colors">
+      <div className="bg-white dark:bg-[#121215] border border-blue-500/30 dark:border-blue-500/20 hover:border-blue-500/60 rounded-lg p-5 flex flex-col justify-between h-40 sm:h-44 shadow-xs transition-all relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-blue-500" />
         <div>
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -105,7 +109,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               <MessageSquare className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-3xl text-zinc-900 dark:text-white mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight">
             {whatsappCount + emailCount}
           </div>
         </div>

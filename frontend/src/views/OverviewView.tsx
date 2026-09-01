@@ -41,12 +41,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
     <div className="space-y-6">
       {/* 1. Hero Executive Strip */}
       <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-xs transition-colors">
-        <div className="space-y-1.5 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-blue-50 dark:bg-[#18181b] border border-blue-200 dark:border-[#27272a] text-[11px] font-mono font-semibold text-blue-700 dark:text-blue-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
-            <span>AUTONOMOUS REVENUE ENGINE</span>
-          </div>
-          <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-zinc-900 dark:text-white tracking-tight leading-tight">
+        <div className="space-y-2 max-w-2xl">
+          <h2 className="font-heading font-extrabold text-xl sm:text-2xl lg:text-[1.65rem] text-zinc-900 dark:text-white tracking-tight leading-tight">
             Revenue Recovery for Indian Payment Dropouts
           </h2>
           <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 font-body leading-relaxed">
