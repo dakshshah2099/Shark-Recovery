@@ -78,3 +78,43 @@ async def create_payment_link(
         status="created",
         created_at=int(time.time()),
     )
+
+
+async def create_razorpay_order(
+    amount: float,
+    currency: str = "INR",
+    receipt: Optional[str] = None,
+    notes: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Creates an official Razorpay Order for standard checkout modal initiation.
+    """
+    client = get_razorpay_client()
+    amount_paise = int(round(amount * 100))
+    order_receipt = receipt or f"rcpt_{uuid.uuid4().hex[:8]}"
+
+    if client:
+        try:
+            order_data = {
+                "amount": amount_paise,
+                "currency": currency,
+                "receipt": order_receipt,
+                "notes": notes or {},
+            }
+            order = client.order.create(data=order_data)
+            return {
+                "order_id": order.get("id"),
+                "amount": amount,
+                "currency": currency,
+                "key_id": settings.RAZORPAY_KEY_ID,
+            }
+        except Exception as e:
+            logger.warning(f"Razorpay live order creation failed ({e}), generating test fallback order ID.")
+
+    return {
+        "order_id": f"order_{uuid.uuid4().hex[:14]}",
+        "amount": amount,
+        "currency": currency,
+        "key_id": settings.RAZORPAY_KEY_ID or "rzp_test_TWSrBAIEzLzPT3",
+    }
+

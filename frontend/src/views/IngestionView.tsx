@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { SingleFailureForm } from '../components/SingleFailureForm';
 import { CsvUploader } from '../components/CsvUploader';
-import { Zap, UploadCloud, Layers } from 'lucide-react';
+import { RazorpayCheckoutButton } from '../components/RazorpayCheckoutButton';
+import { Zap, UploadCloud, Layers, CreditCard } from 'lucide-react';
 
 interface IngestionViewProps {
   onSuccess: () => void;
@@ -9,7 +10,7 @@ interface IngestionViewProps {
 }
 
 export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNotification }) => {
-  const [activeTab, setActiveTab] = useState<'single' | 'csv'>('single');
+  const [activeTab, setActiveTab] = useState<'checkout' | 'single' | 'csv'>('checkout');
 
   return (
     <div className="space-y-6 w-full">
@@ -21,11 +22,26 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
             <span>Payment Dropout Ingestion Hub</span>
           </h2>
           <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
-            Ingest checkout dropouts, bank gateway error logs, or batch reconciliation files to trigger autonomous multi-agent recovery.
+            Test live Razorpay checkout failures, ingest individual dropout events, or upload batch gateway logs.
           </p>
         </div>
 
-        <div role="tablist" aria-label="Ingestion mode" className="flex items-center bg-zinc-100 dark:bg-[#09090b] p-1 rounded-md border border-zinc-200 dark:border-[#27272a] text-xs">
+        <div role="tablist" aria-label="Ingestion mode" className="flex items-center bg-zinc-100 dark:bg-[#09090b] p-1 rounded-md border border-zinc-200 dark:border-[#27272a] text-xs flex-wrap gap-1">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'checkout'}
+            onClick={() => setActiveTab('checkout')}
+            className={`px-3.5 py-1.5 rounded font-subheading font-semibold flex items-center gap-1.5 cursor-pointer transition-all focus-rzp ${
+              activeTab === 'checkout'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            <CreditCard className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Live Razorpay Modal</span>
+          </button>
+
           <button
             type="button"
             role="tab"
@@ -58,9 +74,15 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
         </div>
       </div>
 
-      {activeTab === 'single' ? (
+      {activeTab === 'checkout' && (
+        <RazorpayCheckoutButton onSuccess={onSuccess} showNotification={showNotification} />
+      )}
+
+      {activeTab === 'single' && (
         <SingleFailureForm onSuccess={onSuccess} showNotification={showNotification} />
-      ) : (
+      )}
+
+      {activeTab === 'csv' && (
         <CsvUploader onSuccess={onSuccess} showNotification={showNotification} />
       )}
     </div>

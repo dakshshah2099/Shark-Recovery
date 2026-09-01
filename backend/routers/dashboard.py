@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import func, select
 try:
@@ -22,6 +23,7 @@ try:
     )
     from backend.models.transaction import Transaction, TransactionStatus
     from backend.tools.whatsapp_tool import get_whatsapp_messages
+    from backend.tools.razorpay_tool import create_razorpay_order
 except ImportError:
     from agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
     from config import settings
@@ -38,6 +40,7 @@ except ImportError:
     )
     from models.transaction import Transaction, TransactionStatus
     from tools.whatsapp_tool import get_whatsapp_messages
+    from tools.razorpay_tool import create_razorpay_order
 
 logger = logging.getLogger(__name__)
 
@@ -438,5 +441,122 @@ async def list_groq_models() -> List[str]:
         logger.warning(f"Could not fetch dynamic Groq models: {e}")
 
     return default_models
+
+
+class CheckoutOrderRequest(BaseModel):
+    amount: float = 2499.0
+    currency: str = "INR"
+    customer_name: Optional[str] = "Priya Sharma"
+    customer_email: Optional[str] = "priya.sharma@example.com"
+    customer_phone: Optional[str] = "+919876543210"
+
+
+class CheckoutOrderResponse(BaseModel):
+    order_id: str
+    amount: float
+    currency: str
+    key_id: str
+    customer_name: str
+    customer_email: str
+    customer_phone: str
+
+
+class CheckoutFailureReport(BaseModel):
+    order_id: Optional[str] = None
+    payment_id: Optional[str] = None
+    error_code: Optional[str] = "BAD_REQUEST_ERROR"
+    error_description: Optional[str] = "Payment failed during checkout authentication"
+    error_source: Optional[str] = "bank"
+    error_step: Optional[str] = "payment_authentication"
+    error_reason: Optional[str] = "payment_failed"
+    amount: float = 2499.0
+    customer_name: Optional[str] = "Priya Sharma"
+    customer_email: Optional[str] = "priya.sharma@example.com"
+    customer_phone: Optional[str] = "+919876543210"
+
+
+@router.post("/checkout/create-order", response_model=CheckoutOrderResponse)
+async def create_checkout_order_endpoint(payload: CheckoutOrderRequest) -> CheckoutOrderResponse:
+    """
+    Creates a Razorpay order and returns standard checkout parameters to open the official modal.
+    """
+    notes = {
+        "customer_name": payload.customer_name or "Valued Customer",
+        "customer_email": payload.customer_email or "customer@example.com",
+        "customer_phone": payload.customer_phone or "+919876543210",
+    }
+    order_info = await create_razorpay_order(
+        amount=payload.amount,
+        currency=payload.currency,
+        notes=notes,
+    )
+    return CheckoutOrderResponse(
+        order_id=order_info["order_id"],
+        amount=order_info["amount"],
+        currency=order_info["currency"],
+        key_id=order_info["key_id"],
+        customer_name=payload.customer_name or "Valued Customer",
+        customer_email=payload.customer_email or "customer@example.com",
+        customer_phone=payload.customer_phone or "+919876543210",
+    )
+
+
+@router.post("/checkout/report-failure")
+async def report_checkout_failure_endpoint(
+    payload: CheckoutFailureReport,
+    session: AsyncSession = Depends(get_session),
+) -> Dict[str, Any]:
+    """
+    Receives failure callback directly from Razorpay standard checkout client
+    and invokes the autonomous revenue recovery orchestration pipeline.
+    """
+    cust_query = await session.execute(
+        select(Customer).where(Customer.email == payload.customer_email)
+    )
+    customer = cust_query.scalar_one_or_none()
+
+    if not customer:
+        customer = Customer(
+            name=payload.customer_name or "Valued Customer",
+            email=payload.customer_email or "customer@example.com",
+            phone=payload.customer_phone or "+919876543210",
+            failed_transactions_count=1,
+        )
+        session.add(customer)
+        await session.commit()
+        await session.refresh(customer)
+    else:
+        customer.failed_transactions_count += 1
+        customer.updated_at = datetime.utcnow()
+        session.add(customer)
+        await session.commit()
+
+    # Create Transaction
+    transaction = Transaction(
+        razorpay_order_id=payload.order_id or f"order_demo_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+        razorpay_payment_id=payload.payment_id or f"pay_demo_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+        customer_id=customer.id,
+        amount=payload.amount,
+        currency="INR",
+        status=TransactionStatus.FAILED,
+        failure_code=payload.error_code or "BAD_REQUEST_ERROR",
+        failure_reason=payload.error_description or "Payment failed during checkout authentication",
+        retry_count=0,
+        max_retries=settings.MAX_RETRY_ATTEMPTS,
+    )
+    session.add(transaction)
+    await session.commit()
+    await session.refresh(transaction)
+
+    # Trigger Autonomous Multi-Agent Recovery Pipeline
+    recovery_result = await orchestrate_revenue_recovery(transaction.id, session)
+
+    return {
+        "status": "processed",
+        "event": "checkout.payment_failed",
+        "transaction_id": transaction.id,
+        "recovery": recovery_result,
+    }
+
 
 
