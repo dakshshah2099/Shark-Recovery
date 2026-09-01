@@ -223,7 +223,7 @@ export const App: React.FC = () => {
 
       {/* Main Content Layout with Dynamic Sidebar Offset */}
       <div
-        className={`flex flex-col flex-1 min-h-screen transition-all duration-200 ${
+        className={`flex flex-col flex-1 min-h-screen transition-[padding] duration-300 cubic-bezier(0.4, 0, 0.2, 1) ${
           sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
         }`}
       >
