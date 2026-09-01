@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { MetricCards } from '../components/MetricCards';
-import { AgentStepFlow } from '../components/AgentStepFlow';
 import {
   Play,
   Database,
@@ -16,7 +15,6 @@ interface OverviewViewProps {
   metrics: DashboardMetrics | null;
   transactions: TransactionItem[];
   maxRetries?: number;
-  onUpdateMaxRetries?: (retries: number) => Promise<void> | void;
   onNavigateTab: (tab: string) => void;
   onSimulateBatch: () => void;
   onSeedDB: () => void;
@@ -28,7 +26,6 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   metrics,
   transactions,
   maxRetries = 2,
-  onUpdateMaxRetries,
   onNavigateTab,
   onSimulateBatch,
   onSeedDB,
@@ -93,10 +90,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       {/* 2. Key Metrics Grid */}
       <MetricCards metrics={metrics} />
 
-      {/* 3. Interactive Visual Multi-Agent Node/Step Flow */}
-      <AgentStepFlow maxRetries={maxRetries} onUpdateMaxRetries={onUpdateMaxRetries} />
-
-      {/* 4. Active Recovery Pipeline */}
+      {/* 3. Active Recovery Pipeline */}
       <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs transition-colors space-y-4">
         <div className="flex items-center justify-between pb-3.5 border-b border-zinc-100 dark:border-[#27272a]">
           <div>

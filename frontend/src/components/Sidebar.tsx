@@ -3,6 +3,7 @@ import {
   Table,
   Zap,
   Activity,
+  Cpu,
   Settings,
   X,
   ChevronLeft,
@@ -22,6 +23,7 @@ interface SidebarProps {
   onToggleCollapse: () => void;
   darkMode: boolean;
   onToggleTheme: () => void;
+  debugMode?: boolean;
 }
 
 const MAIN_NAV_ITEMS = [
@@ -36,21 +38,6 @@ const MAIN_NAV_ITEMS = [
     label: 'Transactions',
     icon: Table,
     desc: 'Recovery ledger',
-  },
-];
-
-const AGENT_NAV_ITEMS = [
-  {
-    id: 'ingest',
-    label: 'Failure Ingestion',
-    icon: Zap,
-    desc: 'CSV & simulation',
-  },
-  {
-    id: 'audit',
-    label: 'AI Audit Trail',
-    icon: Activity,
-    desc: 'Trace & telemetry',
   },
 ];
 
@@ -72,7 +59,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   darkMode,
   onToggleTheme,
+  debugMode = true,
 }) => {
+  const agentNavItems = [
+    {
+      id: 'ingest',
+      label: 'Failure Ingestion',
+      icon: Zap,
+      desc: 'CSV & simulation',
+    },
+    ...(debugMode
+      ? [
+          {
+            id: 'agent-flow',
+            label: 'Agent Flow',
+            icon: Cpu,
+            desc: '6-Node Pipeline',
+          },
+        ]
+      : []),
+    {
+      id: 'audit',
+      label: 'AI Audit Trail',
+      icon: Activity,
+      desc: 'Trace & telemetry',
+    },
+  ];
 
   const renderNavGroup = (items: typeof MAIN_NAV_ITEMS, title?: string) => (
     <div className="space-y-1">
@@ -197,7 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Navigation Links */}
           <nav className="p-3 space-y-3">
             {renderNavGroup(MAIN_NAV_ITEMS, 'Payments')}
-            {renderNavGroup(AGENT_NAV_ITEMS, 'Autonomous Agents')}
+            {renderNavGroup(agentNavItems, 'Autonomous Agents')}
             {renderNavGroup(SYSTEM_NAV_ITEMS, 'System')}
           </nav>
         </div>

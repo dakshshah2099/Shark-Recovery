@@ -5,7 +5,8 @@ import { TransactionsView } from './views/TransactionsView';
 import { IngestionView } from './views/IngestionView';
 import { AuditView } from './views/AuditView';
 import { SettingsView } from './views/SettingsView';
-import { Menu } from 'lucide-react';
+import { AgentStepFlow } from './components/AgentStepFlow';
+import { Menu, Cpu } from 'lucide-react';
 import type {
   AuditLogItem,
   DashboardMetrics,
@@ -22,6 +23,7 @@ export const App: React.FC = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
   const [maxRetries, setMaxRetries] = useState<number>(2);
+  const [debugMode, setDebugMode] = useState<boolean>(true);
 
   // Collapsible Sidebar State with LocalStorage persistence
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
@@ -103,6 +105,9 @@ export const App: React.FC = () => {
         if (typeof envData.max_retry_attempts === 'number') {
           setMaxRetries(envData.max_retry_attempts);
         }
+        if (typeof envData.debug_mode === 'boolean') {
+          setDebugMode(envData.debug_mode);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
@@ -132,6 +137,12 @@ export const App: React.FC = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [fetchData]);
+
+  useEffect(() => {
+    if (!debugMode && activeTab === 'agent-flow') {
+      setActiveTab('overview');
+    }
+  }, [debugMode, activeTab]);
 
   const handleSimulateBatch = async () => {
     setSimulating(true);
@@ -240,6 +251,7 @@ export const App: React.FC = () => {
         onToggleCollapse={toggleSidebarCollapse}
         darkMode={darkMode}
         onToggleTheme={toggleTheme}
+        debugMode={debugMode}
       />
 
       {/* Main Content Layout with Dynamic Sidebar Offset */}
@@ -266,7 +278,6 @@ export const App: React.FC = () => {
               metrics={metrics}
               transactions={transactions}
               maxRetries={maxRetries}
-              onUpdateMaxRetries={handleUpdateMaxRetries}
               onNavigateTab={setActiveTab}
               onSimulateBatch={handleSimulateBatch}
               onSeedDB={handleSeedDB}
@@ -289,6 +300,21 @@ export const App: React.FC = () => {
               onSuccess={() => fetchData()}
               showNotification={showNotification}
             />
+          )}
+
+          {activeTab === 'agent-flow' && debugMode && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-zinc-900 dark:text-white flex items-center gap-2">
+                  <Cpu className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <span>Autonomous Multi-Agent Telemetry Flow</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
+                  Deterministic step-by-step reasoning pipeline from checkout dropout to revenue capture.
+                </p>
+              </div>
+              <AgentStepFlow maxRetries={maxRetries} onUpdateMaxRetries={handleUpdateMaxRetries} />
+            </div>
           )}
 
           {activeTab === 'audit' && (
