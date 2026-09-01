@@ -25,28 +25,34 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
           </p>
         </div>
 
-        <div className="flex items-center bg-zinc-100 dark:bg-[#09090b] p-1 rounded-md border border-zinc-200 dark:border-[#27272a] text-xs">
+        <div role="tablist" aria-label="Ingestion mode" className="flex items-center bg-zinc-100 dark:bg-[#09090b] p-1 rounded-md border border-zinc-200 dark:border-[#27272a] text-xs">
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'single'}
             onClick={() => setActiveTab('single')}
-            className={`px-3.5 py-1.5 rounded font-subheading font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
+            className={`px-3.5 py-1.5 rounded font-subheading font-semibold flex items-center gap-1.5 cursor-pointer transition-all focus-rzp ${
               activeTab === 'single'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            <Zap className="w-3.5 h-3.5" />
+            <Zap className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Single Failure</span>
           </button>
 
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'csv'}
             onClick={() => setActiveTab('csv')}
-            className={`px-3.5 py-1.5 rounded font-subheading font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
+            className={`px-3.5 py-1.5 rounded font-subheading font-semibold flex items-center gap-1.5 cursor-pointer transition-all focus-rzp ${
               activeTab === 'csv'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            <UploadCloud className="w-3.5 h-3.5" />
+            <UploadCloud className="w-3.5 h-3.5" aria-hidden="true" />
             <span>CSV Upload</span>
           </button>
         </div>
