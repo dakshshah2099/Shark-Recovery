@@ -111,42 +111,49 @@ def heuristic_diagnosis(ctx: DiagnosticContext) -> FailureDiagnosis:
     """Deterministic, high-accuracy heuristic fallback classifier."""
     text = f"{ctx.failure_code or ''} {ctx.failure_reason or ''}".lower()
 
-    if any(k in text for k in ["insufficient", "balance", "limit", "low_funds", "debit limit"]):
-        category = FailureCategory.INSUFFICIENT_FUNDS
-        root_cause = "Customer's account had insufficient funds or hit daily UPI/card debit limit."
-        can_retry = True
-        risk_score = 0.25
-        rec_action = "Offer flexible payment link with alternative UPI/wallet options and small dynamic discount."
-    elif any(k in text for k in ["otp", "auth", "3ds", "cvv", "verification", "timed out on hdfc"]):
-        category = FailureCategory.AUTHENTICATION_FAILED
-        root_cause = "Customer did not complete OTP / 3DS authentication in time."
-        can_retry = True
-        risk_score = 0.15
-        rec_action = "Send quick 1-click retry payment link via WhatsApp or SMS."
-    elif any(k in text for k in ["fraud", "block", "blacklist", "stolen", "decline", "card_declined"]):
+    # 1. Fraud & Hard Declined
+    if any(k in text for k in ["fraud", "block", "blacklist", "stolen", "decline", "card_declined", "stolen_card"]):
         category = FailureCategory.PAYMENT_DECLINED
         root_cause = "Risk flags or security block detected by payment gateway."
         can_retry = False
         risk_score = 0.95
         rec_action = "Do not auto-retry. Flag for merchant manual review."
-    elif any(k in text for k in ["gateway", "bank", "server", "downtime", "500", "502", "503", "504", "outage"]):
+    # 2. Network & Socket Disconnects
+    elif any(k in text for k in ["network", "socket", "connection", "dropped", "network_timeout"]) or (ctx.failure_code and "network" in ctx.failure_code.lower()):
+        category = FailureCategory.NETWORK_TIMEOUT
+        root_cause = "Network connection timed out or socket dropped during gateway handshake."
+        can_retry = True
+        risk_score = 0.15
+        rec_action = "Immediate retry link dispatched via preferred channel."
+    # 3. Insufficient Funds & Debit Limits
+    elif any(k in text for k in ["insufficient", "balance", "limit", "low_funds", "debit limit"]):
+        category = FailureCategory.INSUFFICIENT_FUNDS
+        root_cause = "Customer's account had insufficient funds or hit daily UPI/card debit limit."
+        can_retry = True
+        risk_score = 0.25
+        rec_action = "Offer flexible payment link with alternative UPI/wallet options and small dynamic discount."
+    # 4. Bank Server Outages & Gateway Downtime
+    elif any(k in text for k in ["server", "downtime", "500", "502", "503", "504", "outage"]) or (ctx.failure_code == "GATEWAY_ERROR" and "sbi" in text):
         category = FailureCategory.BANK_SERVER_ERROR
         root_cause = "Issuer bank or gateway experienced temporary technical downtime."
         can_retry = True
         risk_score = 0.10
         rec_action = "Reassure customer with system recovery notification and valid retry link."
+    # 5. OTP / Authentication Failures
+    elif any(k in text for k in ["otp", "auth", "3ds", "cvv", "verification"]):
+        category = FailureCategory.AUTHENTICATION_FAILED
+        root_cause = "Customer did not complete OTP / 3DS authentication in time."
+        can_retry = True
+        risk_score = 0.15
+        rec_action = "Send quick 1-click retry payment link via WhatsApp or SMS."
+    # 6. Expired Card
     elif any(k in text for k in ["expire", "expired", "invalid_card"]):
         category = FailureCategory.EXPIRED_CARD
         root_cause = "Payment card details were expired or invalid."
         can_retry = True
         risk_score = 0.35
         rec_action = "Prompt customer to retry using UPI, NetBanking, or a new card."
-    elif any(k in text for k in ["timeout", "timed out", "network", "socket", "connection"]):
-        category = FailureCategory.NETWORK_TIMEOUT
-        root_cause = "Network connection timed out during gateway handshake."
-        can_retry = True
-        risk_score = 0.15
-        rec_action = "Immediate retry link dispatched via preferred channel."
+    # 7. Abandoned Checkout / Dropout
     else:
         category = FailureCategory.USER_DROPOUT
         root_cause = "Customer dropped out during payment window."

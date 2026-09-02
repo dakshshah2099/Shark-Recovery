@@ -171,6 +171,7 @@ async def list_audit_logs(
 
 
 @router.get("/whatsapp-feed")
+@router.get("/whatsapp/messages")
 async def get_whatsapp_feed(
     limit: int = Query(default=50, ge=1, le=100),
     session: AsyncSession = Depends(get_session),

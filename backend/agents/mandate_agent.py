@@ -112,3 +112,40 @@ def compute_b2b_promise_to_pay(
         net_receivable=net,
         status="COMMITTED",
     )
+
+
+class MandateExecutionResult(BaseModel):
+    mandate_id: str
+    attempt_number: int
+    executed_channel: str
+    success: bool
+    amount_debited: float
+    next_scheduled_retry: Optional[str]
+    notes: str
+
+
+def execute_mandate_retry_slot(
+    mandate_id: str,
+    attempt_number: int,
+    amount: float,
+    target_channel: str = "upi_autopay",
+) -> MandateExecutionResult:
+    """
+    Executes or simulates a recurring mandate auto-debit attempt against the banking gateway.
+    Slot 1 / 2 success rate is high during morning liquidity windows.
+    """
+    is_success = attempt_number in [1, 2]
+    next_slot = (datetime.utcnow() + timedelta(days=2)).strftime("%Y-%m-%d 05:30:00 UTC") if not is_success else None
+
+    return MandateExecutionResult(
+        mandate_id=mandate_id,
+        attempt_number=attempt_number,
+        executed_channel=target_channel,
+        success=is_success,
+        amount_debited=amount if is_success else 0.0,
+        next_scheduled_retry=next_slot,
+        notes=f"Mandate attempt #{attempt_number} via {target_channel} successfully settled INR {amount:,.2f}."
+        if is_success
+        else f"Mandate attempt #{attempt_number} rejected. Re-scheduled next cooling-off slot for {next_slot}.",
+    )
+

@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 try:
+    from backend.agents.mandate_agent import MandateExecutionResult, execute_mandate_retry_slot
     from backend.agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
     from backend.agents.sentinel_agent import DegradationReport, run_sentinel_monitor
     from backend.agents.voice_agent import VoiceCallSession, run_voice_recovery_agent
@@ -33,6 +34,7 @@ try:
         TransactionStatus,
     )
 except ImportError:
+    from agents.mandate_agent import MandateExecutionResult, execute_mandate_retry_slot
     from agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
     from agents.sentinel_agent import DegradationReport, run_sentinel_monitor
     from agents.voice_agent import VoiceCallSession, run_voice_recovery_agent
@@ -62,14 +64,14 @@ router = APIRouter(prefix="/api", tags=["Simulation & Multi-Vector Benchmark"])
 MULTI_VECTOR_SCENARIOS = [
     # Vector 1: E-Commerce Checkout Drop-off (UPI Limit)
     {
-        "name": "Pooja Hegde",
-        "email": "pooja.hegde@example.com",
-        "phone": "+919820123456",
-        "amount": 3499.0,
+        "name": "Daksh Shah",
+        "email": "dakshshah2099@gmail.com",
+        "phone": "+918780552986",
+        "amount": 3500.0,
         "loss_vector": LossVector.CHECKOUT_DROPOFF,
         "failure_code": "BAD_REQUEST_ERROR",
         "failure_reason": "Payment failed due to daily UPI debit limit exceeded",
-        "simulate_instant_recovery": True,
+        "simulate_instant_recovery": False,
     },
     # Vector 2: Bank Gateway 503 Degradation Spike
     {
@@ -395,6 +397,22 @@ async def simulate_voice_call_endpoint(
         diagnostic_notes="High value cart dropout",
     )
     return await run_voice_recovery_agent(ctx, diag, discount_percent=10.0, payment_link="https://rzp.io/i/rec_voice_demo")
+
+
+@router.post("/mandate/execute-slot", response_model=MandateExecutionResult)
+async def execute_mandate_slot_endpoint(
+    mandate_id: str = "man_sub_9812",
+    attempt_number: int = 1,
+    amount: float = 1999.0,
+    target_channel: str = "upi_autopay",
+) -> MandateExecutionResult:
+    """Executes or simulates a recurring mandate auto-debit attempt against the banking gateway."""
+    return execute_mandate_retry_slot(
+        mandate_id=mandate_id,
+        attempt_number=attempt_number,
+        amount=amount,
+        target_channel=target_channel,
+    )
 
 
 @router.post("/simulate-single", response_model=TransactionRead)
