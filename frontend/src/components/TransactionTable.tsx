@@ -163,7 +163,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-heading font-extrabold text-zinc-900 dark:text-white text-sm">
+                  <div className="font-heading font-extrabold text-zinc-900 dark:text-white text-sm tabular-nums">
                     ₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
                   <div className="mt-1">{getStatusBadge(txn.status)}</div>
@@ -177,7 +177,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     {txn.failure_category.replace(/_/g, ' ')}
                   </span>
                   {txn.status === 'recovered' && (
-                    <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-semibold tabular-nums">
                       Paid: ₹{txn.recovered_amount.toFixed(2)}
                     </span>
                   )}
@@ -193,7 +193,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   <span className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
                     {txn.recovery_channel === 'whatsapp' ? '💬 WhatsApp' : '✉️ Email'}
                     {txn.discount_applied_percent > 0 && (
-                      <span className="ml-1 text-amber-700 dark:text-amber-400 font-mono font-bold">
+                      <span className="ml-1 text-amber-700 dark:text-amber-400 font-mono font-bold tabular-nums">
                         ({txn.discount_applied_percent}%)
                       </span>
                     )}
@@ -297,11 +297,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
                   {/* Amount & Recovered */}
                   <td className="py-3 px-4">
-                    <div className="font-heading font-bold text-zinc-900 dark:text-white text-sm whitespace-nowrap">
+                    <div className="font-heading font-bold text-zinc-900 dark:text-white text-sm whitespace-nowrap tabular-nums">
                       ₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
                     {txn.status === 'recovered' && (
-                      <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono mt-0.5 whitespace-nowrap font-medium">
+                      <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono mt-0.5 whitespace-nowrap font-medium tabular-nums">
                         Paid: ₹{txn.recovered_amount.toFixed(2)}
                       </div>
                     )}
@@ -327,7 +327,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     <div className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
                       {txn.recovery_channel === 'whatsapp' ? '💬 WhatsApp' : '✉️ Email'}
                       {txn.discount_applied_percent > 0 && (
-                        <span className="ml-1 text-amber-700 dark:text-amber-400 font-mono font-semibold">
+                        <span className="ml-1 text-amber-700 dark:text-amber-400 font-mono font-semibold tabular-nums">
                           ({txn.discount_applied_percent}%)
                         </span>
                       )}

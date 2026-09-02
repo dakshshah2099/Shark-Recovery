@@ -302,7 +302,7 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({ logs }) => {
                     </div>
 
                     {/* Right: Latency, Timestamp, Chevron */}
-                    <div className="flex items-center gap-3 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono font-medium self-end sm:self-auto shrink-0">
+                    <div className="flex items-center gap-3 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono font-medium self-end sm:self-auto shrink-0 tabular-nums">
                       {log.execution_duration_ms != null && (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-[#18181b] border border-zinc-200/80 dark:border-[#27272a] text-zinc-700 dark:text-zinc-300">
                           <Clock className="w-2.5 h-2.5 text-zinc-400" />

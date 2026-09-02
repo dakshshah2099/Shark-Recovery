@@ -132,42 +132,42 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <div className="p-4 rounded-lg bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] shadow-xs">
               <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading block">Revenue At Risk</span>
-              <strong className="font-mono font-bold text-sm sm:text-base text-zinc-900 dark:text-white">
+              <strong className="font-mono font-bold text-sm sm:text-base text-zinc-900 dark:text-white tabular-nums">
                 ₹{report.total_revenue_at_risk.toLocaleString('en-IN')}
               </strong>
             </div>
 
             <div className="p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 shadow-xs">
               <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-subheading block">Measured Money Recovered</span>
-              <strong className="font-mono font-bold text-sm sm:text-base text-emerald-600 dark:text-emerald-400">
+              <strong className="font-mono font-bold text-sm sm:text-base text-emerald-600 dark:text-emerald-400 tabular-nums">
                 ₹{report.total_money_recovered.toLocaleString('en-IN')}
               </strong>
             </div>
 
             <div className="p-4 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 shadow-xs">
               <span className="text-[11px] text-blue-700 dark:text-blue-300 font-subheading block">Net Recovery Rate</span>
-              <strong className="font-mono font-bold text-sm sm:text-base text-blue-600 dark:text-blue-400">
+              <strong className="font-mono font-bold text-sm sm:text-base text-blue-600 dark:text-blue-400 tabular-nums">
                 {report.net_recovery_rate_percent}%
               </strong>
             </div>
 
             <div className="p-4 rounded-lg bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] shadow-xs">
               <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading block">Recovery ROI Multiple</span>
-              <strong className="font-mono font-bold text-sm sm:text-base text-purple-600 dark:text-purple-400">
+              <strong className="font-mono font-bold text-sm sm:text-base text-purple-600 dark:text-purple-400 tabular-nums">
                 {report.roi_multiple}x
               </strong>
             </div>
 
             <div className="p-4 rounded-lg bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] shadow-xs">
               <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading block">Voice AI Calls</span>
-              <strong className="font-mono font-bold text-sm sm:text-base text-zinc-900 dark:text-white">
+              <strong className="font-mono font-bold text-sm sm:text-base text-zinc-900 dark:text-white tabular-nums">
                 {report.voice_ai_calls_executed}
               </strong>
             </div>
 
             <div className="p-4 rounded-lg bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] shadow-xs">
               <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading block">Compliance Halts</span>
-              <strong className="font-mono font-bold text-sm sm:text-base text-rose-600 dark:text-rose-400">
+              <strong className="font-mono font-bold text-sm sm:text-base text-rose-600 dark:text-rose-400 tabular-nums">
                 {report.compliance_halts_count} stopped
               </strong>
             </div>
@@ -178,23 +178,23 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
             <div className="p-4 border-b border-zinc-200 dark:border-[#27272a] flex items-center justify-between">
               <span className="font-heading font-bold text-xs sm:text-sm text-zinc-900 dark:text-white flex items-center gap-2">
                 <Layers className="w-4 h-4 text-blue-500" />
-                <span>Multi-Vector Recovery Execution Telemetry ({report.transactions.length} Records)</span>
+                <span>Multi-Vector Batch Benchmark Telemetry</span>
               </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
-                Batch ID: {report.batch_id}
+              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 tabular-nums">
+                Batch: {report.batch_id} • {report.total_transactions} Scenarios
               </span>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-zinc-50 dark:bg-[#18181b] border-b border-zinc-200 dark:border-[#27272a] text-zinc-500 dark:text-zinc-400 font-subheading">
-                    <th className="p-3">Vector / Scenario</th>
-                    <th className="p-3">Order Amount</th>
-                    <th className="p-3">Diagnosis / Root Cause</th>
-                    <th className="p-3">Action & Channel</th>
-                    <th className="p-3">Recovered Amount</th>
-                    <th className="p-3 text-right">Interactive Agent Artefact</th>
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-50 dark:bg-[#18181b] text-zinc-600 dark:text-zinc-400 font-mono uppercase text-[10px] tracking-wider border-b border-zinc-200 dark:border-[#27272a]">
+                  <tr>
+                    <th scope="col" className="p-3">Order & Loss Vector</th>
+                    <th scope="col" className="p-3">At Risk</th>
+                    <th scope="col" className="p-3">Failure Diagnostics</th>
+                    <th scope="col" className="p-3">Intervention Strategy</th>
+                    <th scope="col" className="p-3">Settlement / Status</th>
+                    <th scope="col" className="p-3 text-right">Voice AI Inspection</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-[#27272a]">
@@ -217,7 +217,7 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
                           </span>
                         </td>
 
-                        <td className="p-3 font-mono font-semibold text-zinc-800 dark:text-zinc-200">
+                        <td className="p-3 font-mono font-semibold text-zinc-800 dark:text-zinc-200 tabular-nums">
                           ₹{t.amount.toLocaleString('en-IN')}
                         </td>
 
@@ -230,7 +230,7 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
                             {t.recovery_channel || 'Multi-Channel'}
                           </span>
                           {t.discount_applied_percent > 0 && (
-                            <span className="ml-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                            <span className="ml-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                               -{t.discount_applied_percent}%
                             </span>
                           )}
@@ -238,7 +238,7 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
 
                         <td className="p-3">
                           {isRecovered ? (
-                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                               ₹{t.recovered_amount.toLocaleString('en-IN')}
                             </span>
                           ) : isHalted ? (

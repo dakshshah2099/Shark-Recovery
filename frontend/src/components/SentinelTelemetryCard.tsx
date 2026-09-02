@@ -98,7 +98,7 @@ export const SentinelTelemetryCard: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400 font-mono text-[11px]">
+              <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400 font-mono text-[11px] tabular-nums">
                 <span>SR: <strong className={isHealthy ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-amber-600 dark:text-amber-400 font-bold'}>{node.success_rate}%</strong></span>
                 <span>Latency: {node.latency_ms}ms</span>
               </div>

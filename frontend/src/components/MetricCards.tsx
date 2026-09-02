@@ -27,12 +27,12 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               Recovered Revenue
             </span>
-            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 font-mono">
+            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 font-mono tabular-nums">
               <ArrowUpRight className="w-3 h-3" />
               {recoveryRate}%
             </span>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight tabular-nums">
             ₹{recoveredRev.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
@@ -40,7 +40,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
         <div>
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1.5 font-mono text-[11px]">
             <span className="font-body">Recovery Efficiency</span>
-            <span className="text-emerald-700 dark:text-emerald-400 font-bold">{recoveryRate}%</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-bold tabular-nums">{recoveryRate}%</span>
           </div>
           <div className="w-full bg-zinc-100 dark:bg-[#18181b] h-1.5 rounded-full overflow-hidden">
             <div
@@ -63,14 +63,14 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               <AlertCircle className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight tabular-nums">
             ₹{revAtRisk.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
         <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-[#27272a] font-mono">
-          <span>Dropouts: <strong className="text-zinc-900 dark:text-white font-semibold">{totalCount}</strong></span>
-          <span className="text-rose-600 dark:text-rose-400 font-semibold">{activeCount} In Pipeline</span>
+          <span>Dropouts: <strong className="text-zinc-900 dark:text-white font-semibold tabular-nums">{totalCount}</strong></span>
+          <span className="text-rose-600 dark:text-rose-400 font-semibold tabular-nums">{activeCount} In Pipeline</span>
         </div>
       </div>
 
@@ -86,14 +86,14 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               <Percent className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-amber-700 dark:text-amber-400 mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-amber-700 dark:text-amber-400 mt-2.5 tracking-tight tabular-nums">
             ₹{discountLoss.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
         <div className="flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-[#27272a] font-mono">
           <span className="font-body">AI Discount Range</span>
-          <span className="text-amber-700 dark:text-amber-400 font-semibold">0% – 15%</span>
+          <span className="text-amber-700 dark:text-amber-400 font-semibold tabular-nums">0% – 15%</span>
         </div>
       </div>
 
@@ -109,7 +109,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               <MessageSquare className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight">
+          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight tabular-nums">
             {whatsappCount + emailCount}
           </div>
         </div>
