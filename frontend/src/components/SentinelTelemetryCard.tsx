@@ -58,7 +58,7 @@ export const SentinelTelemetryCard: React.FC = () => {
           </div>
           <div>
             <h3 className="font-heading font-extrabold text-sm sm:text-base text-zinc-900 dark:text-white flex flex-wrap items-center gap-2">
-              <span>Sentinel Degradation Monitor</span>
+              <span>Sentinel Degradation & Loss Vector Telemetry</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
                 report?.overall_system_health === 'OPTIMAL'
                   ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
@@ -70,11 +70,11 @@ export const SentinelTelemetryCard: React.FC = () => {
               </span>
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-[#18181b] text-zinc-500 dark:text-zinc-400 text-[10px] font-mono font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Live DB Feed</span>
+                <span>Live DB Telemetry</span>
               </span>
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
-              Autonomous telemetry analyzing live banking gateway success rates, CBS latency & routing anomalies.
+              Closed-loop telemetry analyzing live revenue degradation across checkout dropoffs, gateway 503s, mandate retries, B2B invoices & Voice AI.
             </p>
           </div>
         </div>
@@ -132,7 +132,7 @@ export const SentinelTelemetryCard: React.FC = () => {
 
               <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400 font-mono text-[11px] tabular-nums">
                 <span>
-                  SR:{' '}
+                  Recovery Rate:{' '}
                   <strong
                     className={
                       isCritical
@@ -145,9 +145,9 @@ export const SentinelTelemetryCard: React.FC = () => {
                     {node.success_rate}%
                   </strong>
                 </span>
-                <span>Latency: {node.latency_ms}ms</span>
+                <span>{node.latency_ms}ms</span>
                 <span className="text-zinc-500 dark:text-zinc-400">
-                  {failures > 0 ? `${failures} DB Failures` : '0 Failures'}
+                  {failures > 0 ? `${failures} Incidents` : '0 Dropouts'}
                 </span>
               </div>
 

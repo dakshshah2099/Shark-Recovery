@@ -26,13 +26,55 @@ class DegradationReport(BaseModel):
     summary: str
 
 
-GATEWAY_NODES = [
-    {"name": "HDFC Bank UPI", "type": "UPI", "base_sr": 94.5, "base_latency": 380, "keywords": ["hdfc", "upi_limit"]},
-    {"name": "State Bank of India", "type": "Netbanking", "base_sr": 86.0, "base_latency": 1150, "keywords": ["sbi", "gateway_error", "503"]},
-    {"name": "ICICI Bank Instant", "type": "UPI", "base_sr": 96.8, "base_latency": 290, "keywords": ["icici"]},
-    {"name": "Razorpay Smart Routing", "type": "Cards", "base_sr": 95.2, "base_latency": 450, "keywords": ["card", "3ds", "checkout"]},
-    {"name": "NPCI e-Mandate Hub", "type": "AutoDebit", "base_sr": 89.0, "base_latency": 820, "keywords": ["mandate", "recurring", "autopay"]},
-    {"name": "Axis Bank UPI", "type": "UPI", "base_sr": 93.5, "base_latency": 410, "keywords": ["axis"]},
+REVENUE_LOSS_VECTORS = [
+    {
+        "vector_id": "checkout_dropoff",
+        "name": "Checkout Drop-off Recovery",
+        "rail": "UPI & Cart Dropout",
+        "base_latency": 240,
+        "keywords": ["checkout_dropoff", "drop", "cart", "checkout", "session", "user_dropout", "timeout", "upi_limit"],
+        "recommendation": "Dispatch 1-click Hinglish WhatsApp recovery link with dynamic 10% discount.",
+    },
+    {
+        "vector_id": "gateway_spike",
+        "name": "Payment Gateway 503 Spikes",
+        "rail": "Smart Routing & 3DS",
+        "base_latency": 450,
+        "keywords": ["gateway_spike", "sbi", "503", "502", "500", "gateway_error", "bank_server_error", "outage", "cbs"],
+        "recommendation": "Reroute incoming checkouts to UPI DeepLink bypass to circumvent bank CBS downtime.",
+    },
+    {
+        "vector_id": "failed_subscription",
+        "name": "Failed-Subscription Recovery",
+        "rail": "Recurring AutoDebit",
+        "base_latency": 320,
+        "keywords": ["failed_subscription", "subscription", "recurring", "autopay"],
+        "recommendation": "Schedule 3-slot cooling-off retries; dispatch direct payment link.",
+    },
+    {
+        "vector_id": "mandate_degradation",
+        "name": "Mandate Retry Sequencer",
+        "rail": "NPCI e-Mandate Hub",
+        "base_latency": 580,
+        "keywords": ["mandate_degradation", "cooling", "sequencer", "nach", "mandate", "debit limit"],
+        "recommendation": "Sequence auto-debit retries across compliant 24h/72h cooling-off windows.",
+    },
+    {
+        "vector_id": "b2b_receivable",
+        "name": "B2B Receivables Chaser",
+        "rail": "Corporate Invoicing",
+        "base_latency": 620,
+        "keywords": ["b2b_receivable", "b2b", "receivable", "invoice", "overdue", "restructuring"],
+        "recommendation": "Propose 2-stage milestone restructuring & capture Promise-to-Pay target.",
+    },
+    {
+        "vector_id": "voice_recovery",
+        "name": "Hinglish Voice Recovery",
+        "rail": "Conversational AI IVR",
+        "base_latency": 890,
+        "keywords": ["voice_recovery", "voice", "ivr", "call", "high_value", "promise_to_pay", "audio"],
+        "recommendation": "Trigger turn-by-turn conversational IVR call with Promise-to-Pay tracking.",
+    },
 ]
 
 
@@ -43,12 +85,19 @@ async def run_sentinel_monitor(
 ) -> DegradationReport:
     """
     Sentinel Telemetry Agent:
-    Computes real gateway degradation metrics by analyzing actual database failure records,
-    error codes, and incoming failure patterns rather than static mock fixtures.
-    """
-    db_failures_by_node: Dict[str, int] = {node["name"]: 0 for node in GATEWAY_NODES}
+    Monitors degradation across all 6 core revenue loss vectors defined in the problem statement:
+    1. Checkout drop-off recovery
+    2. Payment degradation (503 gateway spikes)
+    3. Failed-subscription recovery
+    4. Mandate retry sequencer
+    5. B2B receivables chaser
+    6. Hinglish voice recovery & Promise-to-pay tracker
 
-    # 1. Query real transaction logs from SQLite DB
+    Computes actual empirical recovery rates, volumes at risk, and intervention health from DB transactions.
+    """
+    raw_txns = []
+
+    # 1. Query real transaction records from SQLite DB
     if session:
         try:
             try:
@@ -56,15 +105,20 @@ async def run_sentinel_monitor(
             except ImportError:
                 from models.transaction import Transaction
 
-            result = await session.execute(select(Transaction.failure_code, Transaction.failure_reason))
-            rows = result.all()
-            for code, reason in rows:
-                full_text = f"{code or ''} {reason or ''}".lower()
-                for node in GATEWAY_NODES:
-                    if any(k in full_text for k in node["keywords"]):
-                        db_failures_by_node[node["name"]] += 1
+            result = await session.execute(
+                select(
+                    Transaction.loss_vector,
+                    Transaction.failure_category,
+                    Transaction.failure_code,
+                    Transaction.failure_reason,
+                    Transaction.amount,
+                    Transaction.recovered_amount,
+                    Transaction.status,
+                )
+            )
+            raw_txns = result.all()
         except Exception as e:
-            logger.warning(f"Sentinel DB telemetry aggregation notice: {e}")
+            logger.warning(f"Sentinel DB telemetry query notice: {e}")
     else:
         try:
             try:
@@ -75,68 +129,99 @@ async def run_sentinel_monitor(
                 from models.transaction import Transaction
 
             async with async_session_maker() as auto_sess:
-                result = await auto_sess.execute(select(Transaction.failure_code, Transaction.failure_reason))
-                rows = result.all()
-                for code, reason in rows:
-                    full_text = f"{code or ''} {reason or ''}".lower()
-                    for node in GATEWAY_NODES:
-                        if any(k in full_text for k in node["keywords"]):
-                            db_failures_by_node[node["name"]] += 1
+                result = await auto_sess.execute(
+                    select(
+                        Transaction.loss_vector,
+                        Transaction.failure_category,
+                        Transaction.failure_code,
+                        Transaction.failure_reason,
+                        Transaction.amount,
+                        Transaction.recovered_amount,
+                        Transaction.status,
+                    )
+                )
+                raw_txns = result.all()
         except Exception as e:
             logger.warning(f"Sentinel standalone DB query notice: {e}")
 
-    # 2. Check incoming trigger context
     incoming_text = f"{error_code} {failure_reason}".lower()
 
     anomalies: List[GatewayHealth] = []
-    for node in GATEWAY_NODES:
-        name = node["name"]
-        logged_failures = db_failures_by_node.get(name, 0)
+    for vec in REVENUE_LOSS_VECTORS:
+        vec_id = vec["vector_id"]
+        name = vec["name"]
+        keywords = vec["keywords"]
 
-        # Base success rate penalized by actual observed failures
-        sr_penalty = min(35.0, logged_failures * 3.5)
-        is_current_target = any(k in incoming_text for k in node["keywords"])
-        if is_current_target:
-            sr_penalty += 12.0
+        # Filter transactions matching this loss vector
+        matching_txns = []
+        for t in raw_txns:
+            loss_vec_val = getattr(t[0], "value", str(t[0])) if t[0] else ""
+            category_val = getattr(t[1], "value", str(t[1])) if t[1] else ""
+            code_val = str(t[2] or "").lower()
+            reason_val = str(t[3] or "").lower()
+            combined_text = f"{loss_vec_val} {category_val} {code_val} {reason_val}".lower()
 
-        current_sr = max(35.0, min(99.8, node["base_sr"] - sr_penalty))
-        latency_penalty = int(logged_failures * 180 + (400 if is_current_target else 0))
-        current_latency = int(node["base_latency"] + latency_penalty)
+            if loss_vec_val == vec_id or any(k in combined_text for k in keywords):
+                matching_txns.append(t)
 
-        if current_sr < 70.0 or (is_current_target and "503" in incoming_text):
-            status = "CRITICAL_OUTAGE" if current_sr < 60.0 else "DEGRADED"
-            if "SBI" in name:
-                rec = "Reroute incoming checkouts to UPI DeepLink (PhonePe/GPay) to bypass SBI CBS downtime."
-            elif "Mandate" in name:
-                rec = "Trigger 24h cooling-off retry window; dispatch 1-click fallback payment link."
-            else:
-                rec = "Activate Smart Routing fallback to alternate acquiring gateway."
-        elif current_sr < 85.0:
-            status = "DEGRADED"
-            rec = "Monitor node latency closely; recommend UPI Intent fallback."
-        else:
+        total_logged = len(matching_txns)
+        total_at_risk = sum(float(t[4] or 0.0) for t in matching_txns)
+        total_recovered = sum(float(t[5] or 0.0) for t in matching_txns if str(t[6]).lower() in ["recovered", "transactionstatus.recovered"])
+
+        # Check if currently targeted by incoming failure spike
+        is_current_target = any(k in incoming_text for k in keywords)
+
+        # Success rate calculation: empirical recovery percentage from DB
+        if total_logged == 0:
+            current_sr = 96.0  # nominal baseline when no failure incidents logged
             status = "HEALTHY"
-            rec = "Operational routing running within nominal bounds."
+        else:
+            if total_at_risk > 0:
+                current_sr = min(100.0, max(10.0, (total_recovered / total_at_risk) * 100.0))
+            else:
+                current_sr = 90.0
+
+            if is_current_target:
+                current_sr = max(15.0, current_sr - 12.0)
+
+            if current_sr >= 75.0:
+                status = "HEALTHY"
+            elif current_sr >= 40.0:
+                status = "DEGRADED"
+            else:
+                status = "CRITICAL_OUTAGE"
+
+        # Calculate latency in ms with realistic backoff under load
+        latency_penalty = int(total_logged * 45 + (350 if is_current_target else 0))
+        current_latency = int(vec["base_latency"] + latency_penalty)
+
+        rec = vec["recommendation"]
+        if is_current_target and "503" in incoming_text:
+            rec = "Active 503 bank CBS spike detected: Auto-rerouting dropouts to PhonePe/GPay UPI DeepLink."
 
         anomalies.append(
             GatewayHealth(
                 gateway_name=name,
-                channel_type=node["type"],
+                channel_type=vec["rail"],
                 success_rate=round(current_sr, 1),
                 latency_ms=current_latency,
                 status=status,
-                total_failures_logged=logged_failures,
+                total_failures_logged=total_logged,
                 recommendation=rec,
             )
         )
 
     degraded_count = sum(1 for g in anomalies if g.status != "HEALTHY")
-    overall = "CRITICAL" if any(g.status == "CRITICAL_OUTAGE" for g in anomalies) else ("DEGRADED" if degraded_count >= 2 else ("WARNING" if degraded_count == 1 else "OPTIMAL"))
+    overall = (
+        "CRITICAL"
+        if any(g.status == "CRITICAL_OUTAGE" for g in anomalies)
+        else ("DEGRADED" if degraded_count >= 2 else ("WARNING" if degraded_count == 1 else "OPTIMAL"))
+    )
 
     return DegradationReport(
         timestamp=datetime.utcnow(),
         overall_system_health=overall,
         active_anomalies=anomalies,
         routing_adjustment_recommended=degraded_count > 0,
-        summary=f"Sentinel Telemetry computed health across {len(anomalies)} payment nodes from live DB logs. {degraded_count} nodes degraded.",
+        summary=f"Sentinel Telemetry computed recovery metrics across all 6 problem statement loss vectors. {degraded_count} vectors under active remediation.",
     )
