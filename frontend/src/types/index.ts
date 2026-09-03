@@ -36,12 +36,17 @@ export interface TransactionItem {
   failure_code?: string | null;
   failure_reason?: string | null;
   failure_category: FailureCategory;
+  loss_vector?: string | null;
+  escalation_level?: number;
   retry_count: number;
   max_retries: number;
   recovery_link?: string | null;
   recovery_channel?: string | null;
   discount_applied_percent: number;
   recovered_amount: number;
+  promise_to_pay_date?: string | null;
+  mandate_retry_schedule?: string | null;
+  voice_call_transcript?: string | null;
   created_at: string;
   updated_at: string;
 }

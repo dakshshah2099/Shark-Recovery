@@ -15,6 +15,7 @@ try:
     from backend.models.customer import Customer
     from backend.models.transaction import (
         FailureCategory,
+        LossVector,
         Transaction,
         TransactionStatus,
     )
@@ -26,6 +27,7 @@ except ImportError:
     from models.customer import Customer
     from models.transaction import (
         FailureCategory,
+        LossVector,
         Transaction,
         TransactionStatus,
     )
@@ -108,6 +110,18 @@ async def handle_razorpay_webhook(
             session.add(customer)
             await session.commit()
 
+        # Infer Loss Vector from error code & description
+        loss_vector = LossVector.CHECKOUT_DROPOFF
+        desc_lower = f"{error_code or ''} {error_desc or ''}".lower()
+        if any(k in desc_lower for k in ["sbi", "503", "502", "gateway", "server_error", "outage"]):
+            loss_vector = LossVector.GATEWAY_SPIKE
+        elif any(k in desc_lower for k in ["mandate", "subscription", "recurring", "autopay"]):
+            loss_vector = LossVector.FAILED_SUBSCRIPTION
+        elif any(k in desc_lower for k in ["invoice", "b2b", "receivable"]):
+            loss_vector = LossVector.B2B_RECEIVABLE
+        elif amount_inr >= 5000.0:
+            loss_vector = LossVector.VOICE_RECOVERY
+
         # Create Transaction
         transaction = Transaction(
             razorpay_order_id=order_id,
@@ -116,6 +130,7 @@ async def handle_razorpay_webhook(
             amount=amount_inr if amount_inr > 0 else 1999.0,
             currency=currency,
             status=TransactionStatus.FAILED,
+            loss_vector=loss_vector,
             failure_code=error_code,
             failure_reason=error_desc,
             retry_count=0,
