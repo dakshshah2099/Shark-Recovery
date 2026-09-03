@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import type { AuditLogItem } from '../types';
+import { formatToIST, formatFullIST } from '../utils/date';
 
 interface AuditLogTimelineProps {
   logs: AuditLogItem[];
@@ -309,7 +310,7 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({ logs }) => {
                           <span>{log.execution_duration_ms.toFixed(1)}ms</span>
                         </span>
                       )}
-                      <span>{new Date(log.created_at).toLocaleTimeString()}</span>
+                      <span>{formatToIST(log.created_at)}</span>
                       {isExpanded ? (
                         <ChevronDown className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       ) : (
@@ -343,7 +344,7 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({ logs }) => {
                         <span>•</span>
                         <span>Status: <strong className="uppercase">{log.status}</strong></span>
                         <span>•</span>
-                        <span>ISO: {new Date(log.created_at).toISOString()}</span>
+                        <span>IST: {formatFullIST(log.created_at)}</span>
                       </div>
                       {log.customer_id && (
                         <span className="text-[10px]">Customer: {log.customer_id}</span>

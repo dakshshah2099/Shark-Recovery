@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { CustomSelect, type SelectOption } from './CustomSelect';
 import type { TransactionItem, TransactionStatus } from '../types';
+import { formatToIST } from '../utils/date';
 
 interface TransactionTableProps {
   transactions: TransactionItem[];
@@ -158,8 +159,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
                     {txn.customer_email}
                   </div>
-                  <div className="text-[11px] text-blue-600 dark:text-blue-400 font-mono truncate font-medium">
-                    {txn.razorpay_order_id}
+                  <div className="flex items-center gap-1.5 text-[11px] font-mono mt-0.5">
+                    <span className="text-blue-600 dark:text-blue-400 font-medium truncate">{txn.razorpay_order_id}</span>
+                    <span className="text-zinc-400 dark:text-zinc-500">•</span>
+                    <span className="text-zinc-500 dark:text-zinc-400 tabular-nums">{formatToIST(txn.created_at, true)}</span>
                   </div>
                 </div>
                 <div className="text-right shrink-0">
@@ -290,8 +293,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate mt-0.5">
                       {txn.customer_email}
                     </div>
-                    <div className="text-[11px] text-blue-600 dark:text-blue-400 font-mono truncate mt-0.5 font-medium">
-                      {txn.razorpay_order_id}
+                    <div className="flex items-center gap-2 text-[11px] font-mono mt-0.5">
+                      <span className="text-blue-600 dark:text-blue-400 font-medium truncate">{txn.razorpay_order_id}</span>
+                      <span className="text-zinc-400 dark:text-zinc-500">•</span>
+                      <span className="text-zinc-500 dark:text-zinc-400 tabular-nums">{formatToIST(txn.created_at, true)}</span>
                     </div>
                   </td>
 
