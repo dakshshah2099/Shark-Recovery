@@ -4,23 +4,23 @@ from typing import Dict, List, Optional
 from dotenv import find_dotenv, load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Locate and strictly load .env file from workspace/backend root
-_env_path = find_dotenv(usecwd=True)
-if not _env_path:
-    # Look in current directory or parent directory
-    candidate_paths = [
-        Path.cwd() / ".env",
-        Path.cwd() / "backend" / ".env",
-        Path(__file__).parent / ".env",
-        Path(__file__).parent.parent / ".env",
-    ]
-    for p in candidate_paths:
-        if p.exists():
-            _env_path = str(p)
-            break
+# Locate and strictly load canonical .env file from repository root
+_repo_root = Path(__file__).resolve().parent.parent
+_candidate_paths = [
+    _repo_root / ".env",
+    Path.cwd() / ".env",
+    Path(__file__).parent / ".env",
+]
+_env_path = None
+for p in _candidate_paths:
+    if p.exists():
+        _env_path = str(p)
+        break
 
-if _env_path:
-    load_dotenv(dotenv_path=_env_path, override=True)
+if not _env_path:
+    _env_path = str(_repo_root / ".env")
+
+load_dotenv(dotenv_path=_env_path, override=True)
 
 
 class Settings(BaseSettings):
@@ -72,9 +72,9 @@ settings = Settings()
 
 def save_settings_to_env(updates: Dict[str, Optional[str]]) -> None:
     """
-    Updates configuration on disk strictly in the .env file and reloads runtime settings.
+    Updates configuration on disk strictly in the canonical root .env file and reloads runtime settings.
     """
-    target_env = _env_path if _env_path else str(Path(__file__).parent / ".env")
+    target_env = _env_path if _env_path else str(_repo_root / ".env")
     
     # Read existing lines or create new
     existing_lines: List[str] = []

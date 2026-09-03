@@ -124,12 +124,11 @@ Shark Recovery natively handles all 6 revenue loss vectors:
 git clone https://github.com/your-username/AI_Shark_Razorpay.git
 cd AI_Shark_Razorpay
 
-# Setup Backend Environment
-cd backend
+# Setup Environment in repository root
 cp .env.example .env
 ```
 
-Configure the following credentials in `backend/.env`:
+Configure the following credentials in `.env`:
 ```ini
 # LLM Providers (Optional - deterministic rule fallbacks included)
 GEMINI_API_KEY=your_gemini_api_key
