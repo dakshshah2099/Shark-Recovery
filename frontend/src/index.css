@@ -57,36 +57,50 @@
   }
 }
 
-/* Universal cursor rules: hand (pointer) only on interactive buttons/links, default arrow on text */
+/* Universal default cursor on non-interactive text and containers */
 *, *::before, *::after {
   cursor: default;
 }
 
+/* Hand (pointer) cursor on all interactive elements and all text/icons inside buttons */
 a,
+a *,
 button,
+button *,
 [role="button"],
+[role="button"] *,
 [role="tab"],
+[role="tab"] *,
 select,
+select *,
 summary,
+summary *,
+label[for],
+label[for] *,
 input[type="button"],
 input[type="submit"],
 input[type="reset"],
 input[type="checkbox"],
 input[type="radio"],
-.cursor-pointer {
+.cursor-pointer,
+.cursor-pointer * {
   cursor: pointer !important;
 }
 
 button:disabled,
+button:disabled *,
 [role="button"][aria-disabled="true"],
+[role="button"][aria-disabled="true"] *,
 input:disabled,
 select:disabled,
 .disabled,
-.cursor-not-allowed {
+.disabled *,
+.cursor-not-allowed,
+.cursor-not-allowed * {
   cursor: not-allowed !important;
 }
 
-/* Editable inputs keep text cursor only when focused or typing */
+/* Editable text fields keep text cursor */
 input[type="text"],
 input[type="email"],
 input[type="number"],
