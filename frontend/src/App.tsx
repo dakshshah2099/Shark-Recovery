@@ -327,10 +327,10 @@ export const App: React.FC = () => {
               <div>
                 <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-zinc-900 dark:text-white flex items-center gap-2">
                   <Cpu className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <span>Autonomous Multi-Agent Telemetry Flow</span>
+                  <span>Autonomous Multi-Agent Telemetry Flow & Gateway Performance</span>
                 </h2>
                 <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
-                  Deterministic step-by-step reasoning pipeline from checkout dropout to revenue capture.
+                  Real-time gateway degradation health monitor and deterministic multi-agent reasoning pipeline.
                 </p>
               </div>
               <SentinelTelemetryCard />

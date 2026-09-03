@@ -1,6 +1,5 @@
 import React from 'react';
 import { MetricCards } from '../components/MetricCards';
-import { SentinelTelemetryCard } from '../components/SentinelTelemetryCard';
 import {
   Table,
   ShieldCheck,
@@ -63,9 +62,6 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
       {/* 2. Key Metrics Grid */}
       <MetricCards metrics={metrics} />
-
-      {/* 3. Real-Time Sentinel Gateway Telemetry Monitor */}
-      <SentinelTelemetryCard />
 
       {/* 3. Active Recovery Pipeline */}
       <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs transition-colors space-y-4">

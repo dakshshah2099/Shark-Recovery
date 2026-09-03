@@ -72,9 +72,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ? [
           {
             id: 'agent-flow',
-            label: 'Agent Flow',
+            label: 'Agent Flow & Performance',
             icon: Cpu,
-            desc: '6-Node Pipeline',
+            desc: 'Pipeline & Telemetry',
           },
         ]
       : []),
