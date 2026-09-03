@@ -32,17 +32,28 @@ def main():
     existing_pythonpath = backend_env.get("PYTHONPATH", "")
     backend_env["PYTHONPATH"] = f"{root_dir}{os.pathsep}{backend_dir}{os.pathsep}{existing_pythonpath}"
 
-    # Launch Backend
-    backend_cmd = ["uv", "run", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000", "--reload"]
-    backend_proc = subprocess.Popen(backend_cmd, cwd=str(backend_dir), env=backend_env)
+    creation_flags = subprocess.CREATE_NEW_CONSOLE if sys.platform == "win32" else 0
 
-    # Wait 2 seconds for backend to start
+    # Launch Backend in its own console window
+    backend_cmd = ["uv", "run", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000", "--reload"]
+    backend_proc = subprocess.Popen(
+        backend_cmd,
+        cwd=str(backend_dir),
+        env=backend_env,
+        creationflags=creation_flags,
+    )
+
+    # Wait 2 seconds for backend to initialize
     time.sleep(2)
 
-    # Launch Frontend
+    # Launch Frontend in its own console window
     npm_exec = "npm.cmd" if sys.platform == "win32" else "npm"
     frontend_cmd = [npm_exec, "run", "dev", "--", "--host"]
-    frontend_proc = subprocess.Popen(frontend_cmd, cwd=str(frontend_dir))
+    frontend_proc = subprocess.Popen(
+        frontend_cmd,
+        cwd=str(frontend_dir),
+        creationflags=creation_flags,
+    )
 
     try:
         backend_proc.wait()
