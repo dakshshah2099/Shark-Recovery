@@ -57,6 +57,48 @@
   }
 }
 
+/* Universal cursor rules: hand (pointer) only on interactive buttons/links, default arrow on text */
+*, *::before, *::after {
+  cursor: default;
+}
+
+a,
+button,
+[role="button"],
+[role="tab"],
+select,
+summary,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"],
+input:disabled,
+select:disabled,
+.disabled,
+.cursor-not-allowed {
+  cursor: not-allowed !important;
+}
+
+/* Editable inputs keep text cursor only when focused or typing */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea,
+[contenteditable="true"] {
+  cursor: text !important;
+}
+
 /* Precision focus rings */
 .focus-rzp {
   outline: none;
