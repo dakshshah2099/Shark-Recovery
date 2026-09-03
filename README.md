@@ -153,7 +153,18 @@ MAX_RETRY_ATTEMPTS=2
 MAX_DISCOUNT_PERCENT=15.0
 ```
 
-### 3. Launch Platform (One-Command Runner)
+### 3. Launch Platform
+
+#### Option A: Docker Compose (Production Multi-Container)
+Run backend and frontend in isolated, production-grade Docker containers:
+```bash
+docker compose up --build
+```
+* **Dashboard Frontend (Nginx SPA):** [http://localhost:3000](http://localhost:3000) or [http://localhost:5173](http://localhost:5173)
+* **Backend API Swagger:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+* **Persistent SQLite Volume:** `recovery_data` mounted at `/app/data/recovery.db`
+
+#### Option B: Local Python & Node Runner (One-Command)
 From the repository root:
 ```bash
 python run_demo.py

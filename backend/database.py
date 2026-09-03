@@ -3,6 +3,7 @@ from typing import AsyncGenerator
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
+from pathlib import Path
 try:
     from backend.config import settings
 except ImportError:
@@ -12,6 +13,15 @@ except ImportError:
 logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
 logging.getLogger("sqlalchemy.pool").setLevel(logging.ERROR)
 logging.getLogger("sqlalchemy.dialects").setLevel(logging.ERROR)
+
+# Ensure parent directory exists for SQLite file
+if "sqlite" in settings.DATABASE_URL and "///" in settings.DATABASE_URL:
+    try:
+        db_raw_path = settings.DATABASE_URL.split("///")[-1]
+        if db_raw_path and not db_raw_path.startswith(":memory:"):
+            Path(db_raw_path).resolve().parent.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        logging.getLogger(__name__).warning(f"DB path directory creation notice: {e}")
 
 # SQLite async engine configuration
 connect_args = {"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
