@@ -1,8 +1,10 @@
+import asyncio
 import logging
+import smtplib
+import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Any, Dict
-import aiosmtplib
 try:
     from backend.config import settings
     from backend.models.schemas import EmailPayload
@@ -13,9 +15,37 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+def _send_sync_smtp(message: MIMEMultipart, recipient_email: str) -> None:
+    """Synchronous bulletproof SMTP delivery via Python standard library smtplib."""
+    host = settings.SMTP_HOST or "smtp.gmail.com"
+    port = int(settings.SMTP_PORT or (465 if "gmail" in host.lower() else 587))
+    username = (settings.SMTP_USERNAME or "").strip()
+    password = (settings.SMTP_PASSWORD or "").replace(" ", "").strip()
+
+    # Attempt 1: Direct SSL (Port 465 or default for Gmail)
+    if port == 465 or "gmail" in host.lower():
+        try:
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(host, 465, context=context, timeout=15) as server:
+                server.login(username, password)
+                server.send_message(message)
+                return
+        except Exception as e_ssl:
+            logger.warning(f"SMTP Port 465 SSL failed ({e_ssl}), trying fallback STARTTLS on port 587...")
+
+    # Attempt 2: STARTTLS (Port 587 / 2525)
+    context = ssl.create_default_context()
+    with smtplib.SMTP(host, 587 if port == 465 else port, timeout=15) as server:
+        server.ehlo()
+        server.starttls(context=context)
+        server.ehlo()
+        server.login(username, password)
+        server.send_message(message)
+
+
 async def send_recovery_email(payload: EmailPayload) -> Dict[str, Any]:
     """
-    Sends an automated recovery email asynchronously via aiosmtplib.
+    Sends an automated recovery email asynchronously via standard smtplib executed in asyncio threadpool.
     Gracefully falls back to simulated dispatch if SMTP credentials are not configured.
     """
     # Build MIME Message
@@ -37,22 +67,16 @@ async def send_recovery_email(payload: EmailPayload) -> Dict[str, Any]:
     message.attach(part_html)
 
     # Check if live SMTP credentials exist
-    is_live_smtp = bool(settings.SMTP_USERNAME and settings.SMTP_PASSWORD and not str(settings.SMTP_PASSWORD).startswith("placeholder"))
+    is_live_smtp = bool(
+        settings.SMTP_USERNAME
+        and settings.SMTP_PASSWORD
+        and not str(settings.SMTP_PASSWORD).startswith("placeholder")
+    )
 
     if is_live_smtp:
         try:
-            port = int(settings.SMTP_PORT or 587)
-            logger.info(f"Dispatching live SMTP recovery email to {payload.recipient_email} via {settings.SMTP_HOST}:{port}")
-            await aiosmtplib.send(
-                message,
-                hostname=settings.SMTP_HOST,
-                port=port,
-                username=settings.SMTP_USERNAME,
-                password=settings.SMTP_PASSWORD,
-                use_tls=port == 465,
-                start_tls=port in (587, 2525),
-                timeout=12,
-            )
+            logger.info(f"Dispatching live SMTP recovery email to {payload.recipient_email} via {settings.SMTP_HOST}")
+            await asyncio.to_thread(_send_sync_smtp, message, payload.recipient_email)
             logger.info(f"Live SMTP email delivered successfully to {payload.recipient_email}")
             return {
                 "delivered": True,
