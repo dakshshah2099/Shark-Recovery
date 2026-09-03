@@ -302,9 +302,9 @@ export const App: React.FC = () => {
         debugMode={debugMode}
       />
 
-      {/* Main Content Layout with Dynamic Sidebar Offset */}
+      {/* Main Content Layout with Instant Sidebar Offset */}
       <div
-        className={`flex flex-col flex-1 min-h-screen transition-all duration-300 ease-out ${
+        className={`flex flex-col flex-1 min-h-screen ${
           sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
         }`}
       >
