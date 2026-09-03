@@ -20,8 +20,25 @@ export interface ToastNotification {
   message: string;
 }
 
+const VALID_TABS = ['overview', 'transactions', 'ingest', 'agent-flow', 'audit', 'settings'] as const;
+type TabType = (typeof VALID_TABS)[number];
+
+const getTabFromPath = (): TabType => {
+  const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+  if (VALID_TABS.includes(pathname as TabType)) {
+    return pathname as TabType;
+  }
+  if (window.location.hash) {
+    const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+    if (VALID_TABS.includes(hash as TabType)) {
+      return hash as TabType;
+    }
+  }
+  return 'overview';
+};
+
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('overview');
+  const [activeTab, setActiveTab] = useState<string>(getTabFromPath);
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
@@ -33,6 +50,39 @@ export const App: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
   const [maxRetries, setMaxRetries] = useState<number>(2);
   const [debugMode, setDebugMode] = useState<boolean>(true);
+
+  // Sync route navigation with browser history
+  const handleTabChange = useCallback((tab: string) => {
+    if (!VALID_TABS.includes(tab as TabType)) return;
+    setActiveTab(tab);
+    const targetPath = tab === 'overview' ? '/' : `/${tab}`;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({ tab }, '', targetPath);
+    }
+  }, []);
+
+  // Listen for browser back / forward buttons
+  useEffect(() => {
+    const onPopState = () => {
+      const tab = getTabFromPath();
+      setActiveTab(tab);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  // Sync document title with active route
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      overview: 'Shark Recovery — Overview',
+      transactions: 'Shark Recovery — Transactions Ledger',
+      ingest: 'Shark Recovery — Autonomous Ingestion Hub',
+      'agent-flow': 'Shark Recovery — Agent Flow & Performance',
+      audit: 'Shark Recovery — AI Audit Trail',
+      settings: 'Shark Recovery — Settings & Keys',
+    };
+    document.title = titles[activeTab] || 'Shark Recovery';
+  }, [activeTab]);
 
   // Collapsible Sidebar State with LocalStorage persistence
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
@@ -242,7 +292,7 @@ export const App: React.FC = () => {
       {/* Enterprise Collapsible Sidebar */}
       <Sidebar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
         collapsed={sidebarCollapsed}
@@ -302,7 +352,7 @@ export const App: React.FC = () => {
               metrics={metrics}
               transactions={transactions}
               maxRetries={maxRetries}
-              onNavigateTab={setActiveTab}
+              onNavigateTab={handleTabChange}
             />
           )}
 
