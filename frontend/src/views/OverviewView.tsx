@@ -1,8 +1,8 @@
 import React from 'react';
 import { MetricCards } from '../components/MetricCards';
+import { SentinelTelemetryCard } from '../components/SentinelTelemetryCard';
 import {
   Table,
-  ArrowRight,
   ShieldCheck,
   Activity,
   Zap,
@@ -64,6 +64,9 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       {/* 2. Key Metrics Grid */}
       <MetricCards metrics={metrics} />
 
+      {/* 3. Real-Time Sentinel Gateway Telemetry Monitor */}
+      <SentinelTelemetryCard />
+
       {/* 3. Active Recovery Pipeline */}
       <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs transition-colors space-y-4">
         <div className="flex items-center justify-between pb-3.5 border-b border-zinc-100 dark:border-[#27272a]">
@@ -76,15 +79,6 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
               Transactions actively undergoing automated diagnostic and dynamic discount outreach.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => onNavigateTab('transactions')}
-            aria-label="View full transactions recovery ledger"
-            className="text-xs font-subheading font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 cursor-pointer focus-rzp rounded"
-          >
-            <span>View Full Ledger</span>
-            <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-          </button>
         </div>
 
         {activeTxns.length === 0 ? (
@@ -121,15 +115,6 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             <span>Deterministic Guardrail:</span>
             <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">Bounded to {maxRetries} Retries</span>
           </span>
-          <button
-            type="button"
-            onClick={() => onNavigateTab('ingest')}
-            aria-label="Go to Failure Ingestion hub"
-            className="text-blue-600 dark:text-blue-400 hover:underline font-subheading font-semibold cursor-pointer inline-flex items-center gap-1 focus-rzp rounded"
-          >
-            <Zap className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Ingest Dropout Event &rarr;</span>
-          </button>
         </div>
       </div>
     </div>

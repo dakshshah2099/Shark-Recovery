@@ -107,6 +107,55 @@ Output:
 """
 
 
+def calculate_dynamic_risk_score(
+    category: FailureCategory,
+    amount: float,
+    previous_failed_attempts: int = 0,
+    total_spent: float = 0.0,
+    failure_code: Optional[str] = None,
+    failure_reason: Optional[str] = None,
+) -> float:
+    """
+    Computes a continuous, multi-factor statistical risk score (0.0 to 1.0) combining:
+    1. Base Category Vulnerability
+    2. Order Ticket Size & Outlier Exposure Factor
+    3. Failure Frequency & Prior Dropout Velocity Penalty
+    4. Customer Lifetime Value (LTV) Loyalty Trust Mitigation
+    5. Specific Error Keyword Sensitivity (Fraud vs External Gateway downtime)
+    """
+    # 1. Base category vulnerability
+    base_map = {
+        FailureCategory.PAYMENT_DECLINED: 0.85,
+        FailureCategory.EXPIRED_CARD: 0.30,
+        FailureCategory.INSUFFICIENT_FUNDS: 0.22,
+        FailureCategory.USER_DROPOUT: 0.18,
+        FailureCategory.AUTHENTICATION_FAILED: 0.14,
+        FailureCategory.NETWORK_TIMEOUT: 0.08,
+        FailureCategory.BANK_SERVER_ERROR: 0.05,
+    }
+    base_risk = base_map.get(category, 0.20)
+
+    # 2. Ticket Size & Exposure Factor (larger carts carry higher customer dropout anxiety or fraud exposure)
+    amount_factor = min(0.15, max(0.0, (amount / 100000.0) * 0.15))
+
+    # 3. Repeat Failure Velocity Penalty (+0.08 per prior failure, up to 0.32)
+    history_penalty = min(0.32, max(0.0, previous_failed_attempts * 0.08))
+
+    # 4. Customer LTV Trust Mitigation (loyal customers with high total spend reduce churn risk up to -0.15)
+    ltv_mitigation = min(0.15, max(0.0, (total_spent / 50000.0) * 0.15))
+
+    # 5. Specific Error Keyword Sensitivity
+    keyword_delta = 0.0
+    text = f"{failure_code or ''} {failure_reason or ''}".lower()
+    if any(k in text for k in ["stolen", "fraud", "blacklist", "blocked"]):
+        keyword_delta += 0.14
+    elif any(k in text for k in ["503", "gateway_error", "bank downtime", "cbs", "server outage"]):
+        keyword_delta -= 0.04  # purely external banking gateway failure
+
+    computed_risk = base_risk + amount_factor + history_penalty - ltv_mitigation + keyword_delta
+    return round(max(0.02, min(0.99, computed_risk)), 2)
+
+
 def heuristic_diagnosis(ctx: DiagnosticContext) -> FailureDiagnosis:
     """Deterministic, high-accuracy heuristic fallback classifier."""
     text = f"{ctx.failure_code or ''} {ctx.failure_reason or ''}".lower()
@@ -116,63 +165,62 @@ def heuristic_diagnosis(ctx: DiagnosticContext) -> FailureDiagnosis:
         category = FailureCategory.PAYMENT_DECLINED
         root_cause = "Risk flags or security block detected by payment gateway."
         can_retry = False
-        risk_score = 0.95
         rec_action = "Do not auto-retry. Flag for merchant manual review."
     # 2. Network & Socket Disconnects
     elif any(k in text for k in ["network", "socket", "connection", "dropped", "network_timeout"]) or (ctx.failure_code and "network" in ctx.failure_code.lower()):
         category = FailureCategory.NETWORK_TIMEOUT
         root_cause = "Network connection timed out or socket dropped during gateway handshake."
         can_retry = True
-        risk_score = 0.15
         rec_action = "Immediate retry link dispatched via preferred channel."
     # 3. Insufficient Funds & Debit Limits
     elif any(k in text for k in ["insufficient", "balance", "limit", "low_funds", "debit limit"]):
         category = FailureCategory.INSUFFICIENT_FUNDS
         root_cause = "Customer's account had insufficient funds or hit daily UPI/card debit limit."
         can_retry = True
-        risk_score = 0.25
         rec_action = "Offer flexible payment link with alternative UPI/wallet options and small dynamic discount."
     # 4. Bank Server Outages & Gateway Downtime
     elif any(k in text for k in ["server", "downtime", "500", "502", "503", "504", "outage"]) or (ctx.failure_code == "GATEWAY_ERROR" and "sbi" in text):
         category = FailureCategory.BANK_SERVER_ERROR
         root_cause = "Issuer bank or gateway experienced temporary technical downtime."
         can_retry = True
-        risk_score = 0.10
         rec_action = "Reassure customer with system recovery notification and valid retry link."
     # 5. OTP / Authentication Failures
     elif any(k in text for k in ["otp", "auth", "3ds", "cvv", "verification"]):
         category = FailureCategory.AUTHENTICATION_FAILED
         root_cause = "Customer did not complete OTP / 3DS authentication in time."
         can_retry = True
-        risk_score = 0.15
         rec_action = "Send quick 1-click retry payment link via WhatsApp or SMS."
     # 6. Expired Card
     elif any(k in text for k in ["expire", "expired", "invalid_card"]):
         category = FailureCategory.EXPIRED_CARD
         root_cause = "Payment card details were expired or invalid."
         can_retry = True
-        risk_score = 0.35
         rec_action = "Prompt customer to retry using UPI, NetBanking, or a new card."
     # 7. Abandoned Checkout / Dropout
     else:
         category = FailureCategory.USER_DROPOUT
         root_cause = "Customer dropped out during payment window."
         can_retry = True
-        risk_score = 0.20
         rec_action = "Send gentle abandoned cart recovery reminder."
 
-    # Adjust risk score for previous failed attempts
-    if ctx.previous_failed_attempts > 1:
-        risk_score = min(1.0, risk_score + 0.2)
+    # Dynamically compute statistical risk score
+    risk_score = calculate_dynamic_risk_score(
+        category=category,
+        amount=ctx.amount,
+        previous_failed_attempts=ctx.previous_failed_attempts,
+        total_spent=ctx.total_spent,
+        failure_code=ctx.failure_code,
+        failure_reason=ctx.failure_reason,
+    )
 
     return FailureDiagnosis(
         transaction_id=ctx.transaction_id,
         failure_category=category,
         root_cause=root_cause,
         can_retry=can_retry,
-        risk_score=round(risk_score, 2),
+        risk_score=risk_score,
         recommended_action=rec_action,
-        diagnostic_notes=f"Processed diagnostic triage for {ctx.customer_name} ({ctx.amount} INR).",
+        diagnostic_notes=f"Processed dynamic statistical triage for {ctx.customer_name} ({ctx.amount} INR, {ctx.previous_failed_attempts} prior failures, spent {ctx.total_spent} INR).",
     )
 
 

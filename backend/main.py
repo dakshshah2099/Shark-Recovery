@@ -1,3 +1,14 @@
+import sys
+from pathlib import Path
+
+# Ensure root and backend directory are in sys.path for multiprocessing/uvicorn reloaders
+_current_dir = Path(__file__).resolve().parent
+_root_dir = _current_dir.parent
+if str(_root_dir) not in sys.path:
+    sys.path.insert(0, str(_root_dir))
+if str(_current_dir) not in sys.path:
+    sys.path.insert(0, str(_current_dir))
+
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 from fastapi import FastAPI

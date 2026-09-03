@@ -3,7 +3,6 @@ import { SingleFailureForm } from '../components/SingleFailureForm';
 import { CsvUploader } from '../components/CsvUploader';
 import { RazorpayCheckoutButton } from '../components/RazorpayCheckoutButton';
 import { BatchBenchmarkSuite } from '../components/BatchBenchmarkSuite';
-import { SentinelTelemetryCard } from '../components/SentinelTelemetryCard';
 import { Zap, UploadCloud, Layers, CreditCard, Sparkles } from 'lucide-react';
 
 interface IngestionViewProps {
@@ -90,9 +89,6 @@ export const IngestionView: React.FC<IngestionViewProps> = ({ onSuccess, showNot
           </button>
         </div>
       </div>
-
-      {/* Sentinel Telemetry Anomaly Widget */}
-      <SentinelTelemetryCard />
 
       {activeTab === 'benchmark' && (
         <BatchBenchmarkSuite onSuccess={onSuccess} showNotification={showNotification} />

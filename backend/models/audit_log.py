@@ -79,6 +79,7 @@ class AuditLogBase(SQLModel):
 
 class AuditLog(AuditLogBase, table=True):
     __tablename__ = "audit_log"
+    __table_args__ = {"extend_existing": True}
 
     id: str = Field(
         default_factory=generate_audit_id,

@@ -27,9 +27,14 @@ def main():
     print("Simulation:    http://127.0.0.1:8000/api/simulate-batch")
     print("=" * 70)
 
+    # Prepare environment with root and backend directories in PYTHONPATH
+    backend_env = os.environ.copy()
+    existing_pythonpath = backend_env.get("PYTHONPATH", "")
+    backend_env["PYTHONPATH"] = f"{root_dir}{os.pathsep}{backend_dir}{os.pathsep}{existing_pythonpath}"
+
     # Launch Backend
     backend_cmd = ["uv", "run", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000", "--reload"]
-    backend_proc = subprocess.Popen(backend_cmd, cwd=str(backend_dir))
+    backend_proc = subprocess.Popen(backend_cmd, cwd=str(backend_dir), env=backend_env)
 
     # Wait 2 seconds for backend to start
     time.sleep(2)

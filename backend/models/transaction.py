@@ -119,6 +119,7 @@ class TransactionBase(SQLModel):
 
 class Transaction(TransactionBase, table=True):
     __tablename__ = "transaction"
+    __table_args__ = {"extend_existing": True}
 
     id: str = Field(
         default_factory=generate_transaction_id,

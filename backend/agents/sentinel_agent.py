@@ -48,7 +48,7 @@ async def run_sentinel_monitor(
     """
     db_failures_by_node: Dict[str, int] = {node["name"]: 0 for node in GATEWAY_NODES}
 
-    # 1. Query real transaction logs from DB if session is available
+    # 1. Query real transaction logs from SQLite DB
     if session:
         try:
             try:
@@ -65,6 +65,25 @@ async def run_sentinel_monitor(
                         db_failures_by_node[node["name"]] += 1
         except Exception as e:
             logger.warning(f"Sentinel DB telemetry aggregation notice: {e}")
+    else:
+        try:
+            try:
+                from backend.database import async_session_maker
+                from backend.models.transaction import Transaction
+            except ImportError:
+                from database import async_session_maker
+                from models.transaction import Transaction
+
+            async with async_session_maker() as auto_sess:
+                result = await auto_sess.execute(select(Transaction.failure_code, Transaction.failure_reason))
+                rows = result.all()
+                for code, reason in rows:
+                    full_text = f"{code or ''} {reason or ''}".lower()
+                    for node in GATEWAY_NODES:
+                        if any(k in full_text for k in node["keywords"]):
+                            db_failures_by_node[node["name"]] += 1
+        except Exception as e:
+            logger.warning(f"Sentinel standalone DB query notice: {e}")
 
     # 2. Check incoming trigger context
     incoming_text = f"{error_code} {failure_reason}".lower()

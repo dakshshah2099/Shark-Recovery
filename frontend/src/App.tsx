@@ -6,6 +6,7 @@ import { IngestionView } from './views/IngestionView';
 import { AuditView } from './views/AuditView';
 import { SettingsView } from './views/SettingsView';
 import { AgentStepFlow } from './components/AgentStepFlow';
+import { SentinelTelemetryCard } from './components/SentinelTelemetryCard';
 import { Menu, Cpu, CheckCircle2, AlertCircle, Info, Loader2, X } from 'lucide-react';
 import type {
   AuditLogItem,
@@ -332,6 +333,7 @@ export const App: React.FC = () => {
                   Deterministic step-by-step reasoning pipeline from checkout dropout to revenue capture.
                 </p>
               </div>
+              <SentinelTelemetryCard />
               <AgentStepFlow maxRetries={maxRetries} />
             </div>
           )}

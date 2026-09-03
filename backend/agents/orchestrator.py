@@ -420,7 +420,7 @@ async def orchestrate_revenue_recovery(
             session=session,
             agent_name="SMTPDispatchTool",
             action_type=ActionType.EMAIL_DISPATCHED,
-            status=AuditStatus.SUCCESS if email_result.get("delivered") else AuditStatus.WARNING,
+            status=AuditStatus.SUCCESS if email_result.get("delivered") else AuditStatus.FAILURE,
             transaction_id=txn.id,
             customer_id=cust.id,
             input_payload=email_payload.model_dump_json(),
@@ -446,9 +446,9 @@ async def orchestrate_revenue_recovery(
 
         await record_audit_log(
             session=session,
-            agent_name="WhatsAppDispatchTool",
+            agent_name="TwilioWhatsAppDispatchTool",
             action_type=ActionType.WHATSAPP_DISPATCHED,
-            status=AuditStatus.SUCCESS if wa_result.get("delivered") else AuditStatus.WARNING,
+            status=AuditStatus.SUCCESS if wa_result.get("delivered") else AuditStatus.FAILURE,
             transaction_id=txn.id,
             customer_id=cust.id,
             input_payload=wa_payload.model_dump_json(),

@@ -366,9 +366,9 @@ async def run_batch_benchmark_suite(
 
 
 @router.get("/sentinel/telemetry", response_model=DegradationReport)
-async def get_sentinel_telemetry() -> DegradationReport:
+async def get_sentinel_telemetry(session: AsyncSession = Depends(get_session)) -> DegradationReport:
     """Returns real-time gateway degradation telemetry and routing health."""
-    return await run_sentinel_monitor()
+    return await run_sentinel_monitor(session=session)
 
 
 @router.post("/voice/simulate-call", response_model=VoiceCallSession)

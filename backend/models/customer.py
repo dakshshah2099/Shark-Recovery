@@ -20,6 +20,7 @@ class CustomerBase(SQLModel):
 
 class Customer(CustomerBase, table=True):
     __tablename__ = "customer"
+    __table_args__ = {"extend_existing": True}
 
     id: str = Field(
         default_factory=generate_customer_id,
