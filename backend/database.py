@@ -23,13 +23,22 @@ if "sqlite" in settings.DATABASE_URL and "///" in settings.DATABASE_URL:
     except Exception as e:
         logging.getLogger(__name__).warning(f"DB path directory creation notice: {e}")
 
-# SQLite async engine configuration
-connect_args = {"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
+is_sqlite = "sqlite" in settings.DATABASE_URL.lower()
+is_postgres = "postgres" in settings.DATABASE_URL.lower()
+
+# Async engine configuration with database-specific pooling
+engine_kwargs = {"echo": False}
+if is_sqlite:
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    # Enterprise PostgreSQL connection pool with proactive liveness checking
+    engine_kwargs["pool_size"] = 20
+    engine_kwargs["max_overflow"] = 10
+    engine_kwargs["pool_pre_ping"] = True
 
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=False,
-    connect_args=connect_args,
+    **engine_kwargs,
 )
 
 async_session_maker = async_sessionmaker(
@@ -43,20 +52,29 @@ async_session_maker = async_sessionmaker(
 
 async def init_db() -> None:
     """Initialize database tables defined in SQLModel metadata and run auto-migrations."""
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
-        # Auto-migrate newly added columns if table already existed
-        for col_def in [
-            "ALTER TABLE transaction ADD COLUMN loss_vector VARCHAR DEFAULT 'checkout_dropoff'",
-            "ALTER TABLE transaction ADD COLUMN escalation_level INTEGER DEFAULT 1",
-            "ALTER TABLE transaction ADD COLUMN promise_to_pay_date VARCHAR",
-            "ALTER TABLE transaction ADD COLUMN mandate_retry_schedule TEXT",
-            "ALTER TABLE transaction ADD COLUMN voice_call_transcript TEXT",
-        ]:
-            try:
-                await conn.execute(text(col_def))
-            except Exception:
-                pass
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.create_all, checkfirst=True)
+    except Exception as e:
+        logging.getLogger(__name__).info(f"Schema create check: {e}")
+
+    # Resilient column auto-migration across PostgreSQL and SQLite
+    migration_cols = [
+        ("loss_vector", "VARCHAR DEFAULT 'checkout_dropoff'"),
+        ("escalation_level", "INTEGER DEFAULT 1"),
+        ("promise_to_pay_date", "VARCHAR"),
+        ("mandate_retry_schedule", "TEXT"),
+        ("voice_call_transcript", "TEXT"),
+    ]
+    for col_name, col_def in migration_cols:
+        try:
+            async with engine.begin() as conn:
+                if is_postgres:
+                    await conn.execute(text(f"ALTER TABLE transaction ADD COLUMN IF NOT EXISTS {col_name} {col_def}"))
+                else:
+                    await conn.execute(text(f"ALTER TABLE transaction ADD COLUMN {col_name} {col_def}"))
+        except Exception:
+            pass
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
