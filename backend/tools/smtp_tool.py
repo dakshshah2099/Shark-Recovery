@@ -26,7 +26,7 @@ def _send_sync_smtp(message: MIMEMultipart, recipient_email: str) -> None:
     if port == 465 or "gmail" in host.lower():
         try:
             context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(host, 465, context=context, timeout=15) as server:
+            with smtplib.SMTP_SSL(host, 465, context=context, timeout=3) as server:
                 server.login(username, password)
                 server.send_message(message)
                 return
@@ -35,7 +35,7 @@ def _send_sync_smtp(message: MIMEMultipart, recipient_email: str) -> None:
 
     # Attempt 2: STARTTLS (Port 587 / 2525)
     context = ssl.create_default_context()
-    with smtplib.SMTP(host, 587 if port == 465 else port, timeout=15) as server:
+    with smtplib.SMTP(host, 587 if port == 465 else port, timeout=3) as server:
         server.ehlo()
         server.starttls(context=context)
         server.ehlo()

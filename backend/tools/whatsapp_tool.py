@@ -90,7 +90,7 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
                     to=to_whatsapp,
                 )
 
-            msg = await asyncio.to_thread(_sync_send)
+            msg = await asyncio.wait_for(asyncio.to_thread(_sync_send), timeout=3.0)
             twilio_sid = msg.sid
             delivery_status = msg.status or "sent"
             dispatch_mode = "twilio_live"
