@@ -37,7 +37,7 @@ from agents.voice_agent import run_voice_recovery_agent
 from agents.orchestrator import orchestrate_revenue_recovery
 from tools.razorpay_tool import create_payment_link, create_razorpay_order
 from tools.smtp_tool import send_recovery_email
-from tools.whatsapp_tool import get_whatsapp_messages, send_whatsapp_message
+from tools.whatsapp_tool import send_whatsapp_message
 
 
 if sys.platform == "win32":
@@ -325,9 +325,6 @@ async def run_exhaustive_feature_audit():
         audit_res = await client.get("/api/audit-logs")
         assert audit_res.status_code == 200
         assert len(audit_res.json()) > 0
-
-        wa_res = await client.get("/api/whatsapp/messages")
-        assert wa_res.status_code == 200
 
         env_res = await client.get("/api/env-config")
         assert env_res.status_code == 200

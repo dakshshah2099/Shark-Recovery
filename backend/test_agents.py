@@ -21,7 +21,7 @@ from backend.agents.strategy_agent import run_strategy_agent, heuristic_strategy
 from backend.agents.orchestrator import orchestrate_revenue_recovery
 from backend.tools.razorpay_tool import create_payment_link
 from backend.tools.smtp_tool import send_recovery_email
-from backend.tools.whatsapp_tool import get_whatsapp_messages, send_whatsapp_message
+from backend.tools.whatsapp_tool import send_whatsapp_message
 
 
 async def run_all_phase_2_tests():

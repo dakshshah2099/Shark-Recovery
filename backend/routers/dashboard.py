@@ -22,7 +22,6 @@ try:
         TransactionRead,
     )
     from backend.models.transaction import Transaction, TransactionStatus
-    from backend.tools.whatsapp_tool import get_whatsapp_messages
     from backend.tools.razorpay_tool import create_razorpay_order
 except ImportError:
     from agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
@@ -39,7 +38,6 @@ except ImportError:
         TransactionRead,
     )
     from models.transaction import Transaction, TransactionStatus
-    from tools.whatsapp_tool import get_whatsapp_messages
     from tools.razorpay_tool import create_razorpay_order
 
 logger = logging.getLogger(__name__)
@@ -170,81 +168,6 @@ async def list_audit_logs(
     ]
 
 
-@router.get("/whatsapp-feed")
-@router.get("/whatsapp/messages")
-async def get_whatsapp_feed(
-    limit: int = Query(default=50, ge=1, le=100),
-    session: AsyncSession = Depends(get_session),
-) -> List[Dict[str, Any]]:
-    """
-    Returns real-time WhatsApp simulated message stream for frontend replica widget.
-    Hydrates from persistent SQLite AuditLog and live in-memory store.
-    """
-    # 1. In-memory messages
-    in_memory = get_whatsapp_messages(limit=limit)
-
-    # 2. Database audit logs for WhatsApp dispatches
-    db_logs = (
-        await session.execute(
-            select(AuditLog)
-            .where(AuditLog.action_type == ActionType.WHATSAPP_DISPATCHED)
-            .order_by(AuditLog.created_at.desc())
-            .limit(limit)
-        )
-    ).scalars().all()
-
-    combined: List[Dict[str, Any]] = list(in_memory)
-    seen_txns = {m["transaction_id"] for m in in_memory if "transaction_id" in m}
-
-    for log in db_logs:
-        if log.transaction_id and log.transaction_id in seen_txns:
-            continue
-
-        recipient_name = "Customer"
-        recipient_phone = "+919876543210"
-        message_text = "Your cart is waiting. Complete payment securely!"
-        payment_link = ""
-
-        # Fetch Customer info
-        if log.customer_id:
-            cust = (await session.execute(select(Customer).where(Customer.id == log.customer_id))).scalar_one_or_none()
-            if cust:
-                recipient_name = cust.name
-                recipient_phone = cust.phone
-
-        # Fetch Transaction link
-        if log.transaction_id:
-            txn = (await session.execute(select(Transaction).where(Transaction.id == log.transaction_id))).scalar_one_or_none()
-            if txn and txn.recovery_link:
-                payment_link = txn.recovery_link
-
-        if log.input_payload:
-            try:
-                parsed_in = json.loads(log.input_payload)
-                message_text = parsed_in.get("message", message_text)
-                recipient_phone = parsed_in.get("recipient_phone") or parsed_in.get("recipient") or recipient_phone
-                payment_link = parsed_in.get("payment_link") or payment_link
-            except Exception:
-                pass
-
-        combined.append({
-            "message_id": f"wam_{log.id}",
-            "transaction_id": log.transaction_id or "",
-            "recipient_phone": recipient_phone,
-            "recipient_name": recipient_name,
-            "message": message_text,
-            "payment_link": payment_link,
-            "template_name": "cart_recovery_incentive",
-            "status": "delivered",
-            "read_receipt": True,
-            "timestamp": log.created_at.isoformat(),
-        })
-
-    # Sort newest first
-    combined.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
-    return combined[:limit]
-
-
 @router.post("/transactions/{transaction_id}/retry")
 async def manual_retry_transaction(
     transaction_id: str,
@@ -302,19 +225,14 @@ async def mark_transaction_recovered(
 
 @router.post("/db/clear")
 async def clear_database(session: AsyncSession = Depends(get_session)) -> Dict[str, Any]:
-    """Clears all transactions, customers, audit logs, and in-memory stores."""
+    """Clears all transactions, customers, and audit logs."""
     from sqlmodel import delete
-    try:
-        from backend.tools.whatsapp_tool import _mock_whatsapp_message_store
-    except ImportError:
-        from tools.whatsapp_tool import _mock_whatsapp_message_store
 
     await session.execute(delete(AuditLog))
     await session.execute(delete(Transaction))
     await session.execute(delete(Customer))
     await session.commit()
-    _mock_whatsapp_message_store.clear()
-    return {"status": "success", "message": "Database and in-memory stores cleared successfully."}
+    return {"status": "success", "message": "Database records cleared successfully."}
 
 
 @router.post("/db/seed")

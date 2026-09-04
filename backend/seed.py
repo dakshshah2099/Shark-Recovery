@@ -27,7 +27,6 @@ try:
         Transaction,
         TransactionStatus,
     )
-    from backend.tools.whatsapp_tool import _mock_whatsapp_message_store
 except ImportError:
     from database import async_session_maker, init_db
     from models.audit_log import ActionType, AuditLog, AuditStatus
@@ -44,7 +43,6 @@ except ImportError:
         Transaction,
         TransactionStatus,
     )
-    from tools.whatsapp_tool import _mock_whatsapp_message_store
 
 SEED_CUSTOMERS = [
     {
@@ -291,20 +289,6 @@ async def seed_database():
                     created_at=created_time + timedelta(seconds=8),
                 )
                 session.add(wa_log)
-
-                # Add to in-memory store
-                _mock_whatsapp_message_store.append({
-                    "message_id": f"wam_{uuid.uuid4().hex[:10]}",
-                    "transaction_id": txn.id,
-                    "recipient_phone": data["phone"],
-                    "recipient_name": data["name"],
-                    "message": f"{msg_text}\n\n👉 Complete Payment: {recovery_link}",
-                    "payment_link": recovery_link,
-                    "template_name": "cart_recovery_incentive",
-                    "status": "delivered",
-                    "read_receipt": True,
-                    "timestamp": (created_time + timedelta(seconds=8)).isoformat(),
-                })
             else:
                 em_log = AuditLog(
                     transaction_id=txn.id,

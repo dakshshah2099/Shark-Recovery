@@ -344,11 +344,49 @@ async def orchestrate_revenue_recovery(
             output_payload=json.dumps(b2b_plan_data),
         )
 
-    # 9. Tool Execution 2: Channel Dispatch (Guaranteed Email + WhatsApp Outreach)
+    # 9. Tool Execution 2: Channel Dispatch (Strict Single-Channel Routing)
     dispatch_results: Dict[str, Any] = {}
+    chosen_channel = strategy.channel
 
-    # 9a. Guaranteed Email Dispatch whenever customer email exists
-    if cust.email and "@" in cust.email and not cust.email.endswith("@example.internal"):
+    # Smart fallback if customer lacks contact medium
+    if chosen_channel in (RecoveryChannel.WHATSAPP, RecoveryChannel.SMS):
+        if not cust.phone:
+            chosen_channel = RecoveryChannel.EMAIL
+    elif chosen_channel == RecoveryChannel.EMAIL:
+        if not cust.email or "@" not in cust.email or cust.email.endswith("@example.internal"):
+            chosen_channel = RecoveryChannel.WHATSAPP if cust.phone else RecoveryChannel.EMAIL
+
+    # 9a. WhatsApp Outreach Dispatch (When chosen channel is WHATSAPP or SMS)
+    if chosen_channel in (RecoveryChannel.WHATSAPP, RecoveryChannel.SMS) and cust.phone:
+        wa_payload = WhatsAppPayload(
+            transaction_id=txn.id,
+            recipient_phone=cust.phone,
+            recipient_name=cust.name,
+            message=f"{strategy.message_content}\n\n👉 Complete Payment: {link_resp.short_url}",
+            payment_link=link_resp.short_url,
+            template_name="cart_recovery_incentive",
+            params={"discount": strategy.discount_percentage, "code": strategy.offer_code or ""},
+        )
+        t_wa_start = time.perf_counter()
+        wa_result = await send_whatsapp_message(wa_payload)
+        t_wa_ms = round((time.perf_counter() - t_wa_start) * 1000, 2)
+
+        await record_audit_log(
+            session=session,
+            agent_name="TwilioWhatsAppDispatchTool",
+            action_type=ActionType.WHATSAPP_DISPATCHED,
+            status=AuditStatus.SUCCESS if wa_result.get("delivered") else AuditStatus.FAILURE,
+            transaction_id=txn.id,
+            customer_id=cust.id,
+            input_payload=wa_payload.model_dump_json(),
+            output_payload=json.dumps(wa_result),
+            duration_ms=t_wa_ms,
+        )
+        dispatch_results["whatsapp"] = wa_result
+        txn.recovery_channel = "whatsapp"
+
+    # 9b. Email Dispatch (When chosen channel is EMAIL or fallback)
+    elif chosen_channel == RecoveryChannel.EMAIL and cust.email and "@" in cust.email and not cust.email.endswith("@example.internal"):
         discount_rows = f"""
         <tr>
           <td style="padding: 6px 0; color: #059669; font-weight: 600;">Special Recovery Discount ({discount_pct:.1f}%):</td>
@@ -428,39 +466,6 @@ async def orchestrate_revenue_recovery(
             duration_ms=t_em_ms,
         )
         dispatch_results["email"] = email_result
-
-    # 9b. WhatsApp Outreach Dispatch if mobile phone available
-    if cust.phone and strategy.channel == RecoveryChannel.WHATSAPP:
-        wa_payload = WhatsAppPayload(
-            transaction_id=txn.id,
-            recipient_phone=cust.phone,
-            recipient_name=cust.name,
-            message=f"{strategy.message_content}\n\n👉 Complete Payment: {link_resp.short_url}",
-            payment_link=link_resp.short_url,
-            template_name="cart_recovery_incentive",
-            params={"discount": strategy.discount_percentage, "code": strategy.offer_code or ""},
-        )
-        t_wa_start = time.perf_counter()
-        wa_result = await send_whatsapp_message(wa_payload)
-        t_wa_ms = round((time.perf_counter() - t_wa_start) * 1000, 2)
-
-        await record_audit_log(
-            session=session,
-            agent_name="TwilioWhatsAppDispatchTool",
-            action_type=ActionType.WHATSAPP_DISPATCHED,
-            status=AuditStatus.SUCCESS if wa_result.get("delivered") else AuditStatus.FAILURE,
-            transaction_id=txn.id,
-            customer_id=cust.id,
-            input_payload=wa_payload.model_dump_json(),
-            output_payload=json.dumps(wa_result),
-            duration_ms=t_wa_ms,
-        )
-        dispatch_results["whatsapp"] = wa_result
-
-    # Primary channel tag
-    if strategy.channel == RecoveryChannel.WHATSAPP and "whatsapp" in dispatch_results:
-        txn.recovery_channel = "whatsapp"
-    elif "email" in dispatch_results:
         txn.recovery_channel = "email"
     else:
         txn.recovery_channel = "whatsapp" if cust.phone else "email"

@@ -12,9 +12,6 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# Buffer for real-time dashboard outreach polling
-_mock_whatsapp_message_store: List[Dict[str, Any]] = []
-
 
 def _get_twilio_client():
     """
@@ -101,33 +98,12 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
             delivery_status = f"twilio_info: {err_msg[:80]}"
             dispatch_mode = "twilio_fallback"
 
-    message_entry = {
-        "message_id": twilio_sid or message_id,
-        "transaction_id": payload.transaction_id,
-        "recipient_phone": payload.recipient_phone,
-        "recipient_name": payload.recipient_name,
-        "message": payload.message,
-        "payment_link": payload.payment_link,
-        "template_name": getattr(settings, "TWILIO_SANDBOX_TEMPLATE", "appointment"),
-        "status": delivery_status,
-        "mode": dispatch_mode,
-        "read_receipt": True,
-        "timestamp": datetime.datetime.utcnow().isoformat(),
-    }
-
-    _mock_whatsapp_message_store.append(message_entry)
-
     return {
         "delivered": True,
         "mode": dispatch_mode,
-        "message_id": message_entry["message_id"],
+        "message_id": twilio_sid or message_id,
         "recipient": payload.recipient_phone,
         "message": payload.message,
         "payment_link": payload.payment_link,
         "status": delivery_status,
     }
-
-
-def get_whatsapp_messages(limit: int = 50) -> List[Dict[str, Any]]:
-    """Retrieves recent WhatsApp outreach messages for dashboard UI."""
-    return list(reversed(_mock_whatsapp_message_store[-limit:]))
