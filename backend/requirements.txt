@@ -11,3 +11,5 @@ razorpay>=2.0.1
 sqlmodel>=0.0.42
 twilio>=9.11.0
 uvicorn[standard]>=0.52.4
+kokoro-onnx>=0.6.1
+soundfile>=0.14.0

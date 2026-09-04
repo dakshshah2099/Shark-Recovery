@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Phone, CheckCircle2, X, Volume2, Play, Square, MessageSquare, Mic, Sparkles } from 'lucide-react';
+import { Phone, CheckCircle2, X, Volume2, Play, Square, MessageSquare, Mic, Sparkles, Cpu, Loader2 } from 'lucide-react';
 
 interface DialogueTurn {
   speaker: string;
   text: string;
   emotion: string;
   timestamp_sec: number;
+  audio_base64?: string;
+  voice_used?: string;
 }
 
 interface VoiceSession {
@@ -29,8 +31,7 @@ interface VoiceCallModalProps {
 }
 
 /**
- * Phonetic preprocessor for natural Romanized Hinglish TTS playback.
- * Normalizes currency, abbreviations, numbers, and honorifics.
+ * Phonetic preprocessor for natural Romanized Hinglish TTS playback fallback.
  */
 function preprocessHinglishSpeech(text: string): string {
   return text
@@ -45,7 +46,6 @@ function preprocessHinglishSpeech(text: string): string {
     .replace(/\b1-click\b/gi, 'one click ')
     .replace(/(\d+)%/g, '$1 percent ')
     .replace(/\bji\b/gi, 'jee')
-    .replace(/\bhaan\b/gi, 'haan')
     .replace(/\bnamaste\b/gi, 'namastey')
     .replace(/\bdhanyawad\b/gi, 'dhanyawaad')
     .trim();
@@ -54,189 +54,217 @@ function preprocessHinglishSpeech(text: string): string {
 export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose, sessionData }) => {
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [activeTurnIndex, setActiveTurnIndex] = useState<number>(-1);
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoiceMode, setSelectedVoiceMode] = useState<'auto' | 'hindi' | 'indian_english'>('auto');
-  const [activeVoiceName, setActiveVoiceName] = useState<string>('Detecting Indian Voice...');
-  const isPlayingRef = useRef<boolean>(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
+  const [audioCache, setAudioCache] = useState<Record<number, string>>({});
+  const [selectedAgentVoice, setSelectedAgentVoice] = useState<string>('hf_alpha');
+  const [selectedCustomerVoice, setSelectedCustomerVoice] = useState<string>('hm_omega');
+  const [engineMode, setEngineMode] = useState<'kokoro' | 'webspeech'>('kokoro');
 
-  // Load and filter browser speech synthesis voices
-  const refreshVoices = useCallback(() => {
+  // Browser Web Speech fallback state
+  const [availableBrowserVoices, setAvailableBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const isPlayingRef = useRef<boolean>(false);
+  const currentAudioElementRef = useRef<HTMLAudioElement | null>(null);
+
+  // Load browser voices for fallback
+  const refreshBrowserVoices = useCallback(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     const voices = window.speechSynthesis.getVoices();
-    setAvailableVoices(voices);
-
-    const indianVoices = voices.filter(
-      (v) =>
-        v.lang.toLowerCase().includes('hi') ||
-        v.lang.toLowerCase().includes('in') ||
-        v.name.toLowerCase().includes('india') ||
-        v.name.toLowerCase().includes('hindi') ||
-        v.name.toLowerCase().includes('swara') ||
-        v.name.toLowerCase().includes('madhur') ||
-        v.name.toLowerCase().includes('neerja') ||
-        v.name.toLowerCase().includes('prabhat')
-    );
-
-    if (indianVoices.length > 0) {
-      setActiveVoiceName(indianVoices[0].name);
-    } else if (voices.length > 0) {
-      setActiveVoiceName(voices[0].name);
-    }
+    setAvailableBrowserVoices(voices);
   }, []);
 
   useEffect(() => {
-    refreshVoices();
+    refreshBrowserVoices();
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = refreshVoices;
+      window.speechSynthesis.onvoiceschanged = refreshBrowserVoices;
     }
-  }, [refreshVoices]);
+  }, [refreshBrowserVoices]);
 
+  // Clean audio and cancel ongoing playback on close
   useEffect(() => {
-    // Reset on modal close
     if (!isOpen) {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-      setIsPlayingAudio(false);
+      stopDialogueAudio();
+      setAudioCache({});
       setActiveTurnIndex(-1);
-      isPlayingRef.current = false;
     }
   }, [isOpen]);
 
   if (!isOpen || !sessionData) return null;
 
-  /**
-   * Selects the highest quality Indian voice for the speaker role
-   */
-  const getBestVoiceForSpeaker = (speaker: string): SpeechSynthesisVoice | null => {
-    if (availableVoices.length === 0) return null;
-
-    const isAgent = speaker === 'AI_Agent';
-
-    // Prioritized list of Indian Neural & Natural Voices
-    const agentPreferredNames = [
-      'swara',
-      'neerja',
-      'google हिन्दी',
-      'google hindi',
-      'hindi',
-      'heera',
-      'kalpana',
-      'google indian english',
-      'india',
-    ];
-
-    const customerPreferredNames = [
-      'madhur',
-      'prabhat',
-      'ravi',
-      'hemant',
-      'google indian english',
-      'india',
-      'hindi',
-      'swara',
-    ];
-
-    const searchList = isAgent ? agentPreferredNames : customerPreferredNames;
-
-    // 1. Try finding specific natural Indian voice by name preference
-    for (const nameKeyword of searchList) {
-      const match = availableVoices.find((v) =>
-        v.name.toLowerCase().includes(nameKeyword)
-      );
-      if (match) return match;
+  const stopDialogueAudio = () => {
+    isPlayingRef.current = false;
+    if (currentAudioElementRef.current) {
+      currentAudioElementRef.current.pause();
+      currentAudioElementRef.current = null;
     }
-
-    // 2. Try finding by language code hi-IN or en-IN
-    const langMatch = availableVoices.find((v) =>
-      selectedVoiceMode === 'hindi'
-        ? v.lang.toLowerCase().startsWith('hi')
-        : v.lang.toLowerCase() === 'hi-in' || v.lang.toLowerCase() === 'en-in'
-    );
-    if (langMatch) return langMatch;
-
-    // 3. Fallback to any Indian voice
-    const anyIndian = availableVoices.find(
-      (v) =>
-        v.lang.toLowerCase().includes('in') ||
-        v.name.toLowerCase().includes('india')
-    );
-    if (anyIndian) return anyIndian;
-
-    return availableVoices[0] || null;
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsPlayingAudio(false);
+    setIsLoadingAudio(false);
+    setActiveTurnIndex(-1);
   };
 
-  const playDialogueAudio = () => {
-    if (!('speechSynthesis' in window)) {
-      alert('Speech synthesis is not supported in this browser.');
-      return;
+  /**
+   * Synthesize audio for a turn via Kokoro-82M backend
+   */
+  const fetchKokoroTurnAudio = async (turnIndex: number, turn: DialogueTurn): Promise<string | null> => {
+    if (audioCache[turnIndex]) {
+      return audioCache[turnIndex];
     }
 
-    window.speechSynthesis.cancel();
-    setIsPlayingAudio(true);
-    isPlayingRef.current = true;
+    const voice = turn.speaker === 'AI_Agent' ? selectedAgentVoice : selectedCustomerVoice;
 
-    const turns = sessionData.dialogue;
-    let index = 0;
+    try {
+      const res = await fetch('/api/voice/synthesize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: turn.text,
+          voice: voice,
+          speaker: turn.speaker,
+          speed: 1.0,
+        }),
+      });
 
-    const speakNextTurn = () => {
-      if (!isPlayingRef.current || index >= turns.length) {
-        setIsPlayingAudio(false);
-        setActiveTurnIndex(-1);
-        isPlayingRef.current = false;
+      if (!res.ok) {
+        throw new Error(`Kokoro synthesis status ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.audio_base64) {
+        setAudioCache((prev) => ({ ...prev, [turnIndex]: data.audio_base64 }));
+        return data.audio_base64;
+      }
+      return null;
+    } catch (e) {
+      console.warn('Kokoro backend synthesis failed, falling back to Web Speech:', e);
+      return null;
+    }
+  };
+
+  /**
+   * Browser Web Speech fallback for turn
+   */
+  const playWebSpeechTurn = (turn: DialogueTurn): Promise<void> => {
+    return new Promise((resolve) => {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+        resolve();
         return;
       }
 
-      const turn = turns[index];
-      setActiveTurnIndex(index);
+      const utterance = new SpeechSynthesisUtterance(preprocessHinglishSpeech(turn.text));
+      const indianMatch = availableBrowserVoices.find(
+        (v) =>
+          v.name.toLowerCase().includes('swara') ||
+          v.name.toLowerCase().includes('madhur') ||
+          v.name.toLowerCase().includes('hindi') ||
+          v.lang.toLowerCase().includes('hi') ||
+          v.lang.toLowerCase().includes('in')
+      );
 
-      const phoneticText = preprocessHinglishSpeech(turn.text);
-      const utterance = new SpeechSynthesisUtterance(phoneticText);
-      const selectedVoice = getBestVoiceForSpeaker(turn.speaker);
-
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-        utterance.lang = selectedVoice.lang;
-        setActiveVoiceName(selectedVoice.name);
+      if (indianMatch) {
+        utterance.voice = indianMatch;
+        utterance.lang = indianMatch.lang;
       } else {
         utterance.lang = 'hi-IN';
       }
 
-      // Natural speech cadence & pitch tailored to speaker roles
-      if (turn.speaker === 'AI_Agent') {
-        utterance.rate = 0.95; // Clear, professional, empathetic pace
-        utterance.pitch = 1.02; // Warm professional tone
-      } else {
-        utterance.rate = 0.92; // Slightly more casual customer cadence
-        utterance.pitch = 0.95; // Distinct customer timbre
-      }
-
-      utterance.onend = () => {
-        index++;
-        // 700ms natural conversation pause between turns
-        setTimeout(speakNextTurn, 700);
-      };
-
-      utterance.onerror = (e) => {
-        console.warn('Speech synthesis error:', e);
-        setIsPlayingAudio(false);
-        setActiveTurnIndex(-1);
-        isPlayingRef.current = false;
-      };
+      utterance.rate = turn.speaker === 'AI_Agent' ? 0.95 : 0.92;
+      utterance.onend = () => resolve();
+      utterance.onerror = () => resolve();
 
       window.speechSynthesis.speak(utterance);
-    };
-
-    speakNextTurn();
+    });
   };
 
-  const stopDialogueAudio = () => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
+  /**
+   * Play single individual turn
+   */
+  const playSingleTurn = async (turnIndex: number) => {
+    stopDialogueAudio();
+    setIsPlayingAudio(true);
+    isPlayingRef.current = true;
+    setActiveTurnIndex(turnIndex);
+
+    const turn = sessionData.dialogue[turnIndex];
+    if (!turn) return;
+
+    if (engineMode === 'kokoro') {
+      setIsLoadingAudio(true);
+      const audioB64 = await fetchKokoroTurnAudio(turnIndex, turn);
+      setIsLoadingAudio(false);
+
+      if (audioB64 && isPlayingRef.current) {
+        const audio = new Audio(audioB64);
+        currentAudioElementRef.current = audio;
+        audio.onended = () => {
+          setIsPlayingAudio(false);
+          setActiveTurnIndex(-1);
+          isPlayingRef.current = false;
+        };
+        audio.onerror = () => {
+          setIsPlayingAudio(false);
+          setActiveTurnIndex(-1);
+          isPlayingRef.current = false;
+        };
+        await audio.play();
+        return;
+      }
     }
-    isPlayingRef.current = false;
+
+    // Web speech fallback
+    await playWebSpeechTurn(turn);
     setIsPlayingAudio(false);
     setActiveTurnIndex(-1);
+    isPlayingRef.current = false;
+  };
+
+  /**
+   * Sequentially play the entire conversational dialogue
+   */
+  const playEntireDialogue = async () => {
+    stopDialogueAudio();
+    setIsPlayingAudio(true);
+    isPlayingRef.current = true;
+
+    const turns = sessionData.dialogue;
+
+    for (let i = 0; i < turns.length; i++) {
+      if (!isPlayingRef.current) break;
+
+      setActiveTurnIndex(i);
+      const turn = turns[i];
+
+      if (engineMode === 'kokoro') {
+        setIsLoadingAudio(true);
+        const audioB64 = await fetchKokoroTurnAudio(i, turn);
+        setIsLoadingAudio(false);
+
+        if (audioB64 && isPlayingRef.current) {
+          await new Promise<void>((resolve) => {
+            const audio = new Audio(audioB64);
+            currentAudioElementRef.current = audio;
+            audio.onended = () => resolve();
+            audio.onerror = () => resolve();
+            audio.play().catch(() => resolve());
+          });
+        } else if (isPlayingRef.current) {
+          // Fallback to Web Speech if Kokoro failed
+          await playWebSpeechTurn(turn);
+        }
+      } else {
+        await playWebSpeechTurn(turn);
+      }
+
+      // 600ms natural conversational pause between turns
+      if (isPlayingRef.current && i < turns.length - 1) {
+        await new Promise((r) => setTimeout(r, 600));
+      }
+    }
+
+    setIsPlayingAudio(false);
+    setActiveTurnIndex(-1);
+    isPlayingRef.current = false;
   };
 
   return (
@@ -295,15 +323,19 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
           </div>
         </div>
 
-        {/* Audio Synthesis Trigger & Voice Engine Banner */}
+        {/* Audio Synthesis Trigger & Kokoro-82M Voice Engine Banner */}
         <div className="p-3.5 rounded-lg bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs text-blue-950 dark:text-blue-200 font-subheading">
               <Volume2 className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
               <span>
                 {isPlayingAudio
-                  ? `Speaking Turn #${activeTurnIndex + 1}: ${sessionData.dialogue[activeTurnIndex]?.speaker === 'AI_Agent' ? 'Shark AI Voice' : sessionData.customer_name}...`
-                  : 'Experience the AI agent dialogue with Indian Neural Voice synthesis.'}
+                  ? `Speaking Turn #${activeTurnIndex + 1}: ${
+                      sessionData.dialogue[activeTurnIndex]?.speaker === 'AI_Agent'
+                        ? 'Shark AI Recovery Agent'
+                        : sessionData.customer_name
+                    }...`
+                  : 'Kokoro-82M Neural Synthesis: authentic conversational Hinglish with dual-speaker alternation.'}
               </span>
             </div>
 
@@ -320,53 +352,100 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
               ) : (
                 <button
                   type="button"
-                  onClick={playDialogueAudio}
-                  className="h-8.5 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs focus-rzp shrink-0"
+                  onClick={playEntireDialogue}
+                  disabled={isLoadingAudio}
+                  className="h-8.5 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs focus-rzp shrink-0 disabled:opacity-50"
                 >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Play Hinglish Call Audio</span>
+                  {isLoadingAudio ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Synthesizing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Play Kokoro-82M Audio</span>
+                    </>
+                  )}
                 </button>
               )}
             </div>
           </div>
 
-          {/* Active Voice Telemetry & Phonetic Tuning Badge */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-blue-200/60 dark:border-blue-900/40 text-[11px] font-mono text-zinc-600 dark:text-zinc-400">
-            <div className="flex items-center gap-2 truncate">
-              <div className="flex items-center gap-1.5 truncate">
-                <Mic className="w-3 h-3 text-blue-500 shrink-0" />
-                <span className="text-zinc-500 dark:text-zinc-400">Voice:</span>
-                <span className="text-blue-700 dark:text-blue-300 font-semibold truncate max-w-[200px]">
-                  {activeVoiceName}
-                </span>
+          {/* Kokoro Engine Telemetry & Voice Config Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-blue-200/60 dark:border-blue-900/40 text-[11px] font-mono">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Agent Voice Preset */}
+              <div className="flex items-center gap-1.5">
+                <Cpu className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                <span className="text-zinc-500 dark:text-zinc-400">Agent Voice:</span>
+                <select
+                  value={selectedAgentVoice}
+                  onChange={(e) => {
+                    setSelectedAgentVoice(e.target.value);
+                    setAudioCache({});
+                  }}
+                  className="h-6 px-1.5 text-[10px] rounded border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-[#121215] text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                  title="Kokoro Agent Voice"
+                >
+                  <option value="hf_alpha">Kokoro Alpha (Hindi Female - Default)</option>
+                  <option value="hf_beta">Kokoro Beta (Warm Hindi Female)</option>
+                  <option value="af_heart">Kokoro Heart (US English Female)</option>
+                </select>
               </div>
 
-              <select
-                value={selectedVoiceMode}
-                onChange={(e) => setSelectedVoiceMode(e.target.value as any)}
-                className="h-6 px-1.5 text-[10px] rounded border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-[#121215] text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
-                title="Select Accent Priority"
-              >
-                <option value="auto">Auto Indian Neural</option>
-                <option value="hindi">Hindi Native Accent</option>
-                <option value="indian_english">Indian English Accent</option>
-              </select>
+              {/* Customer Voice Preset */}
+              <div className="flex items-center gap-1.5">
+                <Mic className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <span className="text-zinc-500 dark:text-zinc-400">Customer Voice:</span>
+                <select
+                  value={selectedCustomerVoice}
+                  onChange={(e) => {
+                    setSelectedCustomerVoice(e.target.value);
+                    setAudioCache({});
+                  }}
+                  className="h-6 px-1.5 text-[10px] rounded border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-[#121215] text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                  title="Kokoro Customer Voice"
+                >
+                  <option value="hm_omega">Kokoro Omega (Hindi Male - Default)</option>
+                  <option value="hm_psi">Kokoro Psi (Calm Hindi Male)</option>
+                  <option value="am_adam">Kokoro Adam (US English Male)</option>
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-emerald-500 shrink-0" />
-              <span className="text-emerald-700 dark:text-emerald-300 font-medium">
-                Phonetic Normalization Active
-              </span>
+            <div className="flex items-center gap-2">
+              <select
+                value={engineMode}
+                onChange={(e) => {
+                  setEngineMode(e.target.value as any);
+                  stopDialogueAudio();
+                }}
+                className="h-6 px-1.5 text-[10px] rounded border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-[#121215] text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                title="Select Audio Engine"
+              >
+                <option value="kokoro">⚡ Kokoro-82M ONNX (Studio Neural)</option>
+                <option value="webspeech">🌐 Browser Web Speech (Fallback)</option>
+              </select>
+
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="text-emerald-700 dark:text-emerald-300 font-medium">
+                  {engineMode === 'kokoro' ? 'Kokoro-82M ONNX Active' : 'Web Speech Fallback'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Turn-by-turn Conversation Stream */}
         <div className="space-y-3 pt-1">
-          <h4 className="text-xs font-heading font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-subheading">
-            <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
-            <span>Turn-by-Turn Conversational Dialogue Transcript:</span>
+          <h4 className="text-xs font-heading font-bold text-zinc-800 dark:text-zinc-200 flex items-center justify-between font-subheading">
+            <div className="flex items-center gap-1.5">
+              <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
+              <span>Turn-by-Turn Conversational Dialogue Transcript:</span>
+            </div>
+            <span className="text-[10px] text-zinc-400 font-mono">Click ▶ on any turn to play individually</span>
           </h4>
 
           <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
@@ -385,14 +464,29 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                       : 'bg-zinc-100 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-zinc-900 dark:text-zinc-200 mr-4'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1 text-[10px] font-mono opacity-70">
-                    <span className="font-bold">
+                  <div className="flex items-center justify-between mb-1.5 text-[10px] font-mono opacity-75">
+                    <span className="font-bold flex items-center gap-1.5">
                       {isAgent ? '🤖 Shark AI Voice Agent' : `👤 ${sessionData.customer_name}`}
+                      <span className="px-1.5 py-0.2 rounded bg-zinc-200/80 dark:bg-[#27272a] text-[9px] font-sans text-zinc-600 dark:text-zinc-300">
+                        {isAgent ? selectedAgentVoice : selectedCustomerVoice}
+                      </span>
                     </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="px-1.5 py-0.2 rounded bg-zinc-200 dark:bg-[#27272a] capitalize">{turn.emotion}</span>
+
+                    <div className="flex items-center gap-2">
+                      <span className="px-1.5 py-0.2 rounded bg-zinc-200/80 dark:bg-[#27272a] capitalize">{turn.emotion}</span>
                       <span>+{turn.timestamp_sec}s</span>
-                    </span>
+
+                      {/* Individual Turn Replay Button */}
+                      <button
+                        type="button"
+                        onClick={() => playSingleTurn(i)}
+                        disabled={isPlayingAudio && isActive}
+                        title={`Replay turn #${i + 1}`}
+                        className="p-1 rounded bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-transform hover:scale-110 disabled:opacity-50"
+                      >
+                        <Play className="w-2.5 h-2.5 fill-current" />
+                      </button>
+                    </div>
                   </div>
                   <p className="font-body text-xs leading-relaxed">{turn.text}</p>
                 </div>

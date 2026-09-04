@@ -62,6 +62,8 @@ Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
-*.sw?
-
+# Kokoro TTS Models
+kokoro_weights/
+backend/kokoro_weights/
+*.onnx
+*.bin

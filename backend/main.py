@@ -17,13 +17,13 @@ try:
     from backend.config import settings
     from backend.database import async_session_maker, init_db
     from backend.models.transaction import Transaction
-    from backend.routers import dashboard_router, simulate_router, webhook_router
+    from backend.routers import dashboard_router, simulate_router, voice_router, webhook_router
     from backend.seed import seed_database
 except ImportError:
     from config import settings
     from database import async_session_maker, init_db
     from models.transaction import Transaction
-    from routers import dashboard_router, simulate_router, webhook_router
+    from routers import dashboard_router, simulate_router, voice_router, webhook_router
     from seed import seed_database
 from sqlmodel import select
 
@@ -57,6 +57,7 @@ app.add_middleware(
 app.include_router(webhook_router)
 app.include_router(simulate_router)
 app.include_router(dashboard_router)
+app.include_router(voice_router)
 
 
 @app.get("/health", tags=["Health"])
