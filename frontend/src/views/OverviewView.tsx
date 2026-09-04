@@ -42,11 +42,11 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigateTab('ingest')}
-            aria-label="Ingest payment dropout event"
+            aria-label="Open Autonomous Recovery Hub"
             className="h-9 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all focus-rzp"
           >
             <Zap className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Ingest Payment Dropout</span>
+            <span>Launch Recovery Hub</span>
           </button>
 
           <button

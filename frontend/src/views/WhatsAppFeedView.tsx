@@ -172,7 +172,7 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
                     onClick={() => setSelectedId(msg.id)}
                     className={`w-full text-left p-3.5 flex items-start gap-3 transition-colors cursor-pointer ${
                       isSelected
-                        ? 'bg-emerald-50/80 dark:bg-[#18231c] border-l-4 border-l-emerald-600 dark:border-l-emerald-500'
+                        ? 'bg-emerald-50/80 dark:bg-[#18231c] ring-1 ring-inset ring-emerald-500/40 dark:ring-emerald-500/30'
                         : 'hover:bg-zinc-50 dark:hover:bg-[#161619]'
                     }`}
                   >

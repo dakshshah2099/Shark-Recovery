@@ -103,9 +103,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const agentNavItems: NavItemDef[] = [
     {
       id: 'ingest',
-      label: 'Failure Ingestion',
+      label: 'Recovery Hub',
       icon: Zap,
-      desc: 'Manual & Batch Ingest',
+      desc: 'Ingest & Benchmark Vectors',
     },
     ...(debugMode
       ? [

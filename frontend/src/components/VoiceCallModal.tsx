@@ -1084,7 +1084,9 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${
-                    isLiveConnected ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                    isLiveConnected
+                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                      : 'bg-zinc-800 text-zinc-400 border-zinc-700'
                   }`}>
                     <Activity className={`w-4 h-4 ${isLiveConnected ? 'animate-pulse' : ''}`} />
                   </div>
@@ -1092,7 +1094,9 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                     <h4 className="text-xs font-heading font-semibold flex items-center gap-2 text-white flex-wrap">
                       <span>Multimodal Live Voice Streaming Bridge</span>
                       <span className={`px-2 py-0.2 rounded text-[9px] font-mono font-bold ${
-                        isLiveConnected ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400'
+                        isLiveConnected
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-zinc-800 text-zinc-400'
                       }`}>
                         {isLiveConnected ? 'Connected (Bi-Directional)' : 'Idle / Standby'}
                       </span>
@@ -1111,7 +1115,9 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                         type="button"
                         onClick={() => setIsMicMuted(!isMicMuted)}
                         className={`h-8 px-3 rounded-md text-xs font-subheading font-medium inline-flex items-center gap-1.5 cursor-pointer transition-colors focus-rzp ${
-                          isMicMuted ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
+                          isMicMuted
+                            ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                            : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200'
                         }`}
                       >
                         {isMicMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5 text-emerald-400" />}

@@ -90,6 +90,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [smtpPass, setSmtpPass] = useState('');
   const [smtpFrom, setSmtpFrom] = useState('');
   const [maxRetries, setMaxRetries] = useState(2);
+  const [activeTab, setActiveTab] = useState<'all' | 'ai' | 'payment' | 'channels' | 'guardrails'>('all');
+  const [showPurgeModal, setShowPurgeModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!showPurgeModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowPurgeModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showPurgeModal]);
 
   const fetchGroqModels = useCallback(async () => {
     try {
@@ -328,7 +341,43 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
             )}
 
+            {/* Category Filter Tabs */}
+            <div
+              role="tablist"
+              aria-label="Configuration categories"
+              className="flex flex-wrap items-center gap-1.5 p-1 bg-zinc-100 dark:bg-[#0c0c0e] border border-zinc-200 dark:border-[#27272a] rounded-lg"
+            >
+              {[
+                { id: 'all', label: 'All Settings', icon: Settings },
+                { id: 'ai', label: 'AI Reasoning', icon: Sparkles },
+                { id: 'payment', label: 'Razorpay Rails', icon: Key },
+                { id: 'channels', label: 'Outreach Channels', icon: MessageSquare },
+                { id: 'guardrails', label: 'Retry Guardrails', icon: ShieldCheck },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveTab(tab.id as 'all' | 'ai' | 'payment' | 'channels' | 'guardrails')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-subheading font-medium inline-flex items-center gap-1.5 transition-all cursor-pointer focus-rzp ${
+                      isActive
+                        ? 'bg-white dark:bg-[#18181b] text-zinc-900 dark:text-white shadow-xs font-semibold'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
             {/* 1. AI & LLM Keys */}
+            {(activeTab === 'all' || activeTab === 'ai') && (
             <div className="space-y-2.5">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
@@ -435,8 +484,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 ))}
               </div>
             </div>
+            )}
 
             {/* 2. Razorpay Credentials */}
+            {(activeTab === 'all' || activeTab === 'payment') && (
             <div className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
@@ -478,9 +529,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
               </div>
             </div>
+            )}
 
-            {/* 3. Twilio WhatsApp */}
-            <div className="space-y-2.5 pt-2">
+            {/* 3 & 4. Outreach Channels (Twilio WhatsApp & SMTP) */}
+            {(activeTab === 'all' || activeTab === 'channels') && (
+              <>
+                {/* 3. Twilio WhatsApp */}
+                <div className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 <span>Twilio WhatsApp API (Sandbox & Production Template Compatible)</span>
@@ -669,8 +724,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
               </div>
             </div>
+            </>
+            )}
 
             {/* 5. Deterministic Guardrails & Retry Policy */}
+            {(activeTab === 'all' || activeTab === 'guardrails') && (
             <div className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
@@ -714,6 +772,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
               </div>
             </div>
+            )}
 
             {/* Submit Bar */}
             <div className="pt-3 border-t border-zinc-100 dark:border-[#27272a] flex items-center justify-between">
@@ -789,7 +848,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           <button
             type="button"
-            onClick={onClearDB}
+            onClick={() => setShowPurgeModal(true)}
             disabled={clearing || seeding}
             className="h-9 px-4 rounded-md bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 text-xs font-subheading font-medium inline-flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50 focus-rzp"
           >
@@ -798,6 +857,60 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Purge Confirmation Modal */}
+      {showPurgeModal && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="purge-modal-title"
+          aria-describedby="purge-modal-desc"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+        >
+          <div className="bg-white dark:bg-[#121215] border border-rose-200 dark:border-rose-900/60 rounded-lg max-w-md w-full p-6 shadow-xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 id="purge-modal-title" className="font-heading font-bold text-base text-zinc-900 dark:text-white">
+                  Confirm Database Purge
+                </h4>
+                <p id="purge-modal-desc" className="text-xs text-zinc-600 dark:text-zinc-400 font-body leading-relaxed">
+                  Are you sure you want to permanently purge the database? This will irreversibly delete all stored transactions, payment recovery links, and AI audit ledger traces.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 rounded p-3 text-[11px] text-rose-800 dark:text-rose-300 font-mono">
+              ⚠️ Gated destructive action: Existing payment attempts will be wiped.
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowPurgeModal(false)}
+                disabled={clearing}
+                className="h-9 px-4 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium cursor-pointer transition-colors focus-rzp"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPurgeModal(false);
+                  onClearDB();
+                }}
+                disabled={clearing}
+                className="h-9 px-4 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-xs font-subheading font-semibold inline-flex items-center gap-2 cursor-pointer shadow-xs transition-colors focus-rzp"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Confirm Database Purge</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

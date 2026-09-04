@@ -32,6 +32,8 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [payingIds, setPayingIds] = useState<Record<string, boolean>>({});
   const [selectedVoiceSession, setSelectedVoiceSession] = useState<any | null>(null);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState<boolean>(false);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleOpenVoiceTranscript = (transcriptJson: string, txn?: TransactionItem) => {
     try {
@@ -91,6 +93,54 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     return matchesSearch && matchesStatus;
   });
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      const isInputActive =
+        activeEl instanceof HTMLInputElement ||
+        activeEl instanceof HTMLTextAreaElement ||
+        activeEl?.getAttribute('contenteditable') === 'true';
+
+      // "/" focuses search input when not already typing
+      if (e.key === '/' && !isInputActive) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
+      // Inside search input: Escape blurs
+      if (e.key === 'Escape' && activeEl === searchInputRef.current) {
+        searchInputRef.current?.blur();
+        return;
+      }
+
+      // Keyboard navigation for table rows
+      if (!isInputActive && filteredTransactions.length > 0) {
+        if (e.key === 'j' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          setSelectedRowIndex((prev) =>
+            prev < filteredTransactions.length - 1 ? prev + 1 : 0
+          );
+        } else if (e.key === 'k' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          setSelectedRowIndex((prev) =>
+            prev > 0 ? prev - 1 : filteredTransactions.length - 1
+          );
+        } else if (e.key === 'r' && selectedRowIndex >= 0 && selectedRowIndex < filteredTransactions.length) {
+          const targetTxn = filteredTransactions[selectedRowIndex];
+          if (targetTxn && targetTxn.status !== 'recovered') {
+            e.preventDefault();
+            handleRowRetry(targetTxn.id);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [filteredTransactions, selectedRowIndex]);
+
   const getStatusBadge = (status: TransactionStatus) => {
     switch (status) {
       case 'recovered':
@@ -137,13 +187,17 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         <div className="relative w-full sm:w-96">
           <Search className="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="Search customer, order ID, failure reason..."
             aria-label="Search customer, order ID, or failure reason"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-9 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md pl-10 pr-4 focus-rzp transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-body"
+            className="w-full h-9 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md pl-10 pr-9 focus-rzp transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-body"
           />
+          <kbd className="hidden sm:inline-flex items-center justify-center w-5 h-5 text-[10px] font-mono text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-[#27272a] border border-zinc-200 dark:border-zinc-700 rounded absolute right-2.5 top-1/2 -translate-y-1/2 select-none pointer-events-none" title="Press / to search">
+            /
+          </kbd>
         </div>
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
@@ -204,7 +258,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   </span>
                   {txn.status === 'recovered' && (
                     <span className="text-emerald-700 dark:text-emerald-400 font-semibold tabular-nums">
-                      Paid: ₹{txn.recovered_amount.toFixed(2)}
+                      Paid: ₹{(txn.recovered_amount ?? txn.amount).toFixed(2)}
                     </span>
                   )}
                 </div>
@@ -303,37 +357,44 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 </td>
               </tr>
             ) : (
-              filteredTransactions.map((txn) => (
-                <tr
-                  key={txn.id}
-                  className="hover:bg-zinc-50/80 dark:hover:bg-[#18181b]/50 transition-colors"
-                >
-                  {/* Customer & Order */}
-                  <td className="py-3 px-4 truncate">
-                    <div className="font-semibold font-subheading text-zinc-900 dark:text-white text-xs truncate">
-                      {txn.customer_name}
-                    </div>
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate mt-0.5">
-                      {txn.customer_email}
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] font-mono mt-0.5">
-                      <span className="text-blue-600 dark:text-blue-400 font-medium truncate">{txn.razorpay_order_id}</span>
-                      <span className="text-zinc-400 dark:text-zinc-500">•</span>
-                      <span className="text-zinc-500 dark:text-zinc-400 tabular-nums">{formatToIST(txn.created_at, true)}</span>
-                    </div>
-                  </td>
-
-                  {/* Amount & Recovered */}
-                  <td className="py-3 px-4">
-                    <div className="font-heading font-bold text-zinc-900 dark:text-white text-sm whitespace-nowrap tabular-nums">
-                      ₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </div>
-                    {txn.status === 'recovered' && (
-                      <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono mt-0.5 whitespace-nowrap font-medium tabular-nums">
-                        Paid: ₹{txn.recovered_amount.toFixed(2)}
+              filteredTransactions.map((txn, index) => {
+                const isSelected = selectedRowIndex === index;
+                return (
+                  <tr
+                    key={txn.id}
+                    onClick={() => setSelectedRowIndex(index)}
+                    className={`transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-blue-50/70 dark:bg-blue-950/30 ring-1 ring-inset ring-blue-500/40'
+                        : 'hover:bg-zinc-50/80 dark:hover:bg-[#18181b]/50'
+                    }`}
+                  >
+                    {/* Customer & Order */}
+                    <td className="py-3 px-4 truncate">
+                      <div className="font-semibold font-subheading text-zinc-900 dark:text-white text-xs truncate">
+                        {txn.customer_name}
                       </div>
-                    )}
-                  </td>
+                      <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate mt-0.5">
+                        {txn.customer_email}
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] font-mono mt-0.5">
+                        <span className="text-blue-600 dark:text-blue-400 font-medium truncate">{txn.razorpay_order_id}</span>
+                        <span className="text-zinc-400 dark:text-zinc-500">•</span>
+                        <span className="text-zinc-500 dark:text-zinc-400 tabular-nums">{formatToIST(txn.created_at, true)}</span>
+                      </div>
+                    </td>
+
+                    {/* Amount & Recovered */}
+                    <td className="py-3 px-4">
+                      <div className="font-heading font-bold text-zinc-900 dark:text-white text-sm whitespace-nowrap tabular-nums">
+                        ₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </div>
+                      {txn.status === 'recovered' && (
+                        <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono mt-0.5 whitespace-nowrap font-medium tabular-nums">
+                          Paid: ₹{(txn.recovered_amount ?? txn.amount).toFixed(2)}
+                        </div>
+                      )}
+                    </td>
 
                   {/* Failure Diagnostic */}
                   <td className="py-3 px-4 overflow-hidden">
@@ -429,10 +490,24 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     </div>
                   </td>
                 </tr>
-              ))
-            )}
+              );
+            })
+          )}
           </tbody>
         </table>
+      </div>
+
+      {/* Keyboard Shortcut Status Bar */}
+      <div className="hidden sm:flex items-center justify-between px-4 py-2 bg-zinc-50/90 dark:bg-[#0c0c0e] border-t border-zinc-200 dark:border-[#27272a] text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
+        <div className="flex items-center gap-3">
+          <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">j</kbd> / <kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">k</kbd> Navigate rows</span>
+          <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">r</kbd> Retry row</span>
+          <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">/</kbd> Focus search</span>
+          <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">esc</kbd> Dismiss</span>
+        </div>
+        <div>
+          Showing {filteredTransactions.length} of {transactions.length} transactions
+        </div>
       </div>
 
       {/* Voice Call Modal */}

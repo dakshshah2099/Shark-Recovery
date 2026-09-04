@@ -364,7 +364,11 @@ export const OverviewCharts: React.FC<OverviewChartsProps> = ({ metrics, transac
             {/* Horizontal Bar Breakdown for Top Categories */}
             <div className="space-y-2.5">
               {categoryStats.slice(0, 4).map((cat) => {
-                const colorConfig = CATEGORY_COLORS[cat.category] || { bar: 'bg-blue-600 dark:bg-blue-500', text: 'text-zinc-500 dark:text-zinc-400' };
+                const defaultColor = {
+                  bar: 'bg-blue-600 dark:bg-blue-500',
+                  text: 'text-zinc-500 dark:text-zinc-400',
+                };
+                const colorConfig = CATEGORY_COLORS[cat.category] || defaultColor;
                 return (
                   <div key={cat.category} className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
