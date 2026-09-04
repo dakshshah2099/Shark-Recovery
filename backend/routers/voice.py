@@ -5,13 +5,11 @@ from pydantic import BaseModel, Field
 
 try:
     from backend.tools.tts_engine import (
-        preprocess_hinglish_for_tts,
         tts_engine,
         VOICE_CATALOG,
     )
 except ImportError:
     from tools.tts_engine import (
-        preprocess_hinglish_for_tts,
         tts_engine,
         VOICE_CATALOG,
     )
@@ -23,9 +21,9 @@ router = APIRouter(prefix="/api/voice", tags=["Voice Recovery TTS"])
 
 class SynthesizeRequest(BaseModel):
     text: str = Field(..., description="Text or Hinglish transcript to synthesize")
-    voice: Optional[str] = Field(None, description="Kokoro voice ID (e.g., hf_alpha, hm_omega)")
+    voice: Optional[str] = Field(None, description="Kokoro voice ID or blend preset")
     speaker: Optional[str] = Field(None, description="Speaker role: AI_Agent or Customer")
-    speed: float = Field(1.0, ge=0.5, le=2.0, description="Speech rate multiplier")
+    speed: float = Field(1.05, ge=0.5, le=2.0, description="Speech rate multiplier")
 
 
 class SynthesizeResponse(BaseModel):
@@ -44,19 +42,20 @@ class DialogueTurnAudioItem(BaseModel):
     timestamp_sec: int
     audio_base64: Optional[str] = None
     voice_used: Optional[str] = None
+    devanagari_normalized: Optional[str] = None
 
 
 class BatchSessionAudioRequest(BaseModel):
     dialogue: List[Dict[str, Any]]
-    agent_voice: str = "hf_alpha"
-    customer_voice: str = "hm_omega"
-    speed: float = 1.0
+    agent_voice: str = "shark_agent_alpha"
+    customer_voice: str = "customer_male"
+    speed: float = 1.05
 
 
 class BatchSessionAudioResponse(BaseModel):
     success: bool
     dialogue: List[DialogueTurnAudioItem]
-    model_engine: str = "Kokoro-82M ONNX"
+    model_engine: str = "Kokoro-82M ONNX + Devanagari G2P"
 
 
 @router.get("/voices", response_model=List[Dict[str, Any]])
@@ -68,7 +67,8 @@ async def get_available_voices():
 @router.post("/synthesize", response_model=SynthesizeResponse)
 async def synthesize_speech(req: SynthesizeRequest):
     """
-    Synthesizes single Hinglish utterance using Kokoro-82M ONNX engine.
+    Synthesizes single Hinglish utterance using Kokoro-82M ONNX engine with
+    phonetic Devanagari normalizer and acoustic neural style blends.
     """
     if not tts_engine.is_available:
         raise HTTPException(
@@ -80,20 +80,18 @@ async def synthesize_speech(req: SynthesizeRequest):
     target_voice = req.voice
     if not target_voice:
         if req.speaker == "Customer":
-            target_voice = "hm_omega"
+            target_voice = "customer_male"
         else:
-            target_voice = "hf_alpha"
+            target_voice = "shark_agent_alpha"
 
     try:
-        clean_text = preprocess_hinglish_for_tts(req.text)
-        audio_b64 = tts_engine.synthesize_base64(
+        audio_b64, clean_text = tts_engine.synthesize_base64(
             text=req.text,
             voice=target_voice,
             speed=req.speed,
         )
-        # Approximate duration estimation (assuming ~24kHz 16-bit mono)
-        wav_bytes, sr = tts_engine.synthesize(text=req.text, voice=target_voice, speed=req.speed)
-        num_samples = (len(wav_bytes) - 44) // 2  # 16-bit PCM has 2 bytes per sample
+        wav_bytes, sr, _ = tts_engine.synthesize(text=req.text, voice=target_voice, speed=req.speed)
+        num_samples = (len(wav_bytes) - 44) // 2
         duration_sec = round(max(0.1, num_samples / sr), 2)
 
         return SynthesizeResponse(
@@ -130,10 +128,11 @@ async def synthesize_dialogue_session(req: BatchSessionAudioRequest):
         voice = req.agent_voice if speaker == "AI_Agent" else req.customer_voice
 
         try:
-            b64_audio = tts_engine.synthesize_base64(text=text, voice=voice, speed=req.speed)
+            b64_audio, clean_text = tts_engine.synthesize_base64(text=text, voice=voice, speed=req.speed)
         except Exception as e:
             logger.warning(f"Failed to synthesize turn text ({text[:30]}...): {e}")
             b64_audio = None
+            clean_text = text
 
         processed_turns.append(
             DialogueTurnAudioItem(
@@ -143,11 +142,12 @@ async def synthesize_dialogue_session(req: BatchSessionAudioRequest):
                 timestamp_sec=timestamp_sec,
                 audio_base64=b64_audio,
                 voice_used=voice,
+                devanagari_normalized=clean_text,
             )
         )
 
     return BatchSessionAudioResponse(
         success=True,
         dialogue=processed_turns,
-        model_engine="Kokoro-82M ONNX",
+        model_engine="Kokoro-82M ONNX + Devanagari G2P",
     )

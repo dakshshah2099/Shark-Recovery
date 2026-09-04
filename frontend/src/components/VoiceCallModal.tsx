@@ -56,9 +56,10 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
   const [activeTurnIndex, setActiveTurnIndex] = useState<number>(-1);
   const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
   const [audioCache, setAudioCache] = useState<Record<number, string>>({});
-  const [selectedAgentVoice, setSelectedAgentVoice] = useState<string>('hf_alpha');
-  const [selectedCustomerVoice, setSelectedCustomerVoice] = useState<string>('hm_omega');
+  const [selectedAgentVoice, setSelectedAgentVoice] = useState<string>('shark_agent_alpha');
+  const [selectedCustomerVoice, setSelectedCustomerVoice] = useState<string>('customer_male');
   const [engineMode, setEngineMode] = useState<'kokoro' | 'webspeech'>('kokoro');
+  const [showDevanagari, setShowDevanagari] = useState<boolean>(false);
 
   // Browser Web Speech fallback state
   const [availableBrowserVoices, setAvailableBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -390,11 +391,12 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                     setAudioCache({});
                   }}
                   className="h-6 px-1.5 text-[10px] rounded border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-[#121215] text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
-                  title="Kokoro Agent Voice"
+                  title="Kokoro Agent Voice Blend"
                 >
-                  <option value="hf_alpha">Kokoro Alpha (Hindi Female - Default)</option>
-                  <option value="hf_beta">Kokoro Beta (Warm Hindi Female)</option>
-                  <option value="af_heart">Kokoro Heart (US English Female)</option>
+                  <option value="shark_agent_alpha">⭐ Shark Agent Alpha (Empathetic Neural Blend)</option>
+                  <option value="shark_agent_warm">Shark Agent Warm (Customer Service Blend)</option>
+                  <option value="hf_alpha">Raw Alpha (Hindi Female)</option>
+                  <option value="af_heart">Heart (US English Studio)</option>
                 </select>
               </div>
 
@@ -409,11 +411,12 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                     setAudioCache({});
                   }}
                   className="h-6 px-1.5 text-[10px] rounded border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-[#121215] text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
-                  title="Kokoro Customer Voice"
+                  title="Kokoro Customer Voice Blend"
                 >
-                  <option value="hm_omega">Kokoro Omega (Hindi Male - Default)</option>
-                  <option value="hm_psi">Kokoro Psi (Calm Hindi Male)</option>
-                  <option value="am_adam">Kokoro Adam (US English Male)</option>
+                  <option value="customer_male">⭐ Customer Omega (Conversational Indian Male)</option>
+                  <option value="customer_calm">Customer Psi (Calm Indian Male)</option>
+                  <option value="customer_female">Customer Beta (Conversational Indian Female)</option>
+                  <option value="hm_omega">Raw Omega (Hindi Male)</option>
                 </select>
               </div>
             </div>
@@ -428,14 +431,14 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                 className="h-6 px-1.5 text-[10px] rounded border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-[#121215] text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
                 title="Select Audio Engine"
               >
-                <option value="kokoro">⚡ Kokoro-82M ONNX (Studio Neural)</option>
+                <option value="kokoro">⚡ Kokoro-82M ONNX + Devanagari G2P</option>
                 <option value="webspeech">🌐 Browser Web Speech (Fallback)</option>
               </select>
 
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3 h-3 text-emerald-500 shrink-0" />
                 <span className="text-emerald-700 dark:text-emerald-300 font-medium">
-                  {engineMode === 'kokoro' ? 'Kokoro-82M ONNX Active' : 'Web Speech Fallback'}
+                  {engineMode === 'kokoro' ? 'Devanagari G2P Active' : 'Web Speech Fallback'}
                 </span>
               </div>
             </div>
@@ -444,13 +447,24 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
 
         {/* Turn-by-turn Conversation Stream */}
         <div className="space-y-3 pt-1">
-          <h4 className="text-xs font-heading font-bold text-zinc-800 dark:text-zinc-200 flex items-center justify-between font-subheading">
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-heading font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-subheading">
               <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
               <span>Turn-by-Turn Conversational Dialogue Transcript:</span>
+            </h4>
+            <div className="flex items-center gap-3">
+              <label className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 flex items-center gap-1 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={showDevanagari}
+                  onChange={(e) => setShowDevanagari(e.target.checked)}
+                  className="w-3 h-3 rounded text-blue-600 focus:ring-0 cursor-pointer"
+                />
+                <span>Hindi Phonetic Subtitles</span>
+              </label>
+              <span className="text-[10px] text-zinc-400 font-mono hidden sm:inline">Click ▶ to test turn</span>
             </div>
-            <span className="text-[10px] text-zinc-400 font-mono">Click ▶ on any turn to play individually</span>
-          </h4>
+          </div>
 
           <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
             {sessionData.dialogue.map((turn, i) => {
