@@ -88,7 +88,14 @@ async def trigger_outbound_call(
     if not txn:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
-    phone = req.customer_phone or txn.customer_phone or "+919876543210"
+    customer = None
+    if txn.customer_id:
+        cust_res = await db.exec(select(Customer).where(Customer.id == txn.customer_id))
+        customer = cust_res.first()
+
+    customer_name = customer.name if customer else "Valued Customer"
+    customer_phone = customer.phone if customer else None
+    phone = req.customer_phone or customer_phone or "+919876543210"
     session_id = f"voice_{txn.id[:8]}_{int(asyncio.get_event_loop().time())}"
 
     # Check if real Twilio Voice credentials exist via API Key & Secret
@@ -123,6 +130,7 @@ async def trigger_outbound_call(
     # Log to Audit Ledger
     audit = AuditLog(
         transaction_id=txn.id,
+        customer_id=txn.customer_id,
         agent_name="HinglishVoiceAgent",
         action_type=ActionType.VOICE_CALL_DISPATCHED,
         status=AuditStatus.SUCCESS,
@@ -134,7 +142,7 @@ async def trigger_outbound_call(
             "discount_percent": req.discount_percent,
         }),
         output_payload=json.dumps({
-            "message": f"Voice recovery session {session_id} initiated for {txn.customer_name} on {provider_used}",
+            "message": f"Voice recovery session {session_id} initiated for {customer_name} on {provider_used}",
             "call_sid": call_sid,
             "status": "in-flight",
         }),
