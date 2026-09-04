@@ -573,13 +573,17 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
     setIsDialing(true);
     setPstnCallStatus(null);
     try {
-      const txnId = sessionData?.call_id?.replace('call_', '') || 'txn_sample';
+      const txnId = sessionData?.transaction_id || sessionData?.call_id?.replace('call_', '') || '';
       const res = await fetch('/api/voice/outbound-call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           transaction_id: txnId,
+          customer_name: sessionData?.customer_name,
           customer_phone: dialPhoneNumber,
+          customer_email: sessionData?.customer_email,
+          amount: sessionData?.order_amount,
+          failure_reason: sessionData?.failure_reason,
           discount_percent: sessionData?.discount_offered || 0.0,
           provider: dialProvider,
         }),
