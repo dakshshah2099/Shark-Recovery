@@ -78,14 +78,14 @@ class GeminiLiveSession:
     def _build_system_instruction(self) -> str:
         first_name = self.customer_name.split()[0] if self.customer_name else "Customer"
         discount_rule = (
-            f"DISCOUNT POLICY: A special {self.discount_percent:.0f}% discount is approved as an incentive. Mention it politely."
+            f"DISCOUNT POLICY: A special {self.discount_percent:.0f}% discount has been pre-approved as an incentive for this cart."
             if self.discount_percent > 0
-            else "DISCOUNT POLICY: 0% discount. STRICT: DO NOT mention the word 'discount' or '0%'. Pitch priority cart reservation and 1-click retry."
+            else "DISCOUNT POLICY: 0% discount. STRICT: DO NOT mention the word 'discount', 'offer', 'rebate', or '0%'. Emphasize that their cart items are securely reserved on high priority."
         )
 
         return f"""
 You are Priya, an empathetic, courteous Indian female Voice Recovery Specialist from Shark Payment Care for Razorpay merchants in India.
-You are currently on a live phone call with customer {self.customer_name} (Phone: {self.customer_phone}, Email: {self.customer_email}).
+You are currently on a continuous live phone call with customer {self.customer_name} (Phone: {self.customer_phone}, Email: {self.customer_email}).
 
 CONTEXT:
 - Order Amount: INR {self.order_amount:,.2f}
@@ -94,17 +94,34 @@ CONTEXT:
 
 STRICT LINGUISTIC RULES:
 1. Speak natural, respectful conversational Hinglish with polite Indian phone cadence ("Namaste {first_name} ji", "Aapka cart reserve rakha hai", "Bilkul samajh sakti hoon").
-2. FEMININE FIRST-PERSON GRAMMAR: You are female. Always use feminine verbs: "bol rahi hoon" (never "bol raha hoon"), "kar sakti hoon", "samajh sakti hoon", "bhej rahi hoon".
+2. FEMININE FIRST-PERSON GRAMMAR: You are female. Always use feminine verbs: "bol rahi hoon" (never "bol raha hoon"), "kar sakti hoon", "samajh sakti hoon", "bhej rahi hoon", "dekh sakti hoon".
 3. Keep responses crisp and conversational (1-2 short sentences per turn, suitable for phone speech).
 
-ACTIVE DISPATCH TOOLS (EXECUTE IMMEDIATELY WHEN APPROPRIATE):
-- If the customer wants the retry link on WhatsApp, execute `dispatch_whatsapp`.
-- If the customer prefers a direct SMS or text message, execute `dispatch_sms`.
-- If the customer wants details/invoice sent via Email, execute `dispatch_email`.
-- If the customer requests omnichannel outreach or generic retry link, execute `dispatch_recovery_link`.
-- If the customer specifies a time or promise to pay, execute `record_promise_to_pay`.
+STRICT 4-STAGE CONVERSATIONAL LIFECYCLE:
+STAGE 1 - GREET & INQUIRE (DO NOT CALL TOOLS YET):
+- Greet {first_name} ji warmly, inform them that their cart of Rs {self.order_amount:,.0f} was interrupted, and ask if they would like assistance retrying payment.
+- DO NOT execute any dispatch tools in Stage 1. Listen to customer's reply first.
 
-After calling any dispatch tool, immediately confirm to the customer verbally that the message/email with the link has been dispatched right to their phone or email.
+STAGE 2 - CHANNEL CONFIRMATION (DO NOT GUESS PLATFORM):
+- When the customer agrees or explains their issue (e.g. OTP delay, bank lag, payment declined), reassure them.
+- If applicable, mention the {self.discount_percent:.0f}% incentive (or cart priority reservation if 0%).
+- MANDATORY: Ask the customer on which channel they would prefer to receive the retry link:
+  "Aapko payment retry link WhatsApp pe bhej doon, direct SMS pe ya Email pe?"
+- WAIT for the customer's response. DO NOT dispatch until the customer explicitly specifies or confirms their platform!
+
+STAGE 3 - PRECISE TOOL DISPATCH:
+- Once the customer specifies their channel, call the corresponding tool:
+  * Customer wants WhatsApp -> call `dispatch_whatsapp`
+  * Customer wants SMS / Text -> call `dispatch_sms`
+  * Customer wants Email / Invoice -> call `dispatch_email`
+  * Customer wants all/both/any -> call `dispatch_recovery_link` with channel="all"
+  * Customer wants to pay at a future time -> call `record_promise_to_pay`
+
+STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
+- CRITICAL: After calling a dispatch tool, DO NOT terminate the call, say goodbye, or close the session!
+- Verbally confirm: "Ji {first_name} ji, maine payment link aapke [WhatsApp/SMS/Email] pe send kar diya hai."
+- Ask if they have received it and if they have any questions regarding payment options (UPI apps, Cards, NetBanking, EMI) or Razorpay security.
+- Stay active on the live stream and answer any subsequent questions until the customer is completely satisfied and finishes the call.
 """.strip()
 
     def _build_tools_declaration(self) -> List[Dict[str, Any]]:
@@ -282,9 +299,10 @@ After calling any dispatch tool, immediately confirm to the customer verbally th
 
         first_name = self.customer_name.split()[0] if self.customer_name else "Customer"
         prompt_text = (
-            f"The phone call with customer {self.customer_name} (Phone: {self.customer_phone}) has just connected. "
-            f"Start speaking immediately right now: Greet {first_name} ji warmly in polite conversational Hinglish as Priya from Shark Payment Care for Razorpay, "
-            f"mention their pending cart of Rs {self.order_amount:,.2f}, and politely offer to help complete the payment."
+            f"The call with customer {self.customer_name} (Phone: {self.customer_phone}) is connected. "
+            f"Start speaking immediately: Greet {first_name} ji warmly in polite conversational Hinglish as Priya from Shark Payment Care for Razorpay, "
+            f"mention their pending cart of Rs {self.order_amount:,.2f}, and politely offer assistance. "
+            f"Ask whether they would prefer the 1-click retry link on WhatsApp, SMS, or Email. Do NOT call any tools yet."
         )
 
         client_turn = {
@@ -332,7 +350,7 @@ After calling any dispatch tool, immediately confirm to the customer verbally th
         except Exception as e:
             logger.warning(f"Error sending audio to Gemini Live: {e}")
 
-    async def send_tool_response(self, call_id: str, output: Dict[str, Any]) -> None:
+    async def send_tool_response(self, call_id: str, fn_name: str, output: Dict[str, Any]) -> None:
         """Sends function tool execution result back to Gemini Live."""
         if not self._ws or self._mock_mode:
             return
@@ -342,14 +360,19 @@ After calling any dispatch tool, immediately confirm to the customer verbally th
                 "functionResponses": [
                     {
                         "id": call_id,
-                        "response": output,
+                        "name": fn_name,
+                        "response": {
+                            "output": output,
+                        },
                     }
                 ]
             }
         }
         try:
             async with self._lock:
-                await self._ws.send(json.dumps(payload))
+                if self._ws:
+                    await self._ws.send(json.dumps(payload))
+                    logger.info(f"GeminiLive[{self.session_id}] Delivered tool response for {fn_name} (call_id: {call_id})")
         except Exception as e:
             logger.warning(f"Error sending tool response to Gemini: {e}")
 
@@ -362,7 +385,7 @@ After calling any dispatch tool, immediately confirm to the customer verbally th
             # First turn: AI Agent Speaks FIRST immediately!
             first_name = self.customer_name.split()[0] if self.customer_name else "Customer"
             disc_text = f" Aur humne aapke liye ek special {self.discount_percent:.0f}% discount reserve kiya hai." if self.discount_percent > 0 else ""
-            greeting = f"Namaste {first_name} ji! Main Priya bol rahi hoon Shark Payment Care se Razorpay merchant ke liye. Aapka Rs {self.order_amount:,.0f} ka order pending tha.{disc_text} Kya main direct 1-click retry link WhatsApp pe bhej doon?"
+            greeting = f"Namaste {first_name} ji! Main Priya bol rahi hoon Shark Payment Care se Razorpay merchant ke liye. Aapka Rs {self.order_amount:,.0f} ka order pending tha.{disc_text} Kya main direct 1-click retry link WhatsApp pe bhej doon, ya SMS pe?"
             
             if self.on_transcript:
                 self.on_transcript("AI_Agent", greeting)
@@ -440,13 +463,17 @@ After calling any dispatch tool, immediately confirm to the customer verbally th
                         
                         tool_result = {"status": "success", "executed": True}
                         if self.on_tool_call:
-                            res = self.on_tool_call(fn_name, fn_args)
-                            if asyncio.iscoroutine(res):
-                                tool_result = await res
-                            elif res is not None:
-                                tool_result = res
-                                
-                        await self.send_tool_response(call_id, tool_result)
+                            try:
+                                res = self.on_tool_call(fn_name, fn_args)
+                                if asyncio.iscoroutine(res):
+                                    tool_result = await res
+                                elif res is not None:
+                                    tool_result = res
+                            except Exception as e_tool:
+                                logger.warning(f"Error executing live tool {fn_name}: {e_tool}")
+                                tool_result = {"status": "error", "error": str(e_tool)}
+
+                        await self.send_tool_response(call_id, fn_name, tool_result)
                         yield {
                             "type": "tool_executed",
                             "tool_name": fn_name,
