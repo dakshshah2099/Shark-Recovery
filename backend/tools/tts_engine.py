@@ -165,10 +165,10 @@ class KokoroTTSEngine:
             v_sky = self._kokoro.get_voice_style("af_sky")
             v_adam = self._kokoro.get_voice_style("am_adam")
 
-            # 1. Shark Agent Alpha: Authoritative & Empathetic Recovery
-            self._blend_cache["shark_agent_alpha"] = 0.70 * v_alpha + 0.20 * v_beta + 0.10 * v_heart
+            # 1. Shark Agent Alpha: Authoritative & Empathetic Recovery (Enhanced English Articulation)
+            self._blend_cache["shark_agent_alpha"] = 0.55 * v_alpha + 0.20 * v_beta + 0.25 * v_heart
             # 2. Shark Agent Warm: Reassuring Support
-            self._blend_cache["shark_agent_warm"] = 0.65 * v_beta + 0.25 * v_alpha + 0.10 * v_sky
+            self._blend_cache["shark_agent_warm"] = 0.55 * v_beta + 0.25 * v_alpha + 0.20 * v_sky
             # 3. Customer Male: Conversational Buyer
             self._blend_cache["customer_male"] = 0.75 * v_omega + 0.20 * v_psi + 0.05 * v_adam
             # 4. Customer Calm: Relaxed Buyer
