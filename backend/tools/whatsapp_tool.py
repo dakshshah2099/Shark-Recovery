@@ -73,7 +73,8 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
             phone_clean = f"+91{phone_clean}"
 
     to_whatsapp = f"whatsapp:{phone_clean}" if not phone_clean.startswith("whatsapp:") else phone_clean
-    from_whatsapp = settings.TWILIO_WHATSAPP_FROM if settings.TWILIO_WHATSAPP_FROM.startswith("whatsapp:") else f"whatsapp:{settings.TWILIO_WHATSAPP_FROM}"
+    raw_from = (settings.TWILIO_WHATSAPP_FROM or "whatsapp:+14155238886").strip()
+    from_whatsapp = raw_from if raw_from.startswith("whatsapp:") else f"whatsapp:{raw_from}"
 
     client = _get_twilio_client()
     if client:
