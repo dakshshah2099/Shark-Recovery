@@ -763,9 +763,9 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
         }
       }}
     >
-      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg max-w-2xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto font-body transition-colors">
+      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg max-w-2xl w-full p-4 sm:p-5 shadow-2xl flex flex-col max-h-[88vh] font-body transition-colors overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-start justify-between pb-3 border-b border-zinc-200 dark:border-[#27272a] gap-3">
+        <div className="flex items-start justify-between pb-2.5 border-b border-zinc-200 dark:border-[#27272a] gap-3 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
               <Phone className="w-4 h-4" aria-hidden="true" />
@@ -803,7 +803,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
         </div>
 
         {/* Mode Selector Segmented Tabs */}
-        <div className="flex items-center justify-between gap-2 p-1 bg-zinc-100 dark:bg-[#18181b] rounded-md border border-zinc-200 dark:border-[#27272a]">
+        <div className="flex items-center justify-between gap-2 p-1 bg-zinc-100 dark:bg-[#18181b] rounded-md border border-zinc-200 dark:border-[#27272a] shrink-0 my-2.5">
           <button
             type="button"
             onClick={() => {
@@ -854,213 +854,215 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
           </button>
         </div>
 
-        {/* Tab 1: Recorded Transcript & Kokoro-82M Playback */}
-        {activeTab === 'transcript' && (
-          <div className="space-y-4 animate-in fade-in duration-100">
-            {/* Operational Context Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <div className="p-3 rounded-md bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] space-y-1">
-                <span className="text-[10px] uppercase font-mono font-bold text-zinc-400 block tracking-tight">
-                  Customer Intent
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <strong className="font-subheading font-bold text-emerald-600 dark:text-emerald-400 text-xs">
-                    {sessionData.customer_intent.replace(/_/g, ' ')}
-                  </strong>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-md bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] space-y-1">
-                <span className="text-[10px] uppercase font-mono font-bold text-zinc-400 block tracking-tight">
-                  Promise-To-Pay Target
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-3 h-3 text-purple-500 shrink-0" />
-                  <strong className="font-mono font-bold text-zinc-900 dark:text-white text-xs truncate">
-                    {sessionData.promise_to_pay_date || 'Immediate Retarget'}
-                  </strong>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-md bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] space-y-1">
-                <span className="text-[10px] uppercase font-mono font-bold text-zinc-400 block tracking-tight">
-                  Incentive Tactic
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
-                  <strong className={`font-subheading font-bold text-xs ${sessionData.discount_offered > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-800 dark:text-zinc-200'}`}>
-                    {sessionData.discount_offered > 0 ? `${sessionData.discount_offered}% Special Discount` : 'Cart Reserved (0% Off)'}
-                  </strong>
-                </div>
-              </div>
-            </div>
-
-            {/* Neural Synthesis Audio Player Strip */}
-            <div className="p-3.5 rounded-md bg-zinc-950 dark:bg-[#0c0c0e] text-white border border-zinc-800 dark:border-[#27272a] space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30">
-                    <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-pulse' : ''}`} />
+        {/* Tab Contents Area */}
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+          {/* Tab 1: Recorded Transcript & Kokoro-82M Playback */}
+          {activeTab === 'transcript' && (
+            <div className="space-y-3 animate-in fade-in duration-100">
+              {/* Operational Context Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="p-2.5 rounded-md bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] space-y-0.5">
+                  <span className="text-[10px] uppercase font-mono font-bold text-zinc-400 block tracking-tight">
+                    Customer Intent
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <strong className="font-subheading font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                      {sessionData.customer_intent.replace(/_/g, ' ')}
+                    </strong>
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-heading font-semibold text-white">
-                        {isPlayingAudio
-                          ? `Playing Turn #${activeTurnIndex + 1} (${activeTurn?.speaker === 'AI_Agent' ? 'Priya Voice AI' : sessionData.customer_name})`
-                          : 'Neural Voice Player'}
-                      </span>
-                      {isPlayingAudio && (
-                        <div className="flex items-end gap-0.5 h-3" aria-hidden="true">
-                          <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse h-3" />
-                          <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse [animation-delay:150ms] h-2" />
-                          <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse [animation-delay:300ms] h-3.5" />
-                          <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse [animation-delay:450ms] h-2.5" />
-                        </div>
-                      )}
+                </div>
+
+                <div className="p-2.5 rounded-md bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] space-y-0.5">
+                  <span className="text-[10px] uppercase font-mono font-bold text-zinc-400 block tracking-tight">
+                    Promise-To-Pay Target
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3 h-3 text-purple-500 shrink-0" />
+                    <strong className="font-mono font-bold text-zinc-900 dark:text-white text-xs truncate">
+                      {sessionData.promise_to_pay_date || 'Immediate Retarget'}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-md bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] space-y-0.5">
+                  <span className="text-[10px] uppercase font-mono font-bold text-zinc-400 block tracking-tight">
+                    Incentive Tactic
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
+                    <strong className={`font-subheading font-bold text-xs ${sessionData.discount_offered > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-800 dark:text-zinc-200'}`}>
+                      {sessionData.discount_offered > 0 ? `${sessionData.discount_offered}% Special Discount` : 'Cart Reserved (0% Off)'}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Neural Synthesis Audio Player Strip */}
+              <div className="p-2.5 sm:p-3 rounded-md bg-zinc-950 dark:bg-[#0c0c0e] text-white border border-zinc-800 dark:border-[#27272a] space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30">
+                      <Volume2 className={`w-3.5 h-3.5 ${isPlayingAudio ? 'animate-pulse' : ''}`} />
                     </div>
-                    <p className="text-[11px] text-zinc-400 font-mono mt-0.5">
-                      Authentic Conversational Hinglish with English Fintech Clarity
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  {isPlayingAudio ? (
-                    <button
-                      type="button"
-                      onClick={stopDialogueAudio}
-                      aria-label="Stop audio call"
-                      className="h-8 px-3 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-subheading font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs focus-rzp"
-                    >
-                      <Square className="w-3.5 h-3.5 fill-current" />
-                      <span>Stop Call</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={playEntireDialogue}
-                      disabled={isLoadingAudio}
-                      aria-label="Play full audio dialogue"
-                      className="h-8 px-3.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs focus-rzp disabled:opacity-50 transition-colors"
-                    >
-                      {isLoadingAudio ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Synthesizing...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3.5 h-3.5 fill-current" />
-                          <span>Play Full Dialogue</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {activeTurnIndex >= 0 && (
-                <div className="pt-1 space-y-1">
-                  <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
-                    <span>Progress: Turn {activeTurnIndex + 1} of {sessionData.dialogue.length}</span>
-                    <span>+{sessionData.dialogue[activeTurnIndex]?.timestamp_sec}s / {sessionData.call_duration_seconds}s</span>
-                  </div>
-                  <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 transition-all duration-300 rounded-full"
-                      style={{ width: `${((activeTurnIndex + 1) / sessionData.dialogue.length) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Turn-by-Turn Conversational Transcript */}
-            <div className="space-y-2.5 pt-1">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-heading font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
-                  <span>Turn-by-Turn Conversational Transcript</span>
-                </h4>
-                <div className="flex items-center gap-3">
-                  <label className="text-[11px] font-subheading font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={showDevanagari}
-                      onChange={(e) => setShowDevanagari(e.target.checked)}
-                      className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-0 cursor-pointer"
-                    />
-                    <span>Hindi Devanagari Subtitles</span>
-                  </label>
-                  <span className="text-[10px] text-zinc-400 font-mono hidden sm:inline">Click ▶ to test turn</span>
-                </div>
-              </div>
-
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                {sessionData.dialogue.map((turn, i) => {
-                  const isAgent = turn.speaker === 'AI_Agent';
-                  const isActive = activeTurnIndex === i;
-                  const displayText = showDevanagari ? transliterateTextToDevanagari(turn.text) : turn.text;
-
-                  return (
-                    <div
-                      key={i}
-                      className={`p-3 rounded-md text-xs leading-relaxed transition-all duration-150 border ${
-                        isActive
-                          ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/40 shadow-xs ring-1 ring-blue-500'
-                          : isAgent
-                          ? 'bg-blue-50/40 dark:bg-blue-950/20 border-blue-200/60 dark:border-blue-900/40 ml-3 sm:ml-4'
-                          : 'bg-zinc-50 dark:bg-[#18181b] border-zinc-200 dark:border-[#27272a] mr-3 sm:mr-4'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1 text-[10px] font-mono">
-                        <span className="font-bold flex items-center gap-1.5 text-zinc-900 dark:text-white">
-                          {isAgent ? (
-                            <>
-                              <Bot className="w-3 h-3 text-rose-500" />
-                              <span>Priya (Shark Recovery Voice AI)</span>
-                            </>
-                          ) : (
-                            <>
-                              <User className="w-3 h-3 text-zinc-500" />
-                              <span>{sessionData.customer_name}</span>
-                            </>
-                          )}
-                          <span className="px-1.5 py-0.2 rounded bg-zinc-200/80 dark:bg-[#27272a] text-[9px] font-mono text-zinc-600 dark:text-zinc-400 font-normal">
-                            {isAgent ? 'Empathetic Female' : 'Customer Male'}
-                          </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-heading font-semibold text-white">
+                          {isPlayingAudio
+                            ? `Playing Turn #${activeTurnIndex + 1} (${activeTurn?.speaker === 'AI_Agent' ? 'Priya Voice AI' : sessionData.customer_name})`
+                            : 'Neural Voice Player'}
                         </span>
-
-                        <div className="flex items-center gap-2">
-                          <span className="px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-[#27272a] text-zinc-600 dark:text-zinc-400 capitalize">
-                            {turn.emotion}
-                          </span>
-                          <span className="text-zinc-400 font-mono">+{turn.timestamp_sec}s</span>
-
-                          <button
-                            type="button"
-                            onClick={() => playSingleTurn(i)}
-                            disabled={isPlayingAudio && isActive}
-                            aria-label={`Play turn ${i + 1}`}
-                            className="w-6 h-6 rounded bg-zinc-200/80 hover:bg-zinc-300 dark:bg-[#27272a] dark:hover:bg-[#3f3f46] text-zinc-800 dark:text-zinc-100 flex items-center justify-center cursor-pointer transition-colors disabled:opacity-50 focus-rzp"
-                            title={`Play turn #${i + 1}`}
-                          >
-                            <Play className="w-2.5 h-2.5 fill-current" />
-                          </button>
-                        </div>
+                        {isPlayingAudio && (
+                          <div className="flex items-end gap-0.5 h-3" aria-hidden="true">
+                            <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse h-3" />
+                            <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse [animation-delay:150ms] h-2" />
+                            <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse [animation-delay:300ms] h-3.5" />
+                            <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse [animation-delay:450ms] h-2.5" />
+                          </div>
+                        )}
                       </div>
-
-                      <p className={`font-body text-xs leading-relaxed ${isAgent ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-800 dark:text-zinc-200'}`}>
-                        {displayText}
+                      <p className="text-[10px] text-zinc-400 font-mono mt-0.5">
+                        Authentic Conversational Hinglish with English Fintech Clarity
                       </p>
                     </div>
-                  );
-                })}
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isPlayingAudio ? (
+                      <button
+                        type="button"
+                        onClick={stopDialogueAudio}
+                        aria-label="Stop audio call"
+                        className="h-7.5 px-3 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-subheading font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs focus-rzp"
+                      >
+                        <Square className="w-3 h-3 fill-current" />
+                        <span>Stop Call</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={playEntireDialogue}
+                        disabled={isLoadingAudio}
+                        aria-label="Play full audio dialogue"
+                        className="h-7.5 px-3 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs focus-rzp disabled:opacity-50 transition-colors"
+                      >
+                        {isLoadingAudio ? (
+                          <>
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Synthesizing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3 h-3 fill-current" />
+                            <span>Play Full Dialogue</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {activeTurnIndex >= 0 && (
+                  <div className="pt-0.5 space-y-1">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
+                      <span>Progress: Turn {activeTurnIndex + 1} of {sessionData.dialogue.length}</span>
+                      <span>+{sessionData.dialogue[activeTurnIndex]?.timestamp_sec}s / {sessionData.call_duration_seconds}s</span>
+                    </div>
+                    <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-all duration-300 rounded-full"
+                        style={{ width: `${((activeTurnIndex + 1) / sessionData.dialogue.length) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Turn-by-Turn Conversational Transcript */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-heading font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Turn-by-Turn Conversational Transcript</span>
+                  </h4>
+                  <div className="flex items-center gap-3">
+                    <label className="text-[11px] font-subheading font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={showDevanagari}
+                        onChange={(e) => setShowDevanagari(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-0 cursor-pointer"
+                      />
+                      <span>Hindi Devanagari Subtitles</span>
+                    </label>
+                    <span className="text-[10px] text-zinc-400 font-mono hidden sm:inline">Click ▶ to test turn</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 max-h-48 sm:max-h-56 overflow-y-auto pr-1">
+                  {sessionData.dialogue.map((turn, i) => {
+                    const isAgent = turn.speaker === 'AI_Agent';
+                    const isActive = activeTurnIndex === i;
+                    const displayText = showDevanagari ? transliterateTextToDevanagari(turn.text) : turn.text;
+
+                    return (
+                      <div
+                        key={i}
+                        className={`p-2.5 rounded-md text-xs leading-relaxed transition-all duration-150 border ${
+                          isActive
+                            ? 'border-blue-500 bg-blue-50/80 dark:bg-blue-950/40 shadow-xs ring-1 ring-blue-500'
+                            : isAgent
+                            ? 'bg-blue-50/40 dark:bg-blue-950/20 border-blue-200/60 dark:border-blue-900/40 ml-2 sm:ml-3'
+                            : 'bg-zinc-50 dark:bg-[#18181b] border-zinc-200 dark:border-[#27272a] mr-2 sm:mr-3'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1 text-[10px] font-mono">
+                          <span className="font-bold flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                            {isAgent ? (
+                              <>
+                                <Bot className="w-3 h-3 text-rose-500" />
+                                <span>Priya (Shark Recovery Voice AI)</span>
+                              </>
+                            ) : (
+                              <>
+                                <User className="w-3 h-3 text-zinc-500" />
+                                <span>{sessionData.customer_name}</span>
+                              </>
+                            )}
+                            <span className="px-1.5 py-0.2 rounded bg-zinc-200/80 dark:bg-[#27272a] text-[9px] font-mono text-zinc-600 dark:text-zinc-400 font-normal">
+                              {isAgent ? 'Empathetic Female' : 'Customer Male'}
+                            </span>
+                          </span>
+
+                          <div className="flex items-center gap-2">
+                            <span className="px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-[#27272a] text-zinc-600 dark:text-zinc-400 capitalize">
+                              {turn.emotion}
+                            </span>
+                            <span className="text-zinc-400 font-mono">+{turn.timestamp_sec}s</span>
+
+                            <button
+                              type="button"
+                              onClick={() => playSingleTurn(i)}
+                              disabled={isPlayingAudio && isActive}
+                              aria-label={`Play turn ${i + 1}`}
+                              className="w-5.5 h-5.5 rounded bg-zinc-200/80 hover:bg-zinc-300 dark:bg-[#27272a] dark:hover:bg-[#3f3f46] text-zinc-800 dark:text-zinc-100 flex items-center justify-center cursor-pointer transition-colors disabled:opacity-50 focus-rzp"
+                              title={`Play turn #${i + 1}`}
+                            >
+                              <Play className="w-2.5 h-2.5 fill-current" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <p className={`font-body text-xs leading-relaxed ${isAgent ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-800 dark:text-zinc-200'}`}>
+                          {displayText}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Tab 2: Live Mic Streaming */}
         {activeTab === 'live_mic' && (
@@ -1275,26 +1277,26 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
 
         {/* Tab 3: PSTN Outbound Dialer (Twilio / Exotel) */}
         {activeTab === 'pstn_dialer' && (
-          <div className="space-y-4 animate-in fade-in duration-100">
-            <div className="p-4 rounded-md bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] space-y-4">
+          <div className="space-y-3 animate-in fade-in duration-100">
+            <div className="p-3.5 sm:p-4 rounded-md bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] space-y-3">
               <div>
                 <h4 className="text-xs font-heading font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                  <PhoneCall className="w-4 h-4 text-blue-500" />
+                  <PhoneCall className="w-3.5 h-3.5 text-blue-500" />
                   <span>Cloud Telephony PSTN Outbound Dispatcher</span>
                 </h4>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
-                  Dials consumer phone numbers over PSTN/VoLTE and connects call audio to the backend WebSocket media stream.
+                  Dials consumer phone numbers over PSTN/VoLTE and connects call audio to backend WebSocket media stream.
                 </p>
               </div>
 
-              <div className="p-2.5 rounded bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 text-[11px] text-blue-900 dark:text-blue-300 flex items-start gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                <div className="space-y-0.5 leading-relaxed">
-                  <span className="font-semibold">Telephony Note:</span> Twilio Free Trial accounts only allow dialing pre-verified numbers and require a publicly reachable URL. For instant zero-setup testing directly with your microphone and speakers, switch to the <button type="button" onClick={() => setActiveTab('live_mic')} className="underline font-semibold hover:text-blue-700 dark:hover:text-blue-200 cursor-pointer">Live Mic Interactive Call</button> tab.
+              <div className="py-1.5 px-2.5 rounded bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 text-[11px] text-blue-900 dark:text-blue-300 flex items-start gap-2">
+                <Sparkles className="w-3 h-3 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                <div className="leading-snug">
+                  <span className="font-semibold">Telephony Note:</span> Twilio Free Trial accounts only allow dialing pre-verified numbers and require a public URL. For instant browser testing with zero telephony setup, switch to <button type="button" onClick={() => setActiveTab('live_mic')} className="underline font-semibold hover:text-blue-700 dark:hover:text-blue-200 cursor-pointer">Live Mic Call</button>.
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div className="space-y-1">
                   <label className="text-[11px] font-mono font-medium text-zinc-700 dark:text-zinc-300">
                     Recipient Phone Number (E.164)
@@ -1304,7 +1306,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                     value={dialPhoneNumber}
                     onChange={(e) => setDialPhoneNumber(e.target.value)}
                     placeholder="+91 98765 43210"
-                    className="w-full h-9 px-3 rounded-md bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] text-xs font-mono text-zinc-900 dark:text-white focus-rzp"
+                    className="w-full h-8 px-3 rounded-md bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] text-xs font-mono text-zinc-900 dark:text-white focus-rzp"
                   />
                 </div>
 
@@ -1315,7 +1317,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                   <select
                     value={dialProvider}
                     onChange={(e) => setDialProvider(e.target.value as any)}
-                    className="w-full h-9 px-3 rounded-md bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] text-xs font-subheading text-zinc-900 dark:text-white focus-rzp cursor-pointer"
+                    className="w-full h-8 px-3 rounded-md bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] text-xs font-subheading text-zinc-900 dark:text-white focus-rzp cursor-pointer"
                   >
                     <option value="auto">Auto (Twilio India / Exotel / Fallback)</option>
                     <option value="twilio">Twilio Voice API (TwiML Stream)</option>
@@ -1333,16 +1335,16 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                   type="button"
                   onClick={handleTriggerPstnCall}
                   disabled={isDialing}
-                  className="h-9 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center gap-2 cursor-pointer shadow-xs focus-rzp disabled:opacity-50 transition-colors"
+                  className="h-8 px-3.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center gap-2 cursor-pointer shadow-xs focus-rzp disabled:opacity-50 transition-colors"
                 >
                   {isDialing ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className="w-3 h-3 animate-spin" />
                       <span>Dialing PSTN Gateway...</span>
                     </>
                   ) : (
                     <>
-                      <PhoneCall className="w-3.5 h-3.5" />
+                      <PhoneCall className="w-3 h-3" />
                       <span>Place Outbound Call Now</span>
                     </>
                   )}
@@ -1352,7 +1354,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
 
             {/* PSTN Dispatch Result Banner */}
             {pstnCallStatus && (
-              <div className={`p-3.5 rounded-md border text-xs space-y-2 animate-in fade-in duration-150 ${
+              <div className={`p-3 rounded-md border text-xs space-y-1.5 animate-in fade-in duration-150 ${
                 pstnCallStatus.success
                   ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200'
                   : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200'
@@ -1360,12 +1362,12 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                 <div className="font-heading font-bold flex items-center gap-1.5">
                   {pstnCallStatus.success ? (
                     <>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span>Call Dispatched: {pstnCallStatus.status}</span>
                     </>
                   ) : (
                     <>
-                      <PhoneOff className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                      <PhoneOff className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
                       <span>PSTN Outbound Blocked: {pstnCallStatus.status}</span>
                     </>
                   )}
@@ -1384,13 +1386,13 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                     <div>Session: <span className="font-bold">{pstnCallStatus.session_id}</span></div>
                   </div>
                 ) : (
-                  <div className="pt-1.5 flex items-center gap-2">
+                  <div className="pt-1 flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setActiveTab('live_mic')}
-                      className="px-3 py-1.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-heading font-semibold text-[11px] inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
+                      className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white font-heading font-semibold text-[11px] inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
                     >
-                      <Mic className="w-3.5 h-3.5" />
+                      <Mic className="w-3 h-3" />
                       <span>Switch to Live Mic Interactive Call</span>
                     </button>
                     <span className="text-[10px] text-rose-600/80 dark:text-rose-400/80 font-mono">
@@ -1402,9 +1404,10 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
             )}
           </div>
         )}
+        </div>
 
         {/* Outcome Footer */}
-        <div className="p-3 rounded-md bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="p-2.5 sm:p-3 rounded-md bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 shrink-0 mt-2.5 pt-2.5 border-t border-zinc-200 dark:border-[#27272a]">
           <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-subheading">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
             <span className="font-semibold">{sessionData.call_outcome}</span>
@@ -1417,7 +1420,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
               stopLiveInteractiveCall();
               onClose();
             }}
-            className="h-8 px-4 rounded-md bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 font-heading font-semibold text-xs cursor-pointer focus-rzp shrink-0 transition-colors self-end sm:self-auto"
+            className="h-7.5 px-3.5 rounded-md bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 font-heading font-semibold text-xs cursor-pointer focus-rzp shrink-0 transition-colors self-end sm:self-auto"
           >
             Close Session
           </button>
