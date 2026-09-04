@@ -83,6 +83,34 @@ async def init_db() -> None:
         except Exception:
             pass
 
+    # Ensure foreign key cascade on postgres if constraint exists
+    if is_postgres:
+        try:
+            async with engine.begin() as conn:
+                await conn.execute(text("""
+                    DO $$
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM information_schema.table_constraints
+                            WHERE constraint_name = 'audit_log_transaction_id_fkey'
+                        ) THEN
+                            ALTER TABLE audit_log DROP CONSTRAINT audit_log_transaction_id_fkey;
+                            ALTER TABLE audit_log ADD CONSTRAINT audit_log_transaction_id_fkey
+                                FOREIGN KEY (transaction_id) REFERENCES transaction(id) ON DELETE CASCADE;
+                        END IF;
+                        IF EXISTS (
+                            SELECT 1 FROM information_schema.table_constraints
+                            WHERE constraint_name = 'audit_log_customer_id_fkey'
+                        ) THEN
+                            ALTER TABLE audit_log DROP CONSTRAINT audit_log_customer_id_fkey;
+                            ALTER TABLE audit_log ADD CONSTRAINT audit_log_customer_id_fkey
+                                FOREIGN KEY (customer_id) REFERENCES customer(id) ON DELETE CASCADE;
+                        END IF;
+                    END $$;
+                """))
+        except Exception as e:
+            logging.getLogger(__name__).warning(f"PostgreSQL cascade migration note: {e}")
+
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for providing an async database session per request."""

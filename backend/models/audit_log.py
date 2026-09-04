@@ -37,12 +37,14 @@ class AuditLogBase(SQLModel):
     transaction_id: Optional[str] = Field(
         default=None,
         foreign_key="transaction.id",
+        ondelete="CASCADE",
         index=True,
         description="Related transaction ID if applicable",
     )
     customer_id: Optional[str] = Field(
         default=None,
         foreign_key="customer.id",
+        ondelete="CASCADE",
         index=True,
         description="Related customer ID if applicable",
     )

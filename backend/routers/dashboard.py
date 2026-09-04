@@ -274,12 +274,21 @@ async def clear_database(session: AsyncSession = Depends(get_session)) -> Dict[s
             status_code=403,
             detail="Database wipe is disabled outside debug mode.",
         )
+    from sqlalchemy import text
     from sqlmodel import delete
+    try:
+        from backend.database import is_postgres
+    except ImportError:
+        from database import is_postgres
 
-    await session.execute(delete(AuditLog))
-    await session.execute(delete(Transaction))
-    await session.execute(delete(Customer))
-    await session.commit()
+    if is_postgres:
+        await session.execute(text("TRUNCATE TABLE audit_log, transaction, customer RESTART IDENTITY CASCADE;"))
+        await session.commit()
+    else:
+        await session.execute(delete(AuditLog))
+        await session.execute(delete(Transaction))
+        await session.execute(delete(Customer))
+        await session.commit()
     return {"status": "success", "message": "Database records cleared successfully."}
 
 
