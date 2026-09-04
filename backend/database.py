@@ -14,17 +14,23 @@ logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
 logging.getLogger("sqlalchemy.pool").setLevel(logging.ERROR)
 logging.getLogger("sqlalchemy.dialects").setLevel(logging.ERROR)
 
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 # Ensure parent directory exists for SQLite file
-if "sqlite" in settings.DATABASE_URL and "///" in settings.DATABASE_URL:
+if "sqlite" in db_url and "///" in db_url:
     try:
-        db_raw_path = settings.DATABASE_URL.split("///")[-1]
+        db_raw_path = db_url.split("///")[-1]
         if db_raw_path and not db_raw_path.startswith(":memory:"):
             Path(db_raw_path).resolve().parent.mkdir(parents=True, exist_ok=True)
     except Exception as e:
         logging.getLogger(__name__).warning(f"DB path directory creation notice: {e}")
 
-is_sqlite = "sqlite" in settings.DATABASE_URL.lower()
-is_postgres = "postgres" in settings.DATABASE_URL.lower()
+is_sqlite = "sqlite" in db_url.lower()
+is_postgres = "postgres" in db_url.lower()
 
 # Async engine configuration with database-specific pooling
 engine_kwargs = {"echo": False}
@@ -37,7 +43,7 @@ else:
     engine_kwargs["pool_pre_ping"] = True
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    db_url,
     **engine_kwargs,
 )
 
