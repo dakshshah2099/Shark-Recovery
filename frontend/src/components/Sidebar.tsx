@@ -6,6 +6,7 @@ import {
   Activity,
   Cpu,
   Settings,
+  MessageSquare,
   X,
   ChevronLeft,
   ChevronRight,
@@ -113,6 +114,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             label: 'Agent Flow & Telemetry',
             icon: Cpu,
             desc: 'Multi-Agent Pipeline',
+          },
+          {
+            id: 'whatsapp-feed',
+            label: 'WhatsApp Outreach Feed',
+            icon: MessageSquare,
+            desc: 'Simulated Outbound Feed',
           },
         ]
       : []),

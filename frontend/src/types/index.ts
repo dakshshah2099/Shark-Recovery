@@ -66,14 +66,18 @@ export interface AuditLogItem {
 }
 
 export interface WhatsAppMessage {
-  message_id: string;
+  id: string;
+  message_id?: string;
   transaction_id: string;
   recipient_phone: string;
-  recipient_name: string;
+  customer_name: string;
+  recipient_name?: string;
   message: string;
-  payment_link: string;
+  payment_link?: string;
+  discount_percentage: number;
   template_name?: string | null;
   status: string;
-  read_receipt: boolean;
-  timestamp: string;
+  read_receipt?: boolean;
+  timestamp?: string;
+  sent_at: string;
 }

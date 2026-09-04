@@ -5,6 +5,7 @@ import { TransactionsView } from './views/TransactionsView';
 import { IngestionView } from './views/IngestionView';
 import { AuditView } from './views/AuditView';
 import { SettingsView } from './views/SettingsView';
+import { WhatsAppFeedView } from './views/WhatsAppFeedView';
 import { AgentStepFlow } from './components/AgentStepFlow';
 import { SentinelTelemetryCard } from './components/SentinelTelemetryCard';
 import { Menu, Cpu, CheckCircle2, AlertCircle, Info, Loader2, X } from 'lucide-react';
@@ -20,7 +21,7 @@ export interface ToastNotification {
   message: string;
 }
 
-const VALID_TABS = ['overview', 'transactions', 'ingest', 'agent-flow', 'audit', 'settings'] as const;
+const VALID_TABS = ['overview', 'transactions', 'ingest', 'agent-flow', 'whatsapp-feed', 'audit', 'settings'] as const;
 type TabType = (typeof VALID_TABS)[number];
 
 const getTabFromPath = (): TabType => {
@@ -398,6 +399,13 @@ export const App: React.FC = () => {
               <SentinelTelemetryCard />
               <AgentStepFlow maxRetries={maxRetries} />
             </div>
+          )}
+
+          {activeTab === 'whatsapp-feed' && debugMode && (
+            <WhatsAppFeedView
+              onSimulatePay={handleSimulatePay}
+              showNotification={showNotification}
+            />
           )}
 
           {activeTab === 'audit' && (
