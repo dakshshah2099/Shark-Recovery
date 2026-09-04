@@ -142,7 +142,7 @@ export const App: React.FC = () => {
       const [metricsRes, txnsRes, auditRes, envRes] = await Promise.all([
         fetch('/api/metrics'),
         fetch('/api/transactions?limit=100'),
-        fetch('/api/audit-logs?limit=100'),
+        fetch('/api/audit-logs?limit=200'),
         fetch('/api/env-config'),
       ]);
 
@@ -389,7 +389,7 @@ export const App: React.FC = () => {
           )}
 
           {activeTab === 'audit' && (
-            <AuditView logs={auditLogs} />
+            <AuditView logs={auditLogs} onRefresh={fetchData} />
           )}
 
           {activeTab === 'settings' && (

@@ -47,8 +47,23 @@ interface BatchBenchmarkSuiteProps {
 
 export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSuccess, showNotification }) => {
   const [running, setRunning] = useState<boolean>(false);
-  const [report, setReport] = useState<BenchmarkReport | null>(null);
+  const [report, setReport] = useState<BenchmarkReport | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const saved = sessionStorage.getItem('shark_benchmark_report');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [selectedVoiceSession, setSelectedVoiceSession] = useState<any | null>(null);
+
+  const handleClearReport = () => {
+    setReport(null);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('shark_benchmark_report');
+    }
+  };
 
   const handleRunBenchmark = async () => {
     setRunning(true);
@@ -59,6 +74,13 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
       if (res.ok) {
         const data = await res.json();
         setReport(data);
+        if (typeof window !== 'undefined') {
+          try {
+            sessionStorage.setItem('shark_benchmark_report', JSON.stringify(data));
+          } catch (e) {
+            console.warn('SessionStorage quota exceeded:', e);
+          }
+        }
         showNotification(`🎉 Benchmark Completed! Measured ₹${data.total_money_recovered.toLocaleString('en-IN')} recovered (${data.net_recovery_rate_percent}% recovery rate).`, 'success', 5000);
         onSuccess();
       } else {
@@ -180,9 +202,18 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
                 <Layers className="w-4 h-4 text-blue-500" />
                 <span>Multi-Vector Batch Benchmark Telemetry</span>
               </span>
-              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 tabular-nums">
-                Batch: {report.batch_id} • {report.total_transactions} Scenarios
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 tabular-nums">
+                  Batch: {report.batch_id} • {report.total_transactions} Scenarios
+                </span>
+                <button
+                  type="button"
+                  onClick={handleClearReport}
+                  className="px-2 py-1 rounded text-[11px] font-subheading font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] cursor-pointer transition-colors"
+                >
+                  Clear Results
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
