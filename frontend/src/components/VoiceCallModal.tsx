@@ -65,6 +65,21 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
   const isPlayingRef = useRef<boolean>(false);
   const currentAudioElementRef = useRef<HTMLAudioElement | null>(null);
 
+  // Stop audio handler
+  const stopDialogueAudio = useCallback(() => {
+    isPlayingRef.current = false;
+    if (currentAudioElementRef.current) {
+      currentAudioElementRef.current.pause();
+      currentAudioElementRef.current = null;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsPlayingAudio(false);
+    setIsLoadingAudio(false);
+    setActiveTurnIndex(-1);
+  }, []);
+
   // Load browser voices for fallback
   const refreshBrowserVoices = useCallback(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
@@ -86,23 +101,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
       setAudioCache({});
       setActiveTurnIndex(-1);
     }
-  }, [isOpen]);
-
-  if (!isOpen || !sessionData) return null;
-
-  const stopDialogueAudio = () => {
-    isPlayingRef.current = false;
-    if (currentAudioElementRef.current) {
-      currentAudioElementRef.current.pause();
-      currentAudioElementRef.current = null;
-    }
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    setIsPlayingAudio(false);
-    setIsLoadingAudio(false);
-    setActiveTurnIndex(-1);
-  };
+  }, [isOpen, stopDialogueAudio]);
 
   /**
    * Synthesize audio for a turn via Kokoro-82M backend
@@ -181,6 +180,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
    * Play single individual turn
    */
   const playSingleTurn = async (turnIndex: number) => {
+    if (!sessionData) return;
     stopDialogueAudio();
     setIsPlayingAudio(true);
     isPlayingRef.current = true;
@@ -223,6 +223,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
    * Sequentially play the entire conversational dialogue
    */
   const playEntireDialogue = async () => {
+    if (!sessionData) return;
     stopDialogueAudio();
     setIsPlayingAudio(true);
     isPlayingRef.current = true;
@@ -266,6 +267,9 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
     setActiveTurnIndex(-1);
     isPlayingRef.current = false;
   };
+
+  // Safe early return if modal is not open or no data
+  if (!isOpen || !sessionData) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
