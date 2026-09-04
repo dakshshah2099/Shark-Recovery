@@ -177,6 +177,39 @@ async def list_audit_logs(
     ]
 
 
+@router.get("/whatsapp-feed")
+async def get_whatsapp_feed(
+    limit: int = Query(default=20, ge=1, le=100),
+    session: AsyncSession = Depends(get_session),
+) -> List[Dict[str, Any]]:
+    """Returns recent dispatched WhatsApp outreach messages from the audit ledger."""
+    query = (
+        select(AuditLog)
+        .where(AuditLog.action_type == ActionType.WHATSAPP_DISPATCHED)
+        .order_by(AuditLog.created_at.desc())
+        .limit(limit)
+    )
+    logs = (await session.execute(query)).scalars().all()
+    feed: List[Dict[str, Any]] = []
+    for log in logs:
+        try:
+            payload = json.loads(log.input_payload or "{}")
+        except Exception:
+            payload = {}
+        feed.append({
+            "id": log.id,
+            "transaction_id": log.transaction_id,
+            "recipient_phone": payload.get("recipient_phone", "Unknown"),
+            "customer_name": payload.get("recipient_name", "Customer"),
+            "message": payload.get("message", ""),
+            "payment_link": payload.get("payment_link"),
+            "discount_percentage": payload.get("params", {}).get("discount", 0.0) if isinstance(payload.get("params"), dict) else 0.0,
+            "status": log.status.value if hasattr(log.status, "value") else str(log.status),
+            "sent_at": log.created_at.isoformat() if log.created_at else "",
+        })
+    return feed
+
+
 @router.post("/transactions/{transaction_id}/retry")
 async def manual_retry_transaction(
     transaction_id: str,
