@@ -52,11 +52,21 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "recovery@sharkagent.local"
 
-    # Twilio WhatsApp Credentials (strictly from .env via API Key & Secret)
+    # Twilio & Telephony Configuration (strictly from .env using API Key & Secret)
     TWILIO_API_KEY: str = ""
     TWILIO_API_SECRET: str = ""
+    TWILIO_PHONE_NUMBER: str = ""
     TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"
     TWILIO_SANDBOX_TEMPLATE: str = "appointment"  # "appointment", "code", "order"
+    
+    # Exotel Indian Cloud Telephony (strictly from .env)
+    EXOTEL_API_KEY: str = ""
+    EXOTEL_API_TOKEN: str = ""
+    EXOTEL_SUBDOMAIN: str = ""
+    EXOTEL_CALLER_ID: str = ""
+    
+    # Public Gateway URL for Telephony WebSockets (TwiML / NCCO Stream)
+    PUBLIC_BASE_URL: str = "http://localhost:8000"
 
     # Agent Guardrails (strictly from .env)
     MAX_RETRY_ATTEMPTS: int = 2
@@ -65,6 +75,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     LLM_MODEL: str = "groq/openai/gpt-oss-120b"
+    GEMINI_LIVE_MODEL: str = "models/gemini-2.0-flash-exp"
 
 
 settings = Settings()
@@ -112,7 +123,9 @@ def save_settings_to_env(updates: Dict[str, Optional[str]]) -> None:
     with open(target_env, "w", encoding="utf-8") as f:
         f.writelines(existing_lines)
 
-    # Reload settings singleton
-    global settings
+    # Reload settings singleton in-place so all imported references are updated immediately
     load_dotenv(dotenv_path=target_env, override=True)
-    settings = Settings()
+    new_settings = Settings()
+    for field_name in Settings.model_fields.keys():
+        if hasattr(new_settings, field_name):
+            setattr(settings, field_name, getattr(new_settings, field_name))

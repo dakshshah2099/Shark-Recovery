@@ -192,6 +192,7 @@ class TransactionRead(BaseModel):
     promise_to_pay_date: Optional[str] = None
     mandate_retry_schedule: Optional[str] = None
     voice_call_transcript: Optional[str] = None
+    is_benchmark: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -230,6 +231,7 @@ class SimulateBatchItem(BaseModel):
     failure_code: str
     failure_reason: str
     loss_vector: Optional[LossVector] = LossVector.CHECKOUT_DROPOFF
+    is_benchmark: bool = False
     simulate_instant_recovery: bool = Field(
         default=False,
         description="If true, simulate customer completing payment via link",
@@ -252,6 +254,7 @@ class EnvConfigRead(BaseModel):
     groq_api_key: Optional[str] = ""
     gemini_api_key: Optional[str] = ""
     llm_model: Optional[str] = "groq/openai/gpt-oss-120b"
+    gemini_live_model: Optional[str] = "models/gemini-2.0-flash-exp"
     razorpay_key_id: Optional[str] = ""
     razorpay_key_secret: Optional[str] = ""
     razorpay_webhook_secret: Optional[str] = ""
@@ -271,6 +274,7 @@ class EnvConfigUpdate(BaseModel):
     groq_api_key: Optional[str] = None
     gemini_api_key: Optional[str] = None
     llm_model: Optional[str] = None
+    gemini_live_model: Optional[str] = None
     razorpay_key_id: Optional[str] = None
     razorpay_key_secret: Optional[str] = None
     razorpay_webhook_secret: Optional[str] = None

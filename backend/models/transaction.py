@@ -115,6 +115,11 @@ class TransactionBase(SQLModel):
         default=None,
         description="Hinglish Voice AI conversational transcript and intent score",
     )
+    is_benchmark: bool = Field(
+        default=False,
+        index=True,
+        description="Flag indicating if transaction is generated as part of a batch benchmark suite",
+    )
 
 
 class Transaction(TransactionBase, table=True):

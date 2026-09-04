@@ -65,6 +65,7 @@ async def init_db() -> None:
         ("promise_to_pay_date", "VARCHAR"),
         ("mandate_retry_schedule", "TEXT"),
         ("voice_call_transcript", "TEXT"),
+        ("is_benchmark", "BOOLEAN DEFAULT FALSE"),
     ]
     for col_name, col_def in migration_cols:
         try:
