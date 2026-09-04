@@ -477,6 +477,29 @@ async def execute_voice_dispatch_tool(
             "message": f"Promise to Pay commitment recorded for {pdate}",
         }
 
+    elif tool_name in ["end_call", "complete_recovery_call"]:
+        reason = str(args.get("reason", "Customer satisfied and call concluded"))
+        sat_status = str(args.get("satisfaction_status", "satisfied"))
+        async with async_session_maker() as db_session:
+            audit = AuditLog(
+                transaction_id=txn_id,
+                customer_id=cust_id,
+                agent_name="VoiceAgent (Priya Live)",
+                action_type=ActionType.VOICE_CALL_DISPATCHED,
+                status=AuditStatus.SUCCESS,
+                input_payload=json.dumps({"tool": "end_call", "reason": reason, "satisfaction_status": sat_status}),
+                output_payload=json.dumps({"call_ended": True, "satisfaction_status": sat_status, "reason": reason}),
+            )
+            db_session.add(audit)
+            await db_session.commit()
+        return {
+            "status": "call_ended",
+            "call_ended": True,
+            "satisfaction_status": sat_status,
+            "reason": reason,
+            "message": f"Recovery call concluded: {reason}",
+        }
+
     return {"status": "success", "tool": tool_name}
 
 
@@ -744,6 +767,14 @@ async def browser_live_chat_websocket(
                         "arguments": event["arguments"],
                         "result": event["result"],
                     }))
+                    if event["tool_name"] in ["end_call", "complete_recovery_call"]:
+                        logger.info(f"Session {session_id}: end_call tool executed. Terminating call gracefully.")
+                        await asyncio.sleep(2.0)
+                        await websocket.send_text(json.dumps({
+                            "event": "call_ended",
+                            "reason": event["arguments"].get("reason", "Customer confirmed satisfaction and call is concluded"),
+                            "satisfaction_status": event["arguments"].get("satisfaction_status", "satisfied"),
+                        }))
         except Exception as e:
             logger.warning(f"Error in Gemini->Browser stream: {e}")
 

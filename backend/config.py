@@ -74,8 +74,8 @@ class Settings(BaseSettings):
     # LLM Configuration (strictly from .env)
     GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    LLM_MODEL: str = "groq/openai/gpt-oss-120b"
-    GEMINI_LIVE_MODEL: str = "models/gemini-2.0-flash-exp"
+    LLM_MODEL: str = "groq/qwen/qwen3.8-27b"
+    GEMINI_LIVE_MODEL: str = "models/gemini-3.1-flash-live-preview"
 
 
 settings = Settings()

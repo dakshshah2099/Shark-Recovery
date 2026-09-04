@@ -225,6 +225,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
   const [liveAgentSpeaking, setLiveAgentSpeaking] = useState<boolean>(false);
   const [liveStatusInfo, setLiveStatusInfo] = useState<string>('Ready to connect');
   const [liveError, setLiveError] = useState<string | null>(null);
+  const [autoEndStatus, setAutoEndStatus] = useState<string | null>(null);
 
   // PSTN Outbound Dialer state
   const [dialPhoneNumber, setDialPhoneNumber] = useState<string>(sessionData?.customer_phone || '+91 98765 43210');
@@ -243,6 +244,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
   const audioContextRef = useRef<AudioContext | null>(null);
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
   const nextLiveAudioPlayTimeRef = useRef<number>(0);
+  const speechRecRef = useRef<any | null>(null);
 
   // Stop audio handler
   const stopDialogueAudio = useCallback(() => {
@@ -279,6 +281,10 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
     if (audioContextRef.current) {
       try { audioContextRef.current.close(); } catch {}
       audioContextRef.current = null;
+    }
+    if (speechRecRef.current) {
+      try { speechRecRef.current.stop(); } catch {}
+      speechRecRef.current = null;
     }
     nextLiveAudioPlayTimeRef.current = 0;
     setIsLiveConnected(false);
@@ -396,13 +402,27 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
             }
           } else if (data.event === 'transcript') {
             const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            if (data.speaker === 'AI_Agent') {
+              setLiveAgentSpeaking(true);
+            }
             setLiveTranscript((prev) => {
               if (prev.length > 0 && prev[prev.length - 1].speaker === data.speaker) {
                 const last = prev[prev.length - 1];
-                return [...prev.slice(0, -1), { ...last, text: last.text + data.text }];
+                if (data.text.startsWith(last.text)) {
+                  return [...prev.slice(0, -1), { ...last, text: data.text }];
+                }
+                const needsSpace = !last.text.endsWith(' ') && !data.text.startsWith(' ');
+                return [...prev.slice(0, -1), { ...last, text: last.text + (needsSpace ? ' ' : '') + data.text }];
               }
               return [...prev, { speaker: data.speaker, text: data.text, time: now }];
             });
+          } else if (data.event === 'call_ended') {
+            const reason = data.reason || 'Customer confirmed satisfaction and call is concluded';
+            setLiveStatusInfo(`Call Concluded: ${reason}`);
+            setAutoEndStatus(reason);
+            setTimeout(() => {
+              stopLiveInteractiveCall();
+            }, 2200);
           } else if (data.event === 'audio') {
             playRawPcm24k(data.pcm_base64, audioCtx);
           } else if (data.event === 'tool_executed') {
@@ -410,6 +430,14 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
               ...prev,
               { name: data.tool_name, args: data.arguments, result: data.result },
             ]);
+            if (data.tool_name === 'end_call' || data.tool_name === 'complete_recovery_call') {
+              const reason = data.arguments?.reason || 'Customer confirmed satisfaction';
+              setLiveStatusInfo(`Customer Satisfied — Auto-Ending Call...`);
+              setAutoEndStatus(reason);
+              setTimeout(() => {
+                stopLiveInteractiveCall();
+              }, 2500);
+            }
           } else if (data.event === 'error') {
             setLiveError(data.message || 'Error received from voice stream');
           }
@@ -446,6 +474,34 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
       source.connect(processor);
       processor.connect(muteNode);
       muteNode.connect(audioCtx.destination);
+
+      // 4. Initialize client-side SpeechRecognition for instant local speech-to-text
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        try {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = false;
+          recognition.lang = 'en-IN';
+          recognition.onresult = (e: any) => {
+            for (let i = e.resultIndex; i < e.results.length; ++i) {
+              if (e.results[i].isFinal) {
+                const spokenText = e.results[i][0].transcript.trim();
+                if (spokenText && ws.readyState === WebSocket.OPEN) {
+                  ws.send(JSON.stringify({ event: 'user_transcript', text: spokenText }));
+                }
+              }
+            }
+          };
+          recognition.onerror = (e: any) => {
+            loggerLog(`SpeechRecognition error: ${e?.error}`);
+          };
+          recognition.start();
+          speechRecRef.current = recognition;
+        } catch (e) {
+          loggerLog(`SpeechRecognition initialization failed: ${e}`);
+        }
+      }
     } catch (e: any) {
       console.error('Failed to initialize live mic session:', e);
       setIsLiveConnected(false);
@@ -1086,10 +1142,33 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                       {liveAgentSpeaking ? 'Priya is speaking...' : isMicMuted ? 'Microphone muted' : 'Listening to your microphone (Speak in Hinglish/English)...'}
                     </span>
                   </div>
-                  <span className="text-zinc-500 text-[10px]">16kHz L16 PCM Stream</span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[9px] border border-emerald-500/30">Auto-End Active</span>
+                    <span className="text-zinc-500 text-[10px]">16kHz L16 PCM Stream</span>
+                  </div>
                 </div>
               )}
             </div>
+
+            {/* Auto-End Confirmation Banner */}
+            {autoEndStatus && (
+              <div className="p-3 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-xs flex items-center justify-between animate-in fade-in duration-150">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <div>
+                    <span className="font-heading font-bold text-emerald-700 dark:text-emerald-400">
+                      Call Concluded Automatically — Customer Satisfied
+                    </span>
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-300 font-mono mt-0.5">
+                      {autoEndStatus}
+                    </p>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] font-bold shrink-0">
+                  Auto-End Complete ✓
+                </span>
+              </div>
+            )}
 
             {/* Live Tool Triggers Box */}
             {liveToolsExecuted.length > 0 && (

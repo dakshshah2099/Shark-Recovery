@@ -29,9 +29,9 @@ def get_gemini_live_model() -> str:
     Returns the configured Gemini Multimodal Live model from settings / .env.
     Normalizes prefix to 'models/<model_name>' for the Google Live WebSocket service.
     """
-    raw_model = (getattr(settings, "GEMINI_LIVE_MODEL", "") or "models/gemini-2.0-flash-exp").strip()
+    raw_model = (getattr(settings, "GEMINI_LIVE_MODEL", "") or "models/gemini-3.1-flash-live-preview").strip()
     if not raw_model:
-        return "models/gemini-2.0-flash-exp"
+        return "models/gemini-3.1-flash-live"
     if not raw_model.startswith("models/"):
         return f"models/{raw_model}"
     return raw_model
@@ -117,11 +117,18 @@ STAGE 3 - PRECISE TOOL DISPATCH:
   * Customer wants all/both/any -> call `dispatch_recovery_link` with channel="all"
   * Customer wants to pay at a future time -> call `record_promise_to_pay`
 
-STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
-- CRITICAL: After calling a dispatch tool, DO NOT terminate the call, say goodbye, or close the session!
-- Verbally confirm: "Ji {first_name} ji, maine payment link aapke [WhatsApp/SMS/Email] pe send kar diya hai."
-- Ask if they have received it and if they have any questions regarding payment options (UPI apps, Cards, NetBanking, EMI) or Razorpay security.
-- Stay active on the live stream and answer any subsequent questions until the customer is completely satisfied and finishes the call.
+STAGE 4 - CONFIRM RECEIPT, ASSIST, AND AUTO-END CALL UPON SATISFACTION:
+- After calling a dispatch tool, verbally confirm:
+  "Ji {first_name} ji, maine payment retry link aapke [WhatsApp/SMS/Email] pe send kar diya hai."
+- Ask if they have received it and if they need any assistance with payment methods or discounts.
+- CRITICAL - SATISFACTION CONFIRMATION & AUTOMATIC HANG-UP:
+  When the customer confirms satisfaction, agreement to pay, link receipt, or concludes the conversation:
+  (e.g., "haan mil gaya", "got the link", "theek hai main pay kar deta hoon", "thank you", "shukriya", "bye", "okay done", "all set", "thanks", "done", "theek hai")
+  YOU MUST IMMEDIATELY:
+  1. Speak a warm, courteous farewell in conversational Hinglish:
+     "Bahut-bahut shukriya {first_name} ji! Aapka din shubh ho, namaste!"
+  2. IMMEDIATELY invoke the `end_call` tool with reason="Customer confirmed receipt/satisfaction and call is concluded", satisfaction_status="satisfied".
+  This will automatically end the phone call. Do NOT remain idle or keep waiting once the customer has confirmed satisfaction.
 """.strip()
 
     def _build_tools_declaration(self) -> List[Dict[str, Any]]:
@@ -215,6 +222,24 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
                             "required": ["promise_date"],
                         },
                     },
+                    {
+                        "name": "end_call",
+                        "description": "Automatically terminates and ends the recovery phone call once the customer confirms satisfaction, payment retry link has been sent or promise to pay recorded, customer has no further questions, or parties say goodbye / thank you.",
+                        "parameters": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "reason": {
+                                    "type": "STRING",
+                                    "description": "Description of why call is ending, e.g. 'Customer confirmed receipt of WhatsApp link and agreed to pay', 'Customer satisfied', 'Promise to pay noted'",
+                                },
+                                "satisfaction_status": {
+                                    "type": "STRING",
+                                    "description": "Satisfaction outcome: 'satisfied', 'payment_pending', 'callback_scheduled', or 'declined'",
+                                },
+                            },
+                            "required": ["reason"],
+                        },
+                    },
                 ]
             }
         ]
@@ -234,10 +259,17 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
         if not requested_model.startswith("models/"):
             requested_model = f"models/{requested_model}"
 
-        # Candidate models hierarchy: requested model -> stable live model
+        # Candidate models hierarchy: requested model -> preferred Gemini Live models
+        preferred_models = [
+            "models/gemini-3.1-flash-live",
+            "models/gemini-3.1-flash-live-preview",
+            "models/gemini-2.0-flash-exp",
+            "models/gemini-2.0-flash",
+        ]
         candidate_models = [requested_model]
-        if requested_model != "models/gemini-2.0-flash-exp":
-            candidate_models.append("models/gemini-2.0-flash-exp")
+        for m in preferred_models:
+            if m not in candidate_models:
+                candidate_models.append(m)
 
         last_err = None
         for model_to_try in candidate_models:
@@ -262,6 +294,8 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
                             "parts": [{"text": self._build_system_instruction()}]
                         },
                         "tools": self._build_tools_declaration(),
+                        "outputAudioTranscription": {},
+                        "inputAudioTranscription": {},
                     }
                 }
                 await self._ws.send(json.dumps(setup_payload))
@@ -444,6 +478,24 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
 
                 server_content = data.get("serverContent")
                 if server_content:
+                    # 1. Output audio transcription (Agent speech text from Gemini)
+                    output_trans = server_content.get("outputTranscription") or server_content.get("output_audio_transcription")
+                    if output_trans:
+                        out_text = output_trans.get("text") if isinstance(output_trans, dict) else str(output_trans)
+                        if out_text:
+                            if self.on_transcript:
+                                self.on_transcript("AI_Agent", out_text)
+                            yield {"type": "transcript", "speaker": "AI_Agent", "text": out_text}
+
+                    # 2. Input audio transcription (Customer speech transcribed by Gemini)
+                    input_trans = server_content.get("inputTranscription") or server_content.get("input_audio_transcription")
+                    if input_trans:
+                        in_text = input_trans.get("text") if isinstance(input_trans, dict) else str(input_trans)
+                        if in_text:
+                            if self.on_transcript:
+                                self.on_transcript("Customer", in_text)
+                            yield {"type": "transcript", "speaker": "Customer", "text": in_text}
+
                     model_turn = server_content.get("modelTurn")
                     if model_turn:
                         for part in model_turn.get("parts", []):
@@ -463,6 +515,8 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
 
                     if server_content.get("turnComplete"):
                         yield {"type": "turn_complete"}
+                    if server_content.get("interrupted"):
+                        yield {"type": "interrupted"}
 
                 # Handle tool calls
                 tool_call = data.get("toolCall")
