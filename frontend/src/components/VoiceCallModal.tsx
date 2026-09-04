@@ -352,8 +352,16 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
     setLiveStatusInfo(`Connecting to AI Shark Gateway using ${liveModelName}...`);
 
     try {
-      // 1. Capture microphone audio stream
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      // 1. Capture microphone audio stream with hardware echo cancellation
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 16000,
+        },
+        video: false,
+      });
       mediaStreamRef.current = stream;
 
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
@@ -388,7 +396,13 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
             }
           } else if (data.event === 'transcript') {
             const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            setLiveTranscript((prev) => [...prev, { speaker: data.speaker, text: data.text, time: now }]);
+            setLiveTranscript((prev) => {
+              if (prev.length > 0 && prev[prev.length - 1].speaker === data.speaker) {
+                const last = prev[prev.length - 1];
+                return [...prev.slice(0, -1), { ...last, text: last.text + data.text }];
+              }
+              return [...prev, { speaker: data.speaker, text: data.text, time: now }];
+            });
           } else if (data.event === 'audio') {
             playRawPcm24k(data.pcm_base64, audioCtx);
           } else if (data.event === 'tool_executed') {
@@ -425,8 +439,13 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
         ws.send(JSON.stringify({ event: 'audio_chunk', pcm_base64: b64 }));
       };
 
+      // Mute microphone loopback to prevent acoustic speaker feedback
+      const muteNode = audioCtx.createGain();
+      muteNode.gain.value = 0;
+
       source.connect(processor);
-      processor.connect(audioCtx.destination);
+      processor.connect(muteNode);
+      muteNode.connect(audioCtx.destination);
     } catch (e: any) {
       console.error('Failed to initialize live mic session:', e);
       setIsLiveConnected(false);
