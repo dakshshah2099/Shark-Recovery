@@ -97,7 +97,7 @@ async def run_sentinel_monitor(
     """
     raw_txns = []
 
-    # 1. Query real transaction records from SQLite DB
+    # 1. Query real transaction records from DB (excluding synthetic benchmark runs)
     if session:
         try:
             try:
@@ -114,6 +114,8 @@ async def run_sentinel_monitor(
                     Transaction.amount,
                     Transaction.recovered_amount,
                     Transaction.status,
+                ).where(
+                    (Transaction.is_benchmark == False) | (Transaction.is_benchmark.is_(None))
                 )
             )
             raw_txns = result.all()
@@ -138,6 +140,8 @@ async def run_sentinel_monitor(
                         Transaction.amount,
                         Transaction.recovered_amount,
                         Transaction.status,
+                    ).where(
+                        (Transaction.is_benchmark == False) | (Transaction.is_benchmark.is_(None))
                     )
                 )
                 raw_txns = result.all()

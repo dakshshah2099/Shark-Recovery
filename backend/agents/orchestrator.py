@@ -107,8 +107,13 @@ async def orchestrate_revenue_recovery(
         return {"status": "error", "message": f"Customer for transaction {transaction_id} not found."}
 
     # 2. Agent 1: Sentinel Telemetry Monitor Agent
+    is_bench = bool(getattr(txn, "is_benchmark", False))
     t_sent_start = time.perf_counter()
-    sentinel_report = await run_sentinel_monitor(txn.failure_code or "", txn.failure_reason or "")
+    sentinel_report = await run_sentinel_monitor(
+        error_code="" if is_bench else (txn.failure_code or ""),
+        failure_reason="" if is_bench else (txn.failure_reason or ""),
+        session=session,
+    )
     t_sent_ms = round((time.perf_counter() - t_sent_start) * 1000, 2)
 
     await record_audit_log(
@@ -118,7 +123,7 @@ async def orchestrate_revenue_recovery(
         status=AuditStatus.SUCCESS,
         transaction_id=txn.id,
         customer_id=cust.id,
-        input_payload=json.dumps({"error_code": txn.failure_code, "reason": txn.failure_reason}),
+        input_payload=json.dumps({"error_code": txn.failure_code, "reason": txn.failure_reason, "is_benchmark": is_bench}),
         output_payload=sentinel_report.model_dump_json(),
         duration_ms=t_sent_ms,
     )

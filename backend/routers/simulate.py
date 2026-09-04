@@ -172,6 +172,7 @@ class BatchBenchmarkReport(BaseModel):
 async def _process_single_failure_item(
     item: SimulateBatchItem,
     session: AsyncSession,
+    is_benchmark: bool = False,
 ) -> TransactionRead:
     """Core helper to ingest a failed checkout item and execute multi-agent recovery orchestration."""
     # 1. Customer look up or creation
@@ -213,6 +214,7 @@ async def _process_single_failure_item(
         failure_reason=item.failure_reason,
         retry_count=0,
         max_retries=settings.MAX_RETRY_ATTEMPTS,
+        is_benchmark=is_benchmark or getattr(item, "is_benchmark", False),
     )
     session.add(txn)
     await session.commit()
@@ -268,6 +270,7 @@ async def _process_single_failure_item(
         promise_to_pay_date=txn.promise_to_pay_date,
         mandate_retry_schedule=txn.mandate_retry_schedule,
         voice_call_transcript=txn.voice_call_transcript,
+        is_benchmark=txn.is_benchmark,
         created_at=txn.created_at,
         updated_at=txn.updated_at,
     )
@@ -333,9 +336,10 @@ async def run_batch_benchmark_suite(
             loss_vector=s.get("loss_vector", LossVector.CHECKOUT_DROPOFF),
             failure_code=s["failure_code"],
             failure_reason=s["failure_reason"],
+            is_benchmark=True,
             simulate_instant_recovery=s["simulate_instant_recovery"],
         )
-        processed_txns.append(await _process_single_failure_item(item, session))
+        processed_txns.append(await _process_single_failure_item(item, session, is_benchmark=True))
 
     total_at_risk = sum(t.amount for t in processed_txns)
     total_recovered = sum(t.recovered_amount for t in processed_txns if t.status == TransactionStatus.RECOVERED)

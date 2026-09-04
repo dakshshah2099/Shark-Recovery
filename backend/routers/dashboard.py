@@ -259,6 +259,7 @@ async def get_env_config() -> EnvConfigRead:
         groq_api_key=settings.GROQ_API_KEY,
         gemini_api_key=settings.GEMINI_API_KEY,
         llm_model=settings.LLM_MODEL,
+        gemini_live_model=settings.GEMINI_LIVE_MODEL,
         razorpay_key_id=settings.RAZORPAY_KEY_ID,
         razorpay_key_secret=settings.RAZORPAY_KEY_SECRET,
         razorpay_webhook_secret=settings.RAZORPAY_WEBHOOK_SECRET,
@@ -297,6 +298,8 @@ async def update_env_config(payload: EnvConfigUpdate) -> EnvConfigRead:
         updates["GEMINI_API_KEY"] = payload.gemini_api_key
     if payload.llm_model is not None:
         updates["LLM_MODEL"] = payload.llm_model
+    if payload.gemini_live_model is not None:
+        updates["GEMINI_LIVE_MODEL"] = payload.gemini_live_model
     if payload.razorpay_key_id is not None:
         updates["RAZORPAY_KEY_ID"] = payload.razorpay_key_id
     if payload.razorpay_key_secret is not None:
