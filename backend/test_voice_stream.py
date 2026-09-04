@@ -109,6 +109,7 @@ async def test_outbound_call_endpoint():
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Case 1: Browser simulation provider returns success=True
         resp = await client.post(
             "/api/voice/outbound-call",
             json={
@@ -120,3 +121,20 @@ async def test_outbound_call_endpoint():
         data = resp.json()
         assert data["success"] is True
         assert "session_id" in data
+
+        # Case 2: Twilio trial account restriction returns success=False with diagnostic guidance
+        resp_tw = await client.post(
+            "/api/voice/outbound-call",
+            json={
+                "transaction_id": txn_id,
+                "customer_phone": "+919876543210",
+                "provider": "twilio",
+            },
+        )
+        assert resp_tw.status_code == 200
+        data_tw = resp_tw.json()
+        assert data_tw["success"] is False
+        assert data_tw["status"] in ("failed", "unconfigured")
+        assert "Twilio" in data_tw["message"]
+        assert "Live Mic Interactive Call" in data_tw["message"]
+

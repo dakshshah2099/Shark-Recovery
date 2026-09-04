@@ -15,6 +15,7 @@ import {
   Mic,
   MicOff,
   PhoneCall,
+  PhoneOff,
   PhoneForwarded,
   Zap,
   Activity,
@@ -1286,6 +1287,13 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                 </p>
               </div>
 
+              <div className="p-2.5 rounded bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 text-[11px] text-blue-900 dark:text-blue-300 flex items-start gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                <div className="space-y-0.5 leading-relaxed">
+                  <span className="font-semibold">Telephony Note:</span> Twilio Free Trial accounts only allow dialing pre-verified numbers and require a publicly reachable URL. For instant zero-setup testing directly with your microphone and speakers, switch to the <button type="button" onClick={() => setActiveTab('live_mic')} className="underline font-semibold hover:text-blue-700 dark:hover:text-blue-200 cursor-pointer">Live Mic Interactive Call</button> tab.
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-[11px] font-mono font-medium text-zinc-700 dark:text-zinc-300">
@@ -1344,20 +1352,52 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
 
             {/* PSTN Dispatch Result Banner */}
             {pstnCallStatus && (
-              <div className={`p-3.5 rounded-md border text-xs space-y-1.5 animate-in fade-in duration-150 ${
+              <div className={`p-3.5 rounded-md border text-xs space-y-2 animate-in fade-in duration-150 ${
                 pstnCallStatus.success
                   ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200'
                   : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200'
               }`}>
                 <div className="font-heading font-bold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Call Dispatched: {pstnCallStatus.status}</span>
+                  {pstnCallStatus.success ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>Call Dispatched: {pstnCallStatus.status}</span>
+                    </>
+                  ) : (
+                    <>
+                      <PhoneOff className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                      <span>PSTN Outbound Blocked: {pstnCallStatus.status}</span>
+                    </>
+                  )}
                 </div>
-                <div className="font-mono text-[11px] space-y-0.5">
-                  <div>Call SID: <span className="font-bold">{pstnCallStatus.call_sid}</span></div>
-                  <div>Provider: <span className="font-bold">{pstnCallStatus.provider_used}</span></div>
-                  <div>Session: <span className="font-bold">{pstnCallStatus.session_id}</span></div>
-                </div>
+
+                {pstnCallStatus.message && (
+                  <p className="leading-relaxed font-sans text-[11px] opacity-90">
+                    {pstnCallStatus.message}
+                  </p>
+                )}
+
+                {pstnCallStatus.success ? (
+                  <div className="font-mono text-[11px] space-y-0.5 pt-1 border-t border-emerald-200/60 dark:border-emerald-800/40">
+                    <div>Call SID: <span className="font-bold">{pstnCallStatus.call_sid}</span></div>
+                    <div>Provider: <span className="font-bold">{pstnCallStatus.provider_used}</span></div>
+                    <div>Session: <span className="font-bold">{pstnCallStatus.session_id}</span></div>
+                  </div>
+                ) : (
+                  <div className="pt-1.5 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('live_mic')}
+                      className="px-3 py-1.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-heading font-semibold text-[11px] inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs"
+                    >
+                      <Mic className="w-3.5 h-3.5" />
+                      <span>Switch to Live Mic Interactive Call</span>
+                    </button>
+                    <span className="text-[10px] text-rose-600/80 dark:text-rose-400/80 font-mono">
+                      (No telephony credentials required)
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -129,42 +129,98 @@ async def trigger_outbound_call(
     phone = req.customer_phone or customer_phone
     session_id = f"voice_{txn.id[:8]}_{int(asyncio.get_event_loop().time())}"
 
+    # Determine caller ID (Twilio phone number or whatsapp sender fallback)
+    caller_id = (settings.TWILIO_PHONE_NUMBER or "").strip()
+    if not caller_id and settings.TWILIO_WHATSAPP_FROM:
+        caller_id = settings.TWILIO_WHATSAPP_FROM.replace("whatsapp:", "").strip()
+
     # Check if real Twilio Voice credentials exist via API Key & Secret
-    has_twilio = bool(settings.TWILIO_API_KEY and settings.TWILIO_API_SECRET and settings.TWILIO_PHONE_NUMBER)
+    has_twilio = bool(settings.TWILIO_API_KEY and settings.TWILIO_API_SECRET and caller_id)
 
     call_sid = f"CA_{session_id}"
     provider_used = "simulation_browser"
+    success = True
+    status = "initiated"
+    message = ""
 
     if req.provider == "twilio" or (req.provider == "auto" and has_twilio):
-        try:
-            from twilio.rest import Client
-
-            api_key = (settings.TWILIO_API_KEY or "").strip()
-            api_secret = (settings.TWILIO_API_SECRET or "").strip()
-            client = Client(api_key, api_secret)
-
-            twiml_url = f"{settings.PUBLIC_BASE_URL}/api/voice/twiml?session_id={session_id}"
-            call = client.calls.create(
-                to=phone,
-                from_=settings.TWILIO_PHONE_NUMBER,
-                url=twiml_url,
-            )
-            call_sid = call.sid
+        if not has_twilio:
+            success = False
+            status = "unconfigured"
             provider_used = "twilio_pstn"
-            logger.info(f"Twilio Voice Call initiated via API Key: SID {call_sid} to {phone}")
-        except Exception as e:
-            logger.warning(f"Twilio outbound call fallback to live session: {e}")
-            provider_used = "telephony_bridge_ready"
+            message = (
+                "Twilio Voice credentials are not configured. Please set TWILIO_API_KEY, "
+                "TWILIO_API_SECRET, and TWILIO_PHONE_NUMBER, or test voice via the 'Live Mic Interactive Call' tab."
+            )
+        else:
+            try:
+                from twilio.rest import Client
+
+                api_key = (settings.TWILIO_API_KEY or "").strip()
+                api_secret = (settings.TWILIO_API_SECRET or "").strip()
+                client = Client(api_key, api_secret)
+
+                twiml_url = f"{settings.PUBLIC_BASE_URL}/api/voice/twiml?session_id={session_id}"
+                call = client.calls.create(
+                    to=phone,
+                    from_=caller_id,
+                    url=twiml_url,
+                )
+                call_sid = call.sid
+                provider_used = "twilio_pstn"
+                success = True
+                status = "ringing"
+                message = f"Outbound PSTN call placed via Twilio to {phone} (SID: {call_sid})"
+                logger.info(f"Twilio Voice Call initiated via API Key: SID {call_sid} to {phone}")
+            except Exception as e:
+                err_msg = str(e)
+                logger.warning(f"Twilio outbound call failed: {err_msg}")
+                success = False
+                status = "failed"
+                provider_used = "twilio_pstn"
+
+                if "Trial account" in err_msg or "trial" in err_msg.lower() or "20003" in err_msg:
+                    message = (
+                        "Twilio Free Tier Restriction: Outbound voice calling is not permitted on this Twilio trial account. "
+                        "Upgrade your Twilio account to make outbound PSTN calls, or use the 'Live Mic Interactive Call' tab to test real-time voice directly in your browser."
+                    )
+                elif "21216" in err_msg or "unverified" in err_msg.lower():
+                    message = (
+                        f"Twilio Free Tier Restriction: The destination number {phone} is not verified in your Twilio Console. "
+                        "Twilio trial accounts can only call pre-verified numbers. Use the 'Live Mic Interactive Call' tab to test without phone verification."
+                    )
+                elif "21210" in err_msg or "callerid" in err_msg.lower():
+                    message = (
+                        f"Twilio Caller ID Error: '{caller_id}' is not an active voice-capable number or verified caller ID in your Twilio account. "
+                        "Configure TWILIO_PHONE_NUMBER with a voice-enabled Twilio number or use the 'Live Mic Interactive Call' tab."
+                    )
+                elif "localhost" in settings.PUBLIC_BASE_URL:
+                    message = (
+                        f"Twilio Call Error: {err_msg}. Note: PUBLIC_BASE_URL is localhost ({settings.PUBLIC_BASE_URL}), "
+                        "which Twilio cannot access over the public internet. Use the 'Live Mic Interactive Call' tab for local testing."
+                    )
+                else:
+                    message = f"Twilio PSTN call failed: {err_msg}. Use the 'Live Mic Interactive Call' tab to test voice recovery."
+    elif req.provider == "exotel":
+        success = False
+        status = "unconfigured"
+        provider_used = "exotel_pstn"
+        message = "Exotel telephony gateway is not configured. Please use Twilio or test via the 'Live Mic Interactive Call' tab."
     else:
-        provider_used = "live_multimodal_ready"
+        # browser_live / simulation_browser
+        success = True
+        status = "ready"
+        provider_used = "simulation_browser"
+        message = "Live interactive voice session ready. Switch to the 'Live Mic Interactive Call' tab to talk directly with Shark AI."
 
     # Log to Audit Ledger
+    audit_status = AuditStatus.SUCCESS if success else AuditStatus.FAILURE
     audit = AuditLog(
         transaction_id=txn.id,
         customer_id=txn.customer_id,
         agent_name="HinglishVoiceAgent",
         action_type=ActionType.VOICE_CALL_DISPATCHED,
-        status=AuditStatus.SUCCESS,
+        status=audit_status,
         input_payload=json.dumps({
             "session_id": session_id,
             "call_sid": call_sid,
@@ -173,13 +229,15 @@ async def trigger_outbound_call(
             "discount_percent": req.discount_percent,
         }),
         output_payload=json.dumps({
-            "message": f"Voice recovery session {session_id} initiated for {customer_name} on {provider_used}",
+            "message": message,
             "call_sid": call_sid,
-            "status": "in-flight",
+            "status": status,
+            "success": success,
         }),
         metadata_json=json.dumps({
             "loss_vector": txn.loss_vector or "checkout_dropout",
             "provider": provider_used,
+            "success": success,
         }),
     )
     db.add(audit)
@@ -188,12 +246,12 @@ async def trigger_outbound_call(
     media_ws_url = f"/api/voice/live-chat/{session_id}"
 
     return OutboundCallResponse(
-        success=True,
+        success=success,
         session_id=session_id,
         call_sid=call_sid,
         provider_used=provider_used,
-        status="initiated",
-        message=f"Autonomous voice session active on {provider_used}",
+        status=status,
+        message=message,
         media_stream_url=media_ws_url,
     )
 
