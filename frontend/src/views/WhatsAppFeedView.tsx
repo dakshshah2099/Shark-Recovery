@@ -334,11 +334,10 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
                       </div>
                     )}
 
-                    {/* Timestamp and Read Status */}
+                    {/* Timestamp */}
                     <div className="flex items-center justify-end gap-1 text-[10px] text-zinc-400 font-mono pt-1">
                       <Clock className="w-2.5 h-2.5" />
                       <span>{selectedMsg.sent_at ? formatToIST(selectedMsg.sent_at) : 'Just now'}</span>
-                      <CheckCheck className="w-3.5 h-3.5 text-blue-500 ml-1" />
                     </div>
                   </div>
                 </div>
