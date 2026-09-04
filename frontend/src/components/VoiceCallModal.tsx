@@ -38,6 +38,7 @@ interface VoiceSession {
   call_id: string;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string;
   order_amount: number;
   discount_offered: number;
   dialogue: DialogueTurn[];
@@ -47,6 +48,7 @@ interface VoiceSession {
   call_duration_seconds: number;
   sms_payment_link_triggered: boolean;
   transaction_id?: string;
+  failure_reason?: string;
 }
 
 interface VoiceCallModalProps {
@@ -337,12 +339,26 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
    */
   const startLiveInteractiveCall = async () => {
     stopDialogueAudio();
-    const sessId = sessionData?.call_id || `live_${Date.now()}`;
+    const sessId = sessionData?.call_id || (sessionData?.transaction_id ? `live_${sessionData.transaction_id}` : `live_${Date.now()}`);
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     // Connect directly to backend or through dev proxy
     const host = window.location.port === '5173' || window.location.port === '3000' ? 'localhost:8000' : window.location.host;
-    const modelParam = encodeURIComponent(liveModelName);
-    const wsUrl = `${wsProtocol}//${host}/api/voice/live-chat/${sessId}?model=${modelParam}`;
+    
+    const params = new URLSearchParams();
+    params.set('model', liveModelName);
+    if (sessionData?.transaction_id) params.set('txn_id', sessionData.transaction_id);
+    if (sessionData?.customer_name) params.set('customer_name', sessionData.customer_name);
+    if (sessionData?.customer_phone) params.set('customer_phone', sessionData.customer_phone);
+    if (sessionData?.customer_email) params.set('customer_email', sessionData.customer_email);
+    if (sessionData?.order_amount !== undefined && sessionData?.order_amount !== null) {
+      params.set('order_amount', String(sessionData.order_amount));
+    }
+    if (sessionData?.discount_offered !== undefined && sessionData?.discount_offered !== null) {
+      params.set('discount_percent', String(sessionData.discount_offered));
+    }
+    if (sessionData?.failure_reason) params.set('failure_reason', sessionData.failure_reason);
+
+    const wsUrl = `${wsProtocol}//${host}/api/voice/live-chat/${sessId}?${params.toString()}`;
 
     setLiveTranscript([]);
     setLiveToolsExecuted([]);

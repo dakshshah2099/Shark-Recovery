@@ -33,9 +33,18 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [selectedVoiceSession, setSelectedVoiceSession] = useState<any | null>(null);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState<boolean>(false);
 
-  const handleOpenVoiceTranscript = (transcriptJson: string) => {
+  const handleOpenVoiceTranscript = (transcriptJson: string, txn?: TransactionItem) => {
     try {
       const data = typeof transcriptJson === 'string' ? JSON.parse(transcriptJson) : transcriptJson;
+      if (txn) {
+        data.transaction_id = txn.id;
+        data.customer_name = txn.customer_name || data.customer_name;
+        data.customer_phone = txn.customer_phone || data.customer_phone;
+        data.customer_email = txn.customer_email || data.customer_email;
+        data.order_amount = txn.amount || data.order_amount;
+        data.failure_reason = txn.failure_reason || data.failure_reason;
+        data.discount_offered = txn.discount_applied_percent ?? data.discount_offered ?? 0;
+      }
       setSelectedVoiceSession(data);
       setIsVoiceModalOpen(true);
     } catch (e) {
@@ -370,7 +379,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                       <div>
                         <button
                           type="button"
-                          onClick={() => handleOpenVoiceTranscript(txn.voice_call_transcript!)}
+                          onClick={() => handleOpenVoiceTranscript(txn.voice_call_transcript!, txn)}
                           className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-mono font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 cursor-pointer transition-colors focus-rzp"
                           title="Listen to Hinglish Voice AI Call Transcript"
                         >
