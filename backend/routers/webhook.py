@@ -39,8 +39,10 @@ router = APIRouter(prefix="/webhook", tags=["Webhooks"])
 
 def verify_signature(body_bytes: bytes, signature: Optional[str], secret: str) -> bool:
     """Verifies HMAC SHA256 signature from Razorpay."""
-    if not secret or not signature:
+    if not secret:
         return True  # Sandbox permissive mode if webhook secret is unset
+    if not signature:
+        return False
     try:
         expected_sig = hmac.new(secret.encode(), body_bytes, hashlib.sha256).hexdigest()
         return hmac.compare_digest(expected_sig, signature)
