@@ -1,4 +1,6 @@
 import asyncio
+import hashlib
+import hmac
 import json
 import sys
 from datetime import datetime
@@ -13,6 +15,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlmodel import select
 
 from main import app
+from config import settings
 from database import async_session_maker, init_db
 from models.audit_log import ActionType, AuditLog, AuditStatus
 from models.customer import Customer
@@ -270,7 +273,7 @@ async def run_exhaustive_feature_audit():
 
         # 11. Razorpay Webhooks (payment.failed & payment_link.paid)
         print("\n--- Testing Feature 10: Razorpay Webhook Ingestion & Settlement ---")
-        webhook_fail = await client.post("/webhook/razorpay", json={
+        fail_payload = {
             "event": "payment.failed",
             "payload": {
                 "payment": {
@@ -289,11 +292,18 @@ async def run_exhaustive_feature_audit():
                     }
                 }
             }
-        })
+        }
+        raw_fail = json.dumps(fail_payload).encode("utf-8")
+        wh_secret = settings.RAZORPAY_WEBHOOK_SECRET or ""
+        fail_headers = {"Content-Type": "application/json"}
+        if wh_secret:
+            fail_headers["X-Razorpay-Signature"] = hmac.new(wh_secret.encode(), raw_fail, hashlib.sha256).hexdigest()
+
+        webhook_fail = await client.post("/webhook/razorpay", content=raw_fail, headers=fail_headers)
         assert webhook_fail.status_code == 200
         hook_txn_id = webhook_fail.json()["transaction_id"]
 
-        webhook_paid = await client.post("/webhook/razorpay", json={
+        paid_payload = {
             "event": "payment_link.paid",
             "payload": {
                 "payment_link": {
@@ -306,7 +316,13 @@ async def run_exhaustive_feature_audit():
                     }
                 }
             }
-        })
+        }
+        raw_paid = json.dumps(paid_payload).encode("utf-8")
+        paid_headers = {"Content-Type": "application/json"}
+        if wh_secret:
+            paid_headers["X-Razorpay-Signature"] = hmac.new(wh_secret.encode(), raw_paid, hashlib.sha256).hexdigest()
+
+        webhook_paid = await client.post("/webhook/razorpay", content=raw_paid, headers=paid_headers)
         assert webhook_paid.status_code == 200
         print("  [PASS] Webhooks: payment.failed orchestrated recovery -> payment_link.paid settled transaction to RECOVERED.")
 
