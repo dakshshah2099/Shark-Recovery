@@ -223,7 +223,6 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
   const [liveTranscript, setLiveTranscript] = useState<{ speaker: string; text: string; time: string }[]>([]);
   const [liveToolsExecuted, setLiveToolsExecuted] = useState<{ name: string; args: any; result: any }[]>([]);
   const [liveAgentSpeaking, setLiveAgentSpeaking] = useState<boolean>(false);
-  const [liveModelName, setLiveModelName] = useState<string>('models/gemini-2.0-flash-exp');
   const [liveStatusInfo, setLiveStatusInfo] = useState<string>('Ready to connect');
   const [liveError, setLiveError] = useState<string | null>(null);
 
@@ -308,19 +307,6 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, stopDialogueAudio, stopLiveInteractiveCall]);
 
-  // Sync live model name from server env configuration on open
-  useEffect(() => {
-    if (isOpen) {
-      fetch('/api/env-config')
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data?.gemini_live_model) {
-            setLiveModelName(data.gemini_live_model);
-          }
-        })
-        .catch(() => {});
-    }
-  }, [isOpen]);
 
   // Clean audio and cancel ongoing playback on close
   useEffect(() => {
@@ -345,7 +331,6 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
     const host = window.location.port === '5173' || window.location.port === '3000' ? 'localhost:8000' : window.location.host;
     
     const params = new URLSearchParams();
-    params.set('model', liveModelName);
     if (sessionData?.transaction_id) params.set('txn_id', sessionData.transaction_id);
     if (sessionData?.customer_name) params.set('customer_name', sessionData.customer_name);
     if (sessionData?.customer_phone) params.set('customer_phone', sessionData.customer_phone);
@@ -365,7 +350,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
     setLiveError(null);
     nextLiveAudioPlayTimeRef.current = 0;
     setIsLiveConnected(true);
-    setLiveStatusInfo(`Connecting to Shark Recovery Gateway using ${liveModelName}...`);
+    setLiveStatusInfo('Connecting to Shark Recovery Voice Gateway...');
 
     try {
       // 1. Capture microphone audio stream with hardware echo cancellation
@@ -405,7 +390,6 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
         try {
           const data = JSON.parse(event.data);
           if (data.event === 'connected') {
-            setLiveModelName(data.model || 'models/gemini-2.0-flash-exp');
             setLiveStatusInfo(`Active: ${data.status}`);
             if (data.error_note) {
               setLiveError(data.error_note);
@@ -863,7 +847,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                       <span className="text-xs font-heading font-semibold text-white">
                         {isPlayingAudio
                           ? `Playing Turn #${activeTurnIndex + 1} (${activeTurn?.speaker === 'AI_Agent' ? 'Priya Voice AI' : sessionData.customer_name})`
-                          : 'Kokoro-82M Neural Audio Player'}
+                          : 'Neural Voice Player'}
                       </span>
                       {isPlayingAudio && (
                         <div className="flex items-end gap-0.5 h-3" aria-hidden="true">
@@ -875,7 +859,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                       )}
                     </div>
                     <p className="text-[11px] text-zinc-400 font-mono mt-0.5">
-                      Kokoro-82M ONNX • Authentic Conversational Hinglish with English Fintech Clarity
+                      Authentic Conversational Hinglish with English Fintech Clarity
                     </p>
                   </div>
                 </div>
@@ -1017,7 +1001,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
           </div>
         )}
 
-        {/* Tab 2: Live Mic Streaming (Gemini 2.0 Live WebSocket) */}
+        {/* Tab 2: Live Mic Streaming */}
         {activeTab === 'live_mic' && (
           <div className="space-y-4 animate-in fade-in duration-100">
             {/* Live Error Banner */}
@@ -1027,7 +1011,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                 <div className="flex-1">
                   <p>{liveError}</p>
                   <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-0.5">
-                    If GEMINI_API_KEY is not configured or offline, Shark Recovery will automatically fallback to local Kokoro neural voice synthesis.
+                    If voice gateway is offline, Shark Recovery will automatically fallback to local neural voice synthesis.
                   </p>
                 </div>
               </div>
@@ -1050,30 +1034,6 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                         {isLiveConnected ? 'Connected (Bi-Directional)' : 'Idle / Standby'}
                       </span>
                     </h4>
-                    
-                    {/* Live Model Selection Pills */}
-                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      <span className="text-[10px] text-zinc-400 font-mono">Model:</span>
-                      {[
-                        { id: 'models/gemini-3.0-flash', label: 'Gemini 3.0 Live' },
-                        { id: 'models/gemini-2.5-flash', label: 'Gemini 2.5 Live' },
-                        { id: 'models/gemini-2.0-flash-exp', label: 'Gemini 2.0 Live' },
-                      ].map((m) => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          disabled={isLiveConnected}
-                          onClick={() => setLiveModelName(m.id)}
-                          className={`px-2 py-0.5 rounded text-[10px] font-mono transition-all cursor-pointer disabled:cursor-not-allowed ${
-                            liveModelName === m.id
-                              ? 'bg-rose-600 text-white font-bold shadow-xs'
-                              : 'bg-zinc-850 hover:bg-zinc-800 text-zinc-400 border border-zinc-700'
-                          }`}
-                        >
-                          {m.label}
-                        </button>
-                      ))}
-                    </div>
 
                     <p className="text-[11px] text-zinc-400 font-mono mt-1">
                       {isLiveConnected ? liveStatusInfo : 'Sub-300ms native voice processing • Priya speaks first • Interruption detection enabled'}
