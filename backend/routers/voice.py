@@ -1,3 +1,5 @@
+import asyncio
+import base64
 import logging
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Query
@@ -59,13 +61,13 @@ class BatchSessionAudioResponse(BaseModel):
 
 
 @router.get("/voices", response_model=List[Dict[str, Any]])
-async def get_available_voices():
+async def get_available_voices() -> List[Dict[str, Any]]:
     """Lists supported Kokoro-82M voices and their Hinglish recovery profiles."""
     return tts_engine.get_catalog()
 
 
 @router.post("/synthesize", response_model=SynthesizeResponse)
-async def synthesize_speech(req: SynthesizeRequest):
+async def synthesize_speech(req: SynthesizeRequest) -> SynthesizeResponse:
     """
     Synthesizes single Hinglish utterance using Kokoro-82M ONNX engine with
     phonetic Devanagari normalizer and acoustic neural style blends.
@@ -85,14 +87,18 @@ async def synthesize_speech(req: SynthesizeRequest):
             target_voice = "shark_agent_alpha"
 
     try:
-        audio_b64, clean_text = tts_engine.synthesize_base64(
-            text=req.text,
-            voice=target_voice,
-            speed=req.speed,
-        )
-        wav_bytes, sr, _ = tts_engine.synthesize(text=req.text, voice=target_voice, speed=req.speed)
-        num_samples = (len(wav_bytes) - 44) // 2
-        duration_sec = round(max(0.1, num_samples / sr), 2)
+        def _synth():
+            wav_bytes, sr, clean_text = tts_engine.synthesize(
+                text=req.text,
+                voice=target_voice,
+                speed=req.speed,
+            )
+            b64_str = base64.b64encode(wav_bytes).decode("utf-8")
+            num_samples = (len(wav_bytes) - 44) // 2
+            duration_sec = round(max(0.1, num_samples / sr), 2)
+            return f"data:audio/wav;base64,{b64_str}", clean_text, sr, duration_sec
+
+        audio_b64, clean_text, sr, duration_sec = await asyncio.to_thread(_synth)
 
         return SynthesizeResponse(
             success=True,
@@ -108,7 +114,7 @@ async def synthesize_speech(req: SynthesizeRequest):
 
 
 @router.post("/session-audio", response_model=BatchSessionAudioResponse)
-async def synthesize_dialogue_session(req: BatchSessionAudioRequest):
+async def synthesize_dialogue_session(req: BatchSessionAudioRequest) -> BatchSessionAudioResponse:
     """
     Synthesizes neural Kokoro audio for an entire multi-turn voice recovery session.
     """
@@ -118,33 +124,37 @@ async def synthesize_dialogue_session(req: BatchSessionAudioRequest):
             detail="Kokoro-82M TTS engine is unavailable."
         )
 
-    processed_turns: List[DialogueTurnAudioItem] = []
-    for turn in req.dialogue:
-        speaker = turn.get("speaker", "AI_Agent")
-        text = turn.get("text", "")
-        emotion = turn.get("emotion", "neutral")
-        timestamp_sec = turn.get("timestamp_sec", 0)
+    def _synth_batch():
+        processed: List[DialogueTurnAudioItem] = []
+        for turn in req.dialogue:
+            speaker = turn.get("speaker", "AI_Agent")
+            text = turn.get("text", "")
+            emotion = turn.get("emotion", "neutral")
+            timestamp_sec = turn.get("timestamp_sec", 0)
 
-        voice = req.agent_voice if speaker == "AI_Agent" else req.customer_voice
+            voice = req.agent_voice if speaker == "AI_Agent" else req.customer_voice
 
-        try:
-            b64_audio, clean_text = tts_engine.synthesize_base64(text=text, voice=voice, speed=req.speed)
-        except Exception as e:
-            logger.warning(f"Failed to synthesize turn text ({text[:30]}...): {e}")
-            b64_audio = None
-            clean_text = text
+            try:
+                b64_audio, clean_text = tts_engine.synthesize_base64(text=text, voice=voice, speed=req.speed)
+            except Exception as e:
+                logger.warning(f"Failed to synthesize turn text ({text[:30]}...): {e}")
+                b64_audio = None
+                clean_text = text
 
-        processed_turns.append(
-            DialogueTurnAudioItem(
-                speaker=speaker,
-                text=text,
-                emotion=emotion,
-                timestamp_sec=timestamp_sec,
-                audio_base64=b64_audio,
-                voice_used=voice,
-                devanagari_normalized=clean_text,
+            processed.append(
+                DialogueTurnAudioItem(
+                    speaker=speaker,
+                    text=text,
+                    emotion=emotion,
+                    timestamp_sec=timestamp_sec,
+                    audio_base64=b64_audio,
+                    voice_used=voice,
+                    devanagari_normalized=clean_text,
+                )
             )
-        )
+        return processed
+
+    processed_turns = await asyncio.to_thread(_synth_batch)
 
     return BatchSessionAudioResponse(
         success=True,
