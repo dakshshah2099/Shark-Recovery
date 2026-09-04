@@ -35,7 +35,7 @@ class VoiceCallSession(BaseModel):
 
 
 VOICE_SYSTEM_PROMPT = """
-You are an empathetic, courteous Indian female AI Voice Recovery Specialist (Priya from Shark Payment Care) for Razorpay merchants in India.
+You are an empathetic, courteous Indian female AI Voice Recovery Specialist (Priya from Shark Recovery) for Razorpay merchants in India.
 Your goal is to politely understand why a payment failed, offer immediate payment resolution assistance via a direct 1-click retry link, and secure a Promise-to-Pay commitment.
 
 STRICT LINGUISTIC & GRAMMATICAL RULES:
@@ -116,7 +116,7 @@ def generate_heuristic_voice_session(
     dialogue = [
         DialogueTurn(
             speaker="AI_Agent",
-            text=f"Namaste {first_name} ji! Main Shark Payment Care team se bol rahi hoon. Dekha aapka ₹{ctx.amount:,.0f} ka order checkout pe interrupt ho gaya tha. Kya main aapki koi help kar sakti hoon?",
+            text=f"Namaste {first_name} ji! Main Shark Recovery team se bol rahi hoon. Dekha aapka ₹{ctx.amount:,.0f} ka order checkout pe interrupt ho gaya tha. Kya main aapki koi help kar sakti hoon?",
             emotion="empathetic",
             timestamp_sec=2,
         ),
@@ -187,7 +187,7 @@ Generate an empathetic, authentic 4-5 turn conversational Hinglish voice recover
 - Order Amount: INR {ctx.amount:,.2f}
 - Failure Root Cause: {diag.root_cause} (Category: {diag.failure_category})
 - {discount_instruction}
-- AI AGENT GENDER: FEMALE (Priya from Shark Payment Care). The AI Agent MUST ALWAYS speak in the FEMININE first-person grammatical gender in Hindi/Hinglish ('bol rahi hoon', 'kar sakti hoon', 'samajh sakti hoon', 'bhej rahi hoon'). NEVER use masculine verb forms ('bol raha hoon', 'kar sakta hoon').
+- AI AGENT GENDER: FEMALE (Priya from Shark Recovery). The AI Agent MUST ALWAYS speak in the FEMININE first-person grammatical gender in Hindi/Hinglish ('bol rahi hoon', 'kar sakti hoon', 'samajh sakti hoon', 'bhej rahi hoon'). NEVER use masculine verb forms ('bol raha hoon', 'kar sakta hoon').
 
 Return valid JSON with:
 {{
@@ -197,7 +197,7 @@ Return valid JSON with:
   "order_amount": {ctx.amount},
   "discount_offered": {discount_percent},
   "dialogue": [
-    {{"speaker": "AI_Agent", "text": "Namaste {first_name} ji! Main Shark Payment Care team se bol rahi hoon...", "emotion": "empathetic", "timestamp_sec": 2}},
+    {{"speaker": "AI_Agent", "text": "Namaste {first_name} ji! Main Shark Recovery team se bol rahi hoon...", "emotion": "empathetic", "timestamp_sec": 2}},
     {{"speaker": "Customer", "text": "...", "emotion": "explaining", "timestamp_sec": 8}},
     {{"speaker": "AI_Agent", "text": "Bilkul samajh sakti hoon...", "emotion": "reassuring", "timestamp_sec": 16}},
     {{"speaker": "Customer", "text": "...", "emotion": "agreeing", "timestamp_sec": 24}},

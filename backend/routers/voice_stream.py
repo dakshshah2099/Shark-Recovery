@@ -222,7 +222,7 @@ async def execute_voice_dispatch_tool(
             customer_name=cust_name,
             customer_email=cust_email,
             customer_contact=cust_phone,
-            description=f"Shark Recovery ({disc:.0f}% off)" if disc > 0 else "Shark Payment Recovery",
+            description=f"Shark Recovery ({disc:.0f}% off)" if disc > 0 else "Shark Recovery",
             notes={"txn_id": txn_id, "channel": tool_name, "voice_agent": "Priya Live"},
         )
         link_resp = await create_payment_link(link_req)
@@ -277,9 +277,9 @@ async def execute_voice_dispatch_tool(
         if custom_sms:
             sms_text = custom_sms
         elif disc > 0:
-            sms_text = f"Hi {first_name}, complete your INR {final_amount:,.2f} order with {disc:.0f}% OFF. Tap link to pay: {payment_link} - Shark Care"
+            sms_text = f"Hi {first_name}, complete your INR {final_amount:,.2f} order with {disc:.0f}% OFF. Tap link to pay: {payment_link} - Shark Recovery"
         else:
-            sms_text = f"Hi {first_name}, your cart is reserved. Complete your Razorpay checkout securely here: {payment_link} - Shark Care"
+            sms_text = f"Hi {first_name}, your cart is reserved. Complete your Razorpay checkout securely here: {payment_link} - Shark Recovery"
 
         twilio_client = _get_twilio_client()
         sms_sid = f"sms_{uuid.uuid4().hex[:10]}"
@@ -349,11 +349,11 @@ async def execute_voice_dispatch_tool(
                 </a>
             </div>
             <p style="color: #94a3b8; font-size: 12px; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
-                Shark Payment Care • Powered by Razorpay
+                Shark Recovery • Powered by Razorpay
             </p>
         </div>
         """
-        text_body = f"Namaste {first_name} ji,\n\nCart reserved. Payable: INR {final_amount:,.2f}.\n\nPay here: {payment_link}\n\n- Shark Payment Care"
+        text_body = f"Namaste {first_name} ji,\n\nCart reserved. Payable: INR {final_amount:,.2f}.\n\nPay here: {payment_link}\n\n- Shark Recovery"
 
         email_payload = EmailPayload(
             transaction_id=txn_id,

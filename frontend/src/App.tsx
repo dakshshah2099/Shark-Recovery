@@ -79,6 +79,7 @@ export const App: React.FC = () => {
       transactions: 'Shark Recovery — Transactions Ledger',
       ingest: 'Shark Recovery — Autonomous Ingestion Hub',
       'agent-flow': 'Shark Recovery — Agent Flow & Performance',
+      'whatsapp-feed': 'Shark Recovery — WhatsApp Feed',
       audit: 'Shark Recovery — AI Audit Trail',
       settings: 'Shark Recovery — Settings & Keys',
     };

@@ -33,7 +33,7 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    APP_NAME: str = "AI Revenue Recovery Agent"
+    APP_NAME: str = "Shark Recovery"
     APP_ENV: str = "development"
     DEBUG: bool = True
     DEBUG_MODE: bool = True

@@ -16,7 +16,7 @@ def main():
     frontend_dir = root_dir / "frontend"
 
     print("=" * 70)
-    print("  AI SHARK REVENUE RECOVERY AGENT (RAZORPAY BUILDATHON)")
+    print("  SHARK RECOVERY — AUTONOMOUS REVENUE RECOVERY PLATFORM")
     print("=" * 70)
     print(f"[1/2] Launching FastAPI Backend from: {backend_dir}")
     print(f"[2/2] Launching Vite+React Frontend from: {frontend_dir}")
@@ -59,7 +59,7 @@ def main():
         backend_proc.wait()
         frontend_proc.wait()
     except KeyboardInterrupt:
-        print("\n[!] Shutting down AI Shark Agent services...")
+        print("\n[!] Shutting down Shark Recovery services...")
         backend_proc.terminate()
         frontend_proc.terminate()
         sys.exit(0)

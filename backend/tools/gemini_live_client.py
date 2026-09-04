@@ -84,7 +84,7 @@ class GeminiLiveSession:
         )
 
         return f"""
-You are Priya, an empathetic, courteous Indian female Voice Recovery Specialist from Shark Payment Care for Razorpay merchants in India.
+You are Priya, an empathetic, courteous Indian female Voice Recovery Specialist from Shark Recovery for Razorpay merchants in India.
 You are currently on a continuous live phone call with customer {self.customer_name} (Phone: {self.customer_phone}, Email: {self.customer_email}).
 
 CONTEXT:
@@ -304,7 +304,7 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
             else "mention that their cart is reserved on priority (DO NOT mention the word discount), "
         )
         prompt_text = (
-            f"You are Priya from Shark Payment Care for Razorpay merchants. The live call with customer {self.customer_name} "
+            f"You are Priya from Shark Recovery for Razorpay merchants. The live call with customer {self.customer_name} "
             f"(Phone: {self.customer_phone}, Email: {self.customer_email}) is now connected. "
             f"CRITICAL GROUND TRUTH CONTEXT: "
             f"- Customer Name: {self.customer_name} (Greet as '{first_name} ji') "
@@ -312,7 +312,7 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
             f"- Failure Cause: '{self.failure_reason}' "
             f"- Incentive Policy: {self.discount_percent:.0f}% discount approved. "
             f"DO NOT guess, invent, or hallucinate any other amount, name, or reason. "
-            f"Start speaking immediately right now: Greet {first_name} ji warmly in polite conversational Hinglish ('Namaste {first_name} ji! Main Shark Payment Care se Priya bol rahi hoon...'), "
+            f"Start speaking immediately right now: Greet {first_name} ji warmly in polite conversational Hinglish ('Namaste {first_name} ji! Main Shark Recovery se Priya bol rahi hoon...'), "
             f"inform them that their order of INR {self.order_amount:,.0f} was interrupted due to {self.failure_reason}, {discount_desc}"
             f"and ask if they would like the 1-click retry link sent on WhatsApp, SMS, or Email. Do NOT call any tools yet."
         )
@@ -397,7 +397,7 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
             # First turn: AI Agent Speaks FIRST immediately!
             first_name = self.customer_name.split()[0] if self.customer_name else "Customer"
             disc_text = f" Aur humne aapke liye ek special {self.discount_percent:.0f}% discount reserve kiya hai." if self.discount_percent > 0 else ""
-            greeting = f"Namaste {first_name} ji! Main Priya bol rahi hoon Shark Payment Care se Razorpay merchant ke liye. Aapka Rs {self.order_amount:,.0f} ka order pending tha.{disc_text} Kya main direct 1-click retry link WhatsApp pe bhej doon, ya SMS pe?"
+            greeting = f"Namaste {first_name} ji! Main Priya bol rahi hoon Shark Recovery se Razorpay merchant ke liye. Aapka Rs {self.order_amount:,.0f} ka order pending tha.{disc_text} Kya main direct 1-click retry link WhatsApp pe bhej doon, ya SMS pe?"
             
             if self.on_transcript:
                 self.on_transcript("AI_Agent", greeting)

@@ -365,7 +365,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
     setLiveError(null);
     nextLiveAudioPlayTimeRef.current = 0;
     setIsLiveConnected(true);
-    setLiveStatusInfo(`Connecting to AI Shark Gateway using ${liveModelName}...`);
+    setLiveStatusInfo(`Connecting to Shark Recovery Gateway using ${liveModelName}...`);
 
     try {
       // 1. Capture microphone audio stream with hardware echo cancellation
@@ -974,7 +974,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                           {isAgent ? (
                             <>
                               <Bot className="w-3 h-3 text-rose-500" />
-                              <span>Priya (Shark Voice AI)</span>
+                              <span>Priya (Shark Recovery Voice AI)</span>
                             </>
                           ) : (
                             <>
@@ -1027,7 +1027,7 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
                 <div className="flex-1">
                   <p>{liveError}</p>
                   <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-0.5">
-                    If GEMINI_API_KEY is not configured or offline, Shark will automatically fallback to local Kokoro neural voice synthesis.
+                    If GEMINI_API_KEY is not configured or offline, Shark Recovery will automatically fallback to local Kokoro neural voice synthesis.
                   </p>
                 </div>
               </div>

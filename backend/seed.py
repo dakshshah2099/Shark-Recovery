@@ -1,5 +1,5 @@
 """
-Database seeder script for AI Revenue Recovery Agent.
+Database seeder script for Shark Recovery.
 Populates SQLite with realistic Indian SaaS & E-commerce payment failure and recovery records.
 """
 

@@ -96,7 +96,7 @@ export const RazorpayCheckoutButton: React.FC<RazorpayCheckoutButtonProps> = ({
         key: orderData.key_id || 'rzp_test_TWSrBAIEzLzPT3',
         amount: Math.round(numAmount * 100),
         currency: orderData.currency || 'INR',
-        name: 'Shark Recovery Store',
+        name: 'Shark Recovery',
         description: 'Payment Dropout & Recovery Live Verification',
         order_id: orderData.order_id,
         prefill: {

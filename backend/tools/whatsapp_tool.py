@@ -39,7 +39,7 @@ def format_twilio_sandbox_message(payload: WhatsAppPayload) -> str:
     3. 'order': Your {{1}} order of {{2}} has shipped and should be delivered on {{3}}. Details: {{4}}
     """
     template = getattr(settings, "TWILIO_SANDBOX_TEMPLATE", "appointment").lower()
-    app_name = "Razorpay Recovery"
+    app_name = "Shark Recovery"
     link = payload.payment_link or "https://razorpay.com"
 
     if template == "code":

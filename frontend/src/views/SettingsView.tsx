@@ -128,7 +128,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           setSmtpPort(data.smtp_port || 587);
           setSmtpUser(data.smtp_username || '');
           setSmtpPass(data.smtp_password || '');
-          setSmtpFrom(data.smtp_from || 'recovery@sharkagent.local');
+          setSmtpFrom(data.smtp_from || 'recovery@sharkrecovery.local');
           setMaxRetries(data.max_retry_attempts ?? 2);
         }
       }
@@ -558,7 +558,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       {twilioTemplate === 'appointment' && <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.2 rounded font-mono">Active</span>}
                     </div>
                     <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 font-mono">
-                      Your Razorpay Recovery appointment is coming up on &#123;link&#125;
+                      Your Shark Recovery appointment is coming up on &#123;link&#125;
                     </div>
                   </button>
 
@@ -577,7 +577,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       {twilioTemplate === 'code' && <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.2 rounded font-mono">Active</span>}
                     </div>
                     <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 font-mono">
-                      Your Razorpay Recovery code is &#123;link&#125;
+                      Your Shark Recovery code is &#123;link&#125;
                     </div>
                   </button>
 
