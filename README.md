@@ -1,6 +1,6 @@
 # 🦈 Shark Recovery — Autonomous Multi-Agent AI Revenue Recovery Platform
 
-> **An autonomous, multi-agent AI revenue recovery platform built for Razorpay merchants in India. Shark Recovery intercepts payment failures and checkout dropouts in real time, diagnoses root causes, enforces RBI regulatory guardrails, computes dynamic margin-bounded incentives ($0\%\le d\le 15\%$), and executes compliant omnichannel recovery across WhatsApp, Email, and interactive Hinglish Voice AI (Gemini Live & Twilio PSTN).**
+> **An enterprise-grade, autonomous multi-agent AI revenue recovery platform engineered for Razorpay merchants in India. Shark Recovery intercepts payment failures and checkout dropouts in real time, diagnoses root causes, enforces RBI regulatory guardrails, computes dynamic margin-bounded incentives ($0\%\le d\le 15\%$), and executes compliant multi-channel recovery workflows across WhatsApp, Email, and interactive Hinglish Voice AI (Gemini 2.0 Live WebSockets & Twilio PSTN).**
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React 19](https://img.shields.io/badge/Frontend-React_19_+_TypeScript-61DAFB.svg?logo=react&logoColor=black)](https://react.dev)
@@ -13,29 +13,60 @@
 
 ---
 
-## 📌 Why Now? The Core Problem & "The Bar"
+## 📑 Table of Contents
 
-Revenue loss in Indian digital commerce and SaaS occurs across 4 critical vectors:
-1. **Payment Infrastructure Degradation**: Bank CBS 503 latency and UPI switch downtime silently abort transactions.
-2. **Checkout Drop-off & Intent Friction**: High-intent shoppers drop out due to daily UPI debit limits, OTP timeouts, or friction.
-3. **Recurring Mandate Rejections**: Subscription auto-debits fail due to salary cycle misalignment or temporary card holds.
+- [The Core Problem & "The Bar"](#-the-core-problem--the-bar)
+- [Autonomous Multi-Agent Architecture](#-autonomous-multi-agent-architecture)
+  - [Agent Roles & Execution Pipeline](#agent-roles--execution-pipeline)
+- [The 6 Enterprise Revenue Loss Vectors](#-the-6-enterprise-revenue-loss-vectors)
+- [Dynamic FinOps Incentive Engine](#-dynamic-finops-incentive-engine)
+- [Interactive Hinglish Voice Recovery AI](#-interactive-hinglish-voice-recovery-ai)
+  - [3 Voice AI Operational Modes](#3-voice-ai-operational-modes)
+  - [Telephony Audio Codec & Transcoding](#telephony-audio-codec--transcoding)
+- [Omnichannel Messaging & Live WhatsApp Simulator](#-omnichannel-messaging--live-whatsapp-simulator)
+- [FinOps Power-User & Accessibility Suite](#-finops-power-user--accessibility-suite)
+- [Interactive Testing, Benchmarking & Ingestion](#-interactive-testing-benchmarking--ingestion)
+- [Regulatory Compliance & Stopping Rules](#-regulatory-compliance--stopping-rules)
+- [Categorized Settings & Maintenance Barrier](#-categorized-settings--maintenance-barrier)
+- [Tech Stack & Infrastructure](#-tech-stack--infrastructure)
+- [Quickstart & Setup Guide](#-quickstart--setup-guide)
+- [Automated Test Verification](#-automated-test-verification)
+- [Repository Structure](#-repository-structure)
+- [License](#-license)
+
+---
+
+## 📌 The Core Problem & "The Bar"
+
+Revenue loss in Indian digital commerce and SaaS rarely happens in one clean step:
+
+1. **Payment Infrastructure Degradation**: Bank CBS 503 latency and UPI switch downtime silently abort transactions during 3DS redirects.
+2. **Checkout Drop-off & Intent Friction**: High-intent shoppers drop out due to daily UPI debit limits (₹1,00,000 ceiling), OTP timeouts, or price friction.
+3. **Recurring Mandate Rejections**: Subscription auto-debits reject due to salary cycle misalignment (e.g., billing on 28th before salary on 1st) or temporary bank holds.
 4. **Uncollected B2B Receivables**: Enterprise Net-30/60 invoices sit unpaid without proactive negotiation.
 
-Traditional dunning tools send static, generic emails that damage brand trust and fail to close the loop.
+Traditional dunning systems send static, generic emails days later. These erode brand trust, offer inappropriate blanket discounts that eat merchant margins, and fail to close the loop.
 
-**Shark Recovery raises the bar:** It operates as a collaborative swarm of specialized AI agents that autonomously triage root causes, enforce regulatory stopping rules (RBI DND calling windows, bounded retry limits, cooling-off intervals), dynamically formulate margin-preserving incentives ($0\%, 5\%, 10\%, 15\%$), conduct real-time Hinglish Voice AI calls, and maintain an immutable financial ledger of **Measured Money Recovered**.
+**Shark Recovery raises the bar:**
+- Operates as a **collaborative swarm of 6 specialized AI agents** that triage dropouts in real time.
+- Enforces **strict RBI regulatory guardrails** (DND calling hours, bounded retry limits, cooling-off windows).
+- Dynamically formulates **margin-preserving incentive tiers** ($0\%, 5\%, 10\%, 15\%$) mapped to root causes.
+- Synthesizes **conversational Hinglish Voice AI calls** with Promise-To-Pay (PTP) commitment extraction.
+- Provides a **verifiable financial audit trail** tracking **Measured Money Recovered**, **Margin Preserved**, and **Recovery ROI Multiple**.
 
 ---
 
 ## 🏛️ Autonomous Multi-Agent Architecture
 
+Shark Recovery organizes specialized AI agents into a coordinated pipeline with automated fallback chains:
+
 ```mermaid
 graph TD
     A[Payment Failure / Dropout / Webhook / Batch] --> B[1. Sentinel Telemetry Agent]
-    B -->|Gateway Health & Routing Analysis| C[2. Diagnostic Root-Cause Agent]
+    B -->|Gateway Health & Routing Telemetry| C[2. Diagnostic Root-Cause Agent]
     C -->|Failure Category & Churn Risk Score| D[3. Guardian Compliance Agent]
-    D -->|RBI DND, Cooling-off & Stopping Rules Check| E{Compliant?}
-    E -->|No: Fraud / Max Retries Exceeded| F[Hard Stop & Mark ABANDONED]
+    D -->|RBI DND, Cooling-off & Stopping Rules| E{Compliant?}
+    E -->|No: Fraud / Stolen Card / Max Retries| F[Hard Stop & Mark ABANDONED]
     E -->|Yes: Approved Escalation Stage| G[4. Master Strategist Agent]
     G -->|Tone, Channel & Dynamic Margin Discount| H[Specialized Recovery Executors]
     
@@ -60,29 +91,45 @@ graph TD
     J --> K[Customer Settlement: payment_link.paid -> Status RECOVERED]
 ```
 
-### Agent Roles & Responsibilities
+### Agent Roles & Execution Pipeline
 
-| Agent | Module | Core Functionality |
-| :--- | :--- | :--- |
-| **Sentinel Telemetry Agent** | `backend/agents/sentinel_agent.py` | Analyzes live database telemetry and gateway health across HDFC UPI, SBI Netbanking, ICICI, Razorpay Smart Routing, and NPCI e-Mandate. Detects 503 bank outages and recommends routing bypasses. |
-| **Diagnostic Root-Cause Agent** | `backend/agents/diagnostic_agent.py` | Employs few-shot LLM reasoning (with deterministic fallback) to classify failures into 7 categories (`INSUFFICIENT_FUNDS`, `AUTHENTICATION_FAILED`, `BANK_SERVER_ERROR`, `EXPIRED_CARD`, `USER_DROPOUT`, `NETWORK_TIMEOUT`, `PAYMENT_DECLINED`) and computes churn/fraud risk ($0.0\text{--}1.0$). |
-| **Guardian Compliance Agent** | `backend/agents/compliance_agent.py` | Enforces regulatory guardrails: RBI Do-Not-Disturb (DND) calling window (8:00 AM – 8:00 PM IST), bounded retry ceilings ($\le 2$ attempts), cooling-off intervals (4h–48h), and hard halts on stolen cards/fraud. |
-| **Master Strategist Agent** | `backend/agents/strategy_agent.py` | Selects optimal omnichannel combination, persuasive communication tone (`casual_hinglish`, `incentive_focused`, `empathetic`, `professional`), and dynamic margin-bounded discount tier ($0\%, 5\%, 10\%, 15\%$). |
-| **Hinglish Voice Recovery AI** | `backend/agents/voice_agent.py`<br>`backend/routers/voice_stream.py` | Multi-mode conversational voice engine: 5-turn Hinglish dialogue scripts with emotion tagging, Kokoro neural / Web Speech audio synthesis, Gemini 2.0 Live WebSocket streaming, and Twilio PSTN outbound dialer. |
-| **Mandate Retry Sequencer & B2B Chaser** | `backend/agents/mandate_agent.py` | Generates 3-slot cooling-off retry schedules (+24h, +72h, +120h) targeting morning banking hours and salary cycles (1st–5th of month), plus B2B installment negotiation plans. |
+| Agent | Module Path | Decision Logic & Responsibilities | Fallback Engine |
+| :--- | :--- | :--- | :--- |
+| **Sentinel Telemetry Agent** | `backend/agents/sentinel_agent.py` | Continuously monitors database transaction logs across 5 banking rails (HDFC UPI, SBI Netbanking, ICICI, Razorpay Smart Routing, NPCI e-Mandate). Calculates real-time failure spikes, rolling latency ($ms$), and triggers routing bypasses. | Statistical baseline window |
+| **Diagnostic Root-Cause Agent** | `backend/agents/diagnostic_agent.py` | Analyzes failure codes, customer history, and checkout context. Categorizes root cause into 7 buckets (`INSUFFICIENT_FUNDS`, `AUTHENTICATION_FAILED`, `BANK_SERVER_ERROR`, `EXPIRED_CARD`, `USER_DROPOUT`, `NETWORK_TIMEOUT`, `PAYMENT_DECLINED`) and outputs churn risk ($0.0\text{--}1.0$). | Few-shot LLM $\to$ deterministic rule tree |
+| **Guardian Compliance Agent** | `backend/agents/compliance_agent.py` | Enforces regulatory guardrails: RBI Do-Not-Disturb calling window (8:00 AM – 8:00 PM IST), bounded retry ceilings ($\le 2$ attempts), cooling-off intervals (4h–48h), and hard halts on stolen cards/fraud ($risk \ge 0.85$). | Strict programmatic rules |
+| **Master Strategist Agent** | `backend/agents/strategy_agent.py` | Formulates recovery plan: communication channel (`whatsapp`, `email`, `voice_ivr`), tone (`casual_hinglish`, `incentive_focused`, `empathetic`, `professional`), and dynamic margin-bounded discount ($0\%, 5\%, 10\%, 15\%$). | Dynamic decision matrix |
+| **Hinglish Voice Recovery AI** | `backend/agents/voice_agent.py`<br>`backend/routers/voice_stream.py` | Multi-mode conversational voice engine: 5-turn Hinglish dialogue scripts with emotion tagging, Kokoro neural / Web Speech audio synthesis, Gemini 2.0 Live WebSocket streaming, and Twilio PSTN outbound dialer. | Template dialogue + Web Speech |
+| **Mandate Retry Sequencer & B2B Chaser** | `backend/agents/mandate_agent.py` | Computes 3-slot cooling-off retry schedules (+24h, +72h, +120h) targeting morning banking hours and salary cycles (1st–5th of month), plus B2B installment negotiation plans. | Deterministic calendar rules |
 
 ---
 
-## ⚡ 6 Core Enterprise Revenue Loss Vectors
+## ⚡ The 6 Enterprise Revenue Loss Vectors
 
 Shark Recovery natively handles all 6 revenue loss vectors:
 
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                               6 REVENUE LOSS VECTORS & TRIAGE ENGINE                               │
+├───────────────────────────────┬───────────────────────────────────┬───────────────────────────────┤
+│ Vector 1: Checkout Dropouts   │ Vector 2: Gateway 503 Spikes      │ Vector 3: Failed Mandates     │
+│ • Daily UPI limit exceeded    │ • SBI / HDFC CBS gateway lag      │ • Subscription debit rejected │
+│ • 10% coupon (RECOVER10)      │ • Zero-margin reassurance (0%)    │ • 3-slot cooling-off plan     │
+│ • WhatsApp 1-click link       │ • Empathetic status update        │ • Morning liquidity windows   │
+├───────────────────────────────┼───────────────────────────────────┼───────────────────────────────┤
+│ Vector 4: B2B Receivables     │ Vector 5: High-Value Abandonment  │ Vector 6: Fraud / Stolen Card │
+│ • Net-30 invoice overdue 15d+ │ • Order value > ₹5,000            │ • Risk score ≥ 0.85           │
+│ • 2-stage installment (50/50) │ • Hinglish Voice AI call          │ • Immediate hard stop         │
+│ • 3% prompt payment rebate    │ • Promise-To-Pay commitment date  │ • Zero outreach / safe audit  │
+└───────────────────────────────┴───────────────────────────────────┴───────────────────────────────┘
+```
+
 1. **E-Commerce Checkout Dropouts (UPI Limits & Low Funds)**
    - **Trigger**: Customer hits ₹1,00,000 daily UPI debit limit or lacks savings balance.
-   - **Intervention**: Strategist crafts high-urgency Hinglish WhatsApp message offering a dynamic 10% coupon (`RECOVER10`) with alternative Credit Card / Netbanking payment link.
+   - **Intervention**: Strategist crafts a high-urgency Hinglish WhatsApp message offering a dynamic 10% coupon (`RECOVER10`) with an alternative Credit Card / Netbanking payment link.
 2. **Bank Gateway 503 Degradation Spikes**
    - **Trigger**: State Bank of India (SBI) or HDFC CBS gateway outage during 3DS redirect.
-   - **Intervention**: Sentinel flags node degradation; Strategist sends empathetic zero-margin reassurance link preserving merchant margin (0% discount).
+   - **Intervention**: Sentinel flags node degradation; Strategist sends an empathetic zero-margin reassurance link preserving merchant margin (0% discount).
 3. **Recurring Subscription e-Mandate Failures**
    - **Trigger**: Card / UPI AutoPay recurring mandate rejected by issuing bank.
    - **Intervention**: Mandate Sequencer schedules a 3-slot cooling-off retry plan (+24h, +72h, +120h) aligning with liquidity windows and sends fallback payment links.
@@ -98,14 +145,42 @@ Shark Recovery natively handles all 6 revenue loss vectors:
 
 ---
 
+## 💰 Dynamic FinOps Incentive Engine
+
+Shark Recovery avoids arbitrary discounts that erode merchant margin. The dynamic incentive matrix enforces strict FinOps guardrails:
+
+| Root-Cause Category | Failure Profile | Dynamic Incentive | Promo Code | FinOps Rationale |
+| :--- | :--- | :---: | :---: | :--- |
+| **`BANK_SERVER_ERROR`** | Bank 503 / CBS outage | **0.0%** | *None* | **Zero Margin Erosion**: Customer intent is intact; failure was technical. A discount is unnecessary and would waste merchant margin. |
+| **`AUTHENTICATION_FAILED`** | 3DS / OTP timeout | **5.0%** | `QUICK5` | **Friction Nudge**: Small token gesture to compensate for authentication inconvenience and encourage immediate retry. |
+| **`INSUFFICIENT_FUNDS`** | UPI limit / balance constraint | **10.0%** | `RECOVER10` | **Instrument Switch**: Clear financial incentive to unblock funds friction or motivate checkout completion via credit card or BNPL. |
+| **`USER_DROPOUT`** | High-value cart abandonment | **10.0% – 15.0%** | `SPECIAL10`<br>`VIP15` | **Conversion Closure**: Preserves margin on high-ticket cart recovery ($> ₹5,000$) while providing compelling urgency. |
+| **`B2B_RECEIVABLE`** | Corporate invoice overdue | **3.0%** | `EARLYPAY3` | **Cashflow Acceleration**: Prompt-payment rebate tied to a 50% upfront installment structure. |
+
+---
+
 ## 🎙️ Interactive Hinglish Voice Recovery AI
 
-The Voice Recovery subsystem ([`VoiceCallModal.tsx`](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/components/VoiceCallModal.tsx) & [`voice_stream.py`](file:///E:/Coding/Projects/AI_Shark_Razorpay/backend/routers/voice_stream.py)) provides 3 complementary modes adapted for desktop and mobile viewports ($\le 375\text{px}$):
+The Voice Recovery subsystem ([`VoiceCallModal.tsx`](frontend/src/components/VoiceCallModal.tsx) & [`voice_stream.py`](backend/routers/voice_stream.py)) provides **3 complementary operational modes** hardened for both desktop and mobile viewports ($\le 375\text{px}$):
+
+### 3 Voice AI Operational Modes
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                               3 VOICE RECOVERY MODES                                   │
+├────────────────────────────┬─────────────────────────────┬─────────────────────────────┤
+│ 1. Recorded Transcript     │ 2. Live Mic Stream          │ 3. PSTN Outbound Dialer     │
+│ • 5-turn Hinglish dialogue │ • Gemini 2.0 Live WebSocket │ • Twilio cellular call      │
+│ • Kokoro neural / TTS      │ • Full-duplex PCM16 stream  │ • Real phone dispatch (+91) │
+│ • Live Devanagari script   │ • Dynamic visualizer        │ • TwiML stream response     │
+│ • PTP date extraction      │ • Real-time negotiation     │ • Post-call SMS link        │
+└────────────────────────────┴─────────────────────────────┴─────────────────────────────┘
+```
 
 1. **Recorded Transcript & Neural Playback**:
    - Turn-by-turn dialogue inspection with speaker emotion tags (`empathetic`, `reassuring`, `helpful`).
-   - Browser Web Speech API & Kokoro-82M neural TTS fallback with phonetic Hinglish normalization.
-   - Live Devanagari script transliteration toggle (`नमस्ते जी, मैं शार्क पेमेंट टीम...`).
+   - Browser Web Speech API & Kokoro-82M neural TTS fallback with phonetic Hinglish normalization (`preprocessHinglishSpeech`).
+   - Live Devanagari script transliteration toggle (`नमस्ते जी, मैं शार्क पेमेंट टीम से बोल रही हूँ...`).
    - Automatic extraction of Promise-To-Pay (PTP) target date and outcome status.
 2. **Live Mic Stream (Gemini 2.0 Live WebSockets)**:
    - Full-duplex browser microphone capture streaming raw PCM audio to `/api/voice/stream`.
@@ -115,53 +190,142 @@ The Voice Recovery subsystem ([`VoiceCallModal.tsx`](file:///E:/Coding/Projects/
    - Live call state monitoring (`ringing`, `in-progress`, `completed`).
    - Automated 1-click Razorpay payment link dispatch via SMS upon call completion.
 
+### Telephony Audio Codec & Transcoding
+
+The telephony gateway in `backend/tools/telephony_codec.py` bridges standard cellular telephony and modern multimodal AI:
+- **$\mu$-Law $\leftrightarrow$ PCM16 Transcoding**: Decodes 8kHz 8-bit $\mu$-law audio from Twilio Media Streams into linear 16-bit PCM.
+- **Bi-Directional Resampling**: Resamples between 8,000 Hz (cellular PSTN), 16,000 Hz (Gemini Live input), and 24,000 Hz (Gemini Live output).
+- **Sub-150ms Streaming Latency**: Uses asynchronous audio chunking for near-instant conversational turn-taking.
+
 ---
 
-## 🖥️ FinOps Experience & Usability Standards
+## 💬 Omnichannel Messaging & Live WhatsApp Simulator
 
-Evaluated and hardened under the **Impeccable Design System** (38/40 Usability Score, 0 detector warnings):
+Shark Recovery provides dual-delivery outreach with native simulation tooling:
 
-* **Alex (Power User / FinOps Lead)**:
-  - Multi-select row checkboxes with bulk triage bar (`Retry Selected`).
-  - Single-click CSV ledger export (`shark_recovery_ledger_YYYY-MM-DD.csv`).
-  - Full keyboard navigation: `j` / `k` (row traverse), `x` (toggle row selection), `r` (retry), `/` (search focus), `esc` (clear).
-* **Sam (Accessibility)**:
-  - Full ARIA grid semantics (`aria-activedescendant`, `role="row"`, `aria-selected`).
-  - Live polite screen reader announcements on keyboard navigation (`aria-live="polite"`).
-* **Jordan (First-Timer / Junior Merchant)**:
-  - Plain-language banking acronym glossary tooltips (`UPI`, `3DS`, `CBS`, `PTP`, `NPCI`, `HMAC`).
-* **Mobile Viewport Optimization**:
-  - Adaptive stacked card view on mobile screens ($< 640\text{px}$).
-  - Fully responsive modal padding, title scaling, and compact tab labels on small viewports ($\le 375\text{px}$).
-* **Categorized Settings & Guardrail Safety**:
-  - Tabbed categories in [`SettingsView.tsx`](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/views/SettingsView.tsx) (Credentials, Recovery Guardrails, DND, AI Prompts, System Maintenance).
-  - Two-step confirmation Destructive Purge Modal barrier for database resets.
-  - Live credential health ping tests for Razorpay, Twilio, Gemini, Groq, and SMTP.
+- **WhatsApp Recovery Feed ([`WhatsAppFeedView.tsx`](frontend/src/views/WhatsAppFeedView.tsx))**:
+  - Live interactive mobile replica widget with animated message bubbles.
+  - Dynamic coupon tags (`10% Auto-Applied`), order summary, and 1-click Razorpay payment link simulation.
+  - Automated customer response simulation testing conversational recovery flows.
+  - Twilio WhatsApp Sandbox REST dispatch with delivery receipt tracking.
+- **SMTP Async TLS Email Dispatch (`backend/tools/smtp_tool.py`)**:
+  - Asynchronous dispatch via `aiosmtplib` (Gmail TLS / Port 587).
+  - Responsive, dark-mode-optimized HTML recovery email with order breakdown table, dynamic discount code badge, and secure payment CTA.
+
+---
+
+## 🖥️ FinOps Power-User & Accessibility Suite
+
+Designed and verified under the **Impeccable Design System** (38/40 Usability Score, 0 detector warnings):
+
+### Alex (Power User / FinOps Lead)
+- **Multi-Select Batch Triage**: Checkbox per row + select-all header with floating action bar (`Retry Selected (N)`).
+- **Single-Click CSV Ledger Export**: Export filtered transactions as timestamped CSV files (`shark_recovery_ledger_YYYY-MM-DD.csv`).
+- **Power-User Keyboard Traversal**:
+  - `j` / `k`: Move highlight up/down across rows.
+  - `x`: Toggle row selection for batch triage.
+  - `r`: Re-run AI recovery triage on highlighted transaction.
+  - `/`: Quick focus on search input.
+  - `esc`: Clear search and dismiss modals.
+
+### Sam (Accessibility & Screen Readers)
+- ARIA table semantics (`aria-activedescendant`, `id="txn-row-${txn.id}"`, `role="row"`, `aria-selected`).
+- Polite live screen reader announcements (`aria-live="polite"`) announcing row selection, order ID, customer name, amount, and status during keyboard traversal.
+
+### Jordan (First-Timer / Junior Merchant)
+- Plain-language banking acronym glossary tooltips across failure diagnostics:
+  - **`UPI`**: Unified Payments Interface - Instant real-time payment system developed by NPCI.
+  - **`3DS`**: 3-Domain Secure - Multi-factor netbanking / card authentication timeout.
+  - **`CBS`**: Core Banking System - Bank mainframe/host timeout (503 Service Unavailable).
+  - **`PTP`**: Promise-To-Pay - Customer verbally or digitally confirmed agreement to pay.
+  - **`NPCI`**: National Payments Corporation of India - Retail payments governing body.
+  - **`HMAC`**: Hash-based Message Authentication Code - Cryptographic webhook signature.
+
+### Mobile Viewport Hardening
+- Adaptive stacked card view on mobile screens ($< 640\text{px}$).
+- Viewport adaptation for small mobile screens ($\le 375\text{px}$) in [`VoiceCallModal.tsx`](frontend/src/components/VoiceCallModal.tsx) with compact tab headers and audio controls.
+
+---
+
+## 🧪 Interactive Testing, Benchmarking & Ingestion
+
+Shark Recovery includes 4 interactive testing and benchmarking tools:
+
+1. **Multi-Vector Benchmark Suite ([`BatchBenchmarkSuite.tsx`](frontend/src/components/BatchBenchmarkSuite.tsx))**:
+   - Executes 8 realistic failure scenarios across all loss vectors in a single click.
+   - Computes exact financial metrics: Total Revenue at Risk (₹1,69,694), Money Recovered (₹68,545), Discount Margin Cost, and Recovery ROI Multiple.
+2. **Official Razorpay Checkout Modal ([`RazorpayCheckoutButton.tsx`](frontend/src/components/RazorpayCheckoutButton.tsx))**:
+   - Native integration of official `checkout.js` SDK.
+   - Allows operators to test real card declines, OTP dropouts, and UPI failures directly against Razorpay test gateways.
+3. **Batch CSV Ingestion ([`IngestionView.tsx`](frontend/src/views/IngestionView.tsx))**:
+   - Upload bulk payment failure CSV files with automatic schema parsing and asynchronous recovery pipeline execution.
+4. **Single Failure Manual Injector ([`SingleFailureForm.tsx`](frontend/src/components/SingleFailureForm.tsx))**:
+   - Operator form to inject custom dropouts with configurable customer details, amounts, and failure codes.
+
+---
+
+## 🛡️ Regulatory Compliance & Stopping Rules
+
+The Guardian Compliance Agent (`backend/agents/compliance_agent.py`) ensures that autonomous AI outreach never violates Indian regulations or customer trust:
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 COMPLIANCE & STOPPING RULES                                      │
+├───────────────────────────────┬──────────────────────────────────┬───────────────────────────────┤
+│ 1. RBI DND Calling Hours      │ 2. Bounded Retry Ceilings        │ 3. Cooling-Off Intervals      │
+│ • 8:00 AM – 8:00 PM IST       │ • Ceiling: ≤ 2 retry attempts    │ • Stage 1: 0h (instant ping)  │
+│ • Voice/SMS suppressed in DND │ • Hard stop on limit reached     │ • Stage 2: 4h cooling-off     │
+│ • Silent digital downgrade    │ • Prevents customer harassment   │ • Stage 3: 24h cooling-off    │
+└───────────────────────────────┴──────────────────────────────────┴───────────────────────────────┘
+```
+
+- **RBI DND Window (8:00 AM – 8:00 PM IST)**: Voice IVR and SMS are strictly suppressed outside allowed hours. Outreach is automatically downgraded to silent digital channels (Email/WhatsApp).
+- **Bounded Retry Limits**: Maximum 2 automated attempts per order. Prevents runaway retry loops.
+- **Cooling-off Schedules**: 4 hours between retry 1 and 2; 24 hours before interactive voice escalation.
+- **Fraud & Chargeback Halt**: Any transaction with risk score $\ge 0.85$ or non-retryable failure codes is halted immediately with zero outreach.
+
+---
+
+## ⚙️ Categorized Settings & Maintenance Barrier
+
+The Settings view ([`SettingsView.tsx`](frontend/src/views/SettingsView.tsx)) provides structured configuration with security guardrails:
+
+- **Categorized Tab Architecture**:
+  - **API Credentials**: Razorpay Key ID/Secret, Webhook Secret, Twilio SID/Token, Gemini/Groq LLM Keys, SMTP credentials.
+  - **Recovery Guardrails**: Maximum retry ceiling, max discount percentage clamp, cooling-off intervals.
+  - **Regulatory DND**: IST calling hour windows and weekend suppression toggles.
+  - **AI Strategy Prompts**: Custom system prompt overrides for Diagnostic and Strategy agents.
+  - **System Maintenance**: Database reset and sample data re-seeding.
+- **Two-Step Destructive Purge Modal Barrier**:
+  - Prevents accidental database erasure during live operations.
+  - Requires explicit confirmation step before executing `/api/settings/purge-data`.
+- **Live Credential Health Validation**:
+  - One-click ping test verifying live API connectivity for Razorpay, Twilio, Gemini, Groq, and SMTP.
 
 ---
 
 ## 💻 Tech Stack & Infrastructure
 
 ### Backend
-* **Runtime & Framework:** Python 3.11+, FastAPI (Async), Uvicorn.
-* **Database & ORM:** SQLModel, SQLAlchemy 2.0 (Async engine with `aiosqlite`).
-* **LLM & Voice Engines:** Google Gemini (`gemini-2.0-flash`, Gemini Live WebSockets), Groq (`llama-3.3-70b`), Kokoro-82M neural TTS, with deterministic rule engine fallback.
-* **Integrations:** Razorpay API (Orders, Payments, Payment Links), Twilio (Voice PSTN & WhatsApp Sandbox), `aiosmtplib` (Gmail TLS/587).
-* **Package Management:** `uv`.
+- **Framework:** Python 3.11+, FastAPI (Async), Uvicorn.
+- **Database & ORM:** SQLModel, SQLAlchemy 2.0 (Async engine with `aiosqlite`).
+- **AI & Voice Engines:** Google Gemini (`gemini-2.0-flash`, Gemini Live WebSockets), Groq (`llama-3.3-70b`), Kokoro-82M neural TTS, with deterministic rule engine fallbacks.
+- **Telephony & Messaging:** Razorpay API (Orders, Payments, Payment Links), Twilio (Voice PSTN & WhatsApp), `aiosmtplib` (Gmail TLS/587).
+- **Package Management:** `uv` (Fast Python package manager).
 
 ### Frontend
-* **UI Framework:** React 19, TypeScript, Vite 8.
-* **Styling & Design System:** TailwindCSS v4, Lucide Icons, Custom Indian Financial notation (₹ INR Lakhs/Crores).
-* **Audio & Synthesis:** Web Audio API, MediaRecorder, Web Speech API (`SpeechSynthesisUtterance`).
-* **Testing & Simulation:** Official Razorpay `checkout.js` SDK modal for live failure generation.
+- **Framework:** React 19, TypeScript, Vite 8.
+- **Styling:** TailwindCSS v4, Lucide Icons, Custom Indian Financial notation (₹ INR Lakhs/Crores).
+- **Audio:** Web Audio API, MediaRecorder, Web Speech API (`SpeechSynthesisUtterance`).
+- **Testing:** Official Razorpay `checkout.js` SDK modal.
 
 ---
 
 ## 🚀 Quickstart & Setup Guide
 
 ### 1. Prerequisites
-* **Python 3.11+** with `uv` installed (`pip install uv` or `winget install astral-sh.uv`)
-* **Node.js 18+** and **npm**
+- **Python 3.11+** with `uv` installed (`pip install uv` or `winget install astral-sh.uv`)
+- **Node.js 18+** and **npm**
 
 ### 2. Clone & Configure Environment
 ```bash
@@ -205,26 +369,26 @@ MAX_DISCOUNT_PERCENT=15.0
 ### 3. Launch Platform
 
 #### Option A: One-Command Local Runner
-From the repository root:
+From repository root:
 ```bash
 python run_demo.py
 ```
-* **Dashboard Frontend:** [http://localhost:5173](http://localhost:5173)
-* **Backend API Swagger:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **Dashboard Frontend:** [http://localhost:5173](http://localhost:5173)
+- **Backend API Swagger:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 #### Option B: Docker Compose (Production Multi-Container)
 ```bash
 docker compose up --build
 ```
-* **Dashboard Frontend (Nginx SPA):** [http://localhost:3000](http://localhost:3000)
-* **Backend API Swagger:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-* **Persistent SQLite Volume:** `recovery_data` mounted at `/app/data/recovery.db`
+- **Dashboard Frontend (Nginx SPA):** [http://localhost:3000](http://localhost:3000)
+- **Backend API Swagger:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **Persistent SQLite Volume:** `recovery_data` mounted at `/app/data/recovery.db`
 
 ---
 
 ## 🧪 Automated Test Verification
 
-Run all test suites to verify schemas, agent reasoning, webhooks, and mathematical precision:
+Run all test suites to verify schemas, agent reasoning, webhooks, and financial calculation precision:
 
 ```bash
 cd backend
@@ -241,19 +405,75 @@ uv run python test_api.py
 
 ---
 
-## 📊 Complete Feature Matrix
+## 📁 Repository Structure
 
-| Feature | Description | Primary Component |
-| :--- | :--- | :--- |
-| **Autonomous Recovery Hub** | Comprehensive transaction ledger with batch selection, CSV export, keyboard shortcuts, and acronym tooltips. | [TransactionTable.tsx](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/components/TransactionTable.tsx) |
-| **Multi-Vector Benchmark Suite** | 8-scenario benchmark measuring exact revenue at risk, money recovered, margin preserved, and recovery ROI multiple. | [BatchBenchmarkSuite.tsx](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/components/BatchBenchmarkSuite.tsx) |
-| **Hinglish Voice Recovery AI** | 3-mode modal: recorded Hinglish transcript with Devanagari transliteration, Gemini Live mic stream, and Twilio PSTN dialer. | [VoiceCallModal.tsx](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/components/VoiceCallModal.tsx) |
-| **Live WhatsApp Feed & Simulator** | Interactive mobile chat stream with animated message bubbles, dynamic coupon badges, and 1-click Razorpay payment triggers. | [WhatsAppFeedView.tsx](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/views/WhatsAppFeedView.tsx) |
-| **Chronological Audit Ledger** | Real-time timeline recording every agent step, input/output JSON payloads, and execution duration. | [AuditLogTimeline.tsx](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/components/AuditLogTimeline.tsx) |
-| **Live Razorpay Checkout Modal** | Official `checkout.js` SDK modal enabling interactive generation of real payment failures (card, OTP, UPI). | [RazorpayCheckoutButton.tsx](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/components/RazorpayCheckoutButton.tsx) |
-| **Sentinel Degradation Monitor** | Live telemetry tracking success rates and latency across HDFC, SBI, ICICI, and NPCI e-Mandate. | [SentinelTelemetryCard.tsx](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/components/SentinelTelemetryCard.tsx) |
-| **Categorized Settings & Guardrails** | Tabbed configuration for API keys, recovery thresholds, RBI DND window, and destructive DB purge barrier. | [SettingsView.tsx](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/views/SettingsView.tsx) |
-| **Batch CSV Ingestion & Single Injector** | Bulk failure CSV uploader and operator form to test custom dropouts on demand. | [IngestionView.tsx](file:///E:/Coding/Projects/AI_Shark_Razorpay/frontend/src/views/IngestionView.tsx) |
+```
+AI_Shark_Razorpay/
+├── backend/
+│   ├── agents/
+│   │   ├── compliance_agent.py   # Guardian: RBI DND, stopping rules & cooling-off
+│   │   ├── diagnostic_agent.py   # Diagnostic: 7-bucket root cause analysis & risk score
+│   │   ├── mandate_agent.py      # Mandate Sequencer: 3-slot retry & B2B PTP chaser
+│   │   ├── orchestrator.py       # Swarm orchestrator coordinating full recovery pipeline
+│   │   ├── sentinel_agent.py     # Sentinel: live telemetry & 503 bank degradation monitor
+│   │   ├── strategy_agent.py     # Strategist: dynamic margin-bounded incentive formulation
+│   │   └── voice_agent.py        # Voice AI: 5-turn Hinglish dialogue generator & PTP tracker
+│   ├── models/
+│   │   ├── audit_log.py          # SQLModel immutable audit ledger model
+│   │   ├── customer.py           # SQLModel customer profile & spending history
+│   │   ├── schemas.py            # Pydantic request/response schemas
+│   │   └── transaction.py        # SQLModel transaction record & status enums
+│   ├── routers/
+│   │   ├── dashboard.py          # Metrics, charts, audit timeline & settings APIs
+│   │   ├── simulate.py           # 8-scenario benchmark suite & CSV batch uploader
+│   │   ├── voice.py              # Kokoro neural TTS synthesis endpoint
+│   │   ├── voice_stream.py       # Gemini Live WebSocket & Twilio PSTN gateway
+│   │   └── webhook.py            # Razorpay HMAC-SHA256 verified webhook receiver
+│   ├── tools/
+│   │   ├── gemini_live_client.py # Gemini 2.0 Live WebSocket client
+│   │   ├── llm_client.py         # LiteLLM client with Gemini/Groq/Heuristic fallback
+│   │   ├── razorpay_tool.py      # Razorpay Payment Link generator & order API
+│   │   ├── smtp_tool.py          # Asynchronous TLS email dispatcher
+│   │   ├── telephony_codec.py    # μ-law ↔ PCM16 audio transcoding & resampling
+│   │   └── whatsapp_tool.py      # Twilio WhatsApp REST client & message logger
+│   ├── database.py               # Async SQLite session manager & schema initialization
+│   ├── main.py                   # FastAPI application entrypoint & middleware
+│   └── seed.py                   # Seed dataset populating realistic transaction ledger
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── AgentStepFlow.tsx          # Interactive multi-agent pipeline visualizer
+│   │   │   ├── AuditLogTimeline.tsx       # Chronological audit ledger with payload inspector
+│   │   │   ├── BatchBenchmarkSuite.tsx    # 8-vector benchmark suite with ROI calculator
+│   │   │   ├── CsvUploader.tsx            # Batch CSV failure uploader
+│   │   │   ├── CustomSelect.tsx           # Accessible custom select dropdown
+│   │   │   ├── MetricCards.tsx            # KPI metric cards (recovered, at risk, ROI)
+│   │   │   ├── OverviewCharts.tsx         # Chart.js analytics (recovery trends, channels)
+│   │   │   ├── RazorpayCheckoutButton.tsx # Official checkout.js drop-out simulator
+│   │   │   ├── SentinelTelemetryCard.tsx  # Live bank gateway degradation monitor
+│   │   │   ├── Sidebar.tsx                # Responsive navigation sidebar
+│   │   │   ├── SingleFailureForm.tsx      # Manual failure injection operator form
+│   │   │   ├── TransactionTable.tsx       # FinOps ledger table with batch retry & CSV export
+│   │   │   └── VoiceCallModal.tsx         # 3-mode Hinglish Voice AI modal (mobile-adapted)
+│   │   ├── views/
+│   │   │   ├── AuditView.tsx              # Full-page audit ledger view
+│   │   │   ├── IngestionView.tsx          # Batch benchmark, CSV upload & manual injector
+│   │   │   ├── OverviewView.tsx           # Primary dashboard overview & metrics
+│   │   │   ├── SettingsView.tsx           # Categorized settings with purge confirmation barrier
+│   │   │   ├── TransactionsView.tsx       # Full transaction ledger view
+│   │   │   └── WhatsAppFeedView.tsx       # Live WhatsApp message feed & phone replica
+│   │   ├── types/                         # TypeScript interfaces & enums
+│   │   ├── utils/                         # Date formatting & currency helpers
+│   │   ├── App.tsx                        # Main application container & view router
+│   │   └── index.css                      # TailwindCSS styles & focus ring design tokens
+│   ├── package.json                       # Frontend dependencies & build scripts
+│   └── vite.config.ts                     # Vite 8 configuration
+├── docker-compose.yml                     # Multi-container production deployment
+├── Dockerfile.backend                     # Backend Docker container specification
+├── Dockerfile.frontend                    # Frontend Nginx container specification
+├── run_demo.py                            # One-command dual runner (FastAPI + Vite)
+└── README.md                              # Complete platform documentation
+```
 
 ---
 
