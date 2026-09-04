@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import io
 import logging
@@ -252,3 +253,28 @@ class KokoroTTSEngine:
 
 # Global module singleton
 tts_engine = KokoroTTSEngine()
+
+
+async def synthesize_kokoro_audio(
+    text: str,
+    voice: str = "shark_agent_alpha",
+    speed: float = 1.05,
+    lang: str = "hi",
+) -> Dict[str, Any]:
+    """Async convenience wrapper for Kokoro TTS synthesis with threadpool offload."""
+    if not tts_engine.is_available:
+        return {"success": False, "error": "Kokoro TTS engine not available"}
+    try:
+        def _run_synth():
+            wav_bytes, sr, clean = tts_engine.synthesize(text=text, voice=voice, speed=speed, lang=lang)
+            b64_str = base64.b64encode(wav_bytes).decode("utf-8")
+            return {
+                "success": True,
+                "audio_base64": b64_str,
+                "sample_rate": sr,
+                "clean_text": clean,
+            }
+        return await asyncio.to_thread(_run_synth)
+    except Exception as e:
+        logger.warning(f"Error in synthesize_kokoro_audio: {e}")
+        return {"success": False, "error": str(e)}
