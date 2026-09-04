@@ -763,26 +763,26 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
         }
       }}
     >
-      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg max-w-2xl w-full p-4 sm:p-5 shadow-2xl flex flex-col max-h-[88vh] font-body transition-colors overflow-hidden">
+      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg max-w-2xl w-full p-3.5 sm:p-5 shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] font-body transition-colors overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-start justify-between pb-2.5 border-b border-zinc-200 dark:border-[#27272a] gap-3 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+        <div className="flex items-start justify-between pb-2.5 border-b border-zinc-200 dark:border-[#27272a] gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
               <Phone className="w-4 h-4" aria-hidden="true" />
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 <h3
                   id="voice-modal-title"
-                  className="font-heading font-extrabold text-sm sm:text-base text-zinc-900 dark:text-white"
+                  className="font-heading font-extrabold text-xs sm:text-base text-zinc-900 dark:text-white"
                 >
                   Autonomous Hinglish Voice Recovery AI
                 </h3>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-100 dark:bg-[#18181b] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-[#27272a]">
+                <span className="px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-mono font-medium bg-zinc-100 dark:bg-[#18181b] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-[#27272a]">
                   {sessionData.call_id}
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
+              <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
                 Target: <span className="font-semibold text-zinc-800 dark:text-zinc-200">{sessionData.customer_name}</span> ({sessionData.customer_phone}) • Order: <span className="font-mono font-bold text-zinc-900 dark:text-white">₹{sessionData.order_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </p>
             </div>
@@ -796,28 +796,29 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
               onClose();
             }}
             aria-label="Close voice modal"
-            className="w-8 h-8 rounded-md hover:bg-zinc-100 dark:hover:bg-[#18181b] text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer focus-rzp shrink-0"
+            className="w-7 sm:w-8 h-7 sm:h-8 rounded-md hover:bg-zinc-100 dark:hover:bg-[#18181b] text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer focus-rzp shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Mode Selector Segmented Tabs */}
-        <div className="flex items-center justify-between gap-2 p-1 bg-zinc-100 dark:bg-[#18181b] rounded-md border border-zinc-200 dark:border-[#27272a] shrink-0 my-2.5">
+        <div className="flex items-center justify-between gap-1 sm:gap-2 p-1 bg-zinc-100 dark:bg-[#18181b] rounded-md border border-zinc-200 dark:border-[#27272a] shrink-0 my-2 sm:my-2.5">
           <button
             type="button"
             onClick={() => {
               stopLiveInteractiveCall();
               setActiveTab('transcript');
             }}
-            className={`flex-1 py-1.5 px-3 rounded text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-rzp ${
+            className={`flex-1 py-1.5 px-2 sm:px-3 rounded text-[11px] sm:text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-rzp ${
               activeTab === 'transcript'
                 ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-white font-semibold shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>Recorded Transcript</span>
+            <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline">Recorded Transcript</span>
+            <span className="sm:hidden">Transcript</span>
           </button>
 
           <button
@@ -826,14 +827,15 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
               stopDialogueAudio();
               setActiveTab('live_mic');
             }}
-            className={`flex-1 py-1.5 px-3 rounded text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-rzp ${
+            className={`flex-1 py-1.5 px-2 sm:px-3 rounded text-[11px] sm:text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-rzp ${
               activeTab === 'live_mic'
                 ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-white font-semibold shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            <Mic className="w-3.5 h-3.5 text-rose-500" />
-            <span>Live Mic Stream (Gemini Live)</span>
+            <Mic className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+            <span className="hidden sm:inline">Live Mic Stream (Gemini Live)</span>
+            <span className="sm:hidden">Live Voice</span>
           </button>
 
           <button
@@ -843,14 +845,15 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
               stopLiveInteractiveCall();
               setActiveTab('pstn_dialer');
             }}
-            className={`flex-1 py-1.5 px-3 rounded text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-rzp ${
+            className={`flex-1 py-1.5 px-2 sm:px-3 rounded text-[11px] sm:text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-rzp ${
               activeTab === 'pstn_dialer'
                 ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-white font-semibold shadow-xs'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
-            <PhoneForwarded className="w-3.5 h-3.5 text-blue-500" />
-            <span>PSTN Outbound Dialer</span>
+            <PhoneForwarded className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+            <span className="hidden sm:inline">PSTN Outbound Dialer</span>
+            <span className="sm:hidden">PSTN Call</span>
           </button>
         </div>
 
@@ -1080,8 +1083,8 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
               </div>
             )}
 
-            <div className="p-4 rounded-md bg-zinc-950 dark:bg-[#0c0c0e] text-white border border-zinc-800 dark:border-[#27272a] space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="p-3.5 sm:p-4 rounded-md bg-zinc-950 dark:bg-[#0c0c0e] text-white border border-zinc-800 dark:border-[#27272a] space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${
                     isLiveConnected

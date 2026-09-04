@@ -7,11 +7,30 @@ import {
   AlertCircle,
   Clock,
   Phone,
+  Download,
 } from 'lucide-react';
 import { CustomSelect, type SelectOption } from './CustomSelect';
 import { VoiceCallModal } from './VoiceCallModal';
 import type { TransactionItem, TransactionStatus } from '../types';
 import { formatToIST } from '../utils/date';
+
+const ACRONYM_GLOSSARY: Record<string, string> = {
+  UPI: 'Unified Payments Interface - Instant real-time payment system developed by NPCI',
+  '3DS': '3-Domain Secure - Multi-factor netbanking / card authentication timeout',
+  CBS: 'Core Banking System - Bank mainframe/host timeout (503 Service Unavailable)',
+  PTP: 'Promise-To-Pay - Customer verbally or digitally confirmed agreement to pay',
+  NPCI: 'National Payments Corporation of India - Retail payments governing body',
+  HMAC: 'Hash-based Message Authentication Code - Cryptographic webhook signature',
+};
+
+const getAcronymExplanation = (category: string): string | undefined => {
+  for (const [acronym, desc] of Object.entries(ACRONYM_GLOSSARY)) {
+    if (category.toUpperCase().includes(acronym)) {
+      return `${acronym}: ${desc}`;
+    }
+  }
+  return undefined;
+};
 
 interface TransactionTableProps {
   transactions: TransactionItem[];
@@ -33,6 +52,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [selectedVoiceSession, setSelectedVoiceSession] = useState<any | null>(null);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState<boolean>(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [announcement, setAnnouncement] = useState<string>('');
+  const [batchRetrying, setBatchRetrying] = useState<boolean>(false);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleOpenVoiceTranscript = (transcriptJson: string, txn?: TransactionItem) => {
@@ -93,6 +115,105 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     return matchesSearch && matchesStatus;
   });
 
+  const toggleSelectRow = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const isAllSelected =
+    filteredTransactions.length > 0 &&
+    filteredTransactions.every((txn) => selectedIds.has(txn.id));
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredTransactions.map((t) => t.id)));
+    }
+  };
+
+  const handleBatchRetry = async () => {
+    const idsToRetry = Array.from(selectedIds).filter((id) => {
+      const txn = transactions.find((t) => t.id === id);
+      return txn && txn.status !== 'recovered';
+    });
+    if (idsToRetry.length === 0) return;
+    setBatchRetrying(true);
+    try {
+      for (const id of idsToRetry) {
+        await onRetry(id);
+      }
+      setSelectedIds(new Set());
+    } finally {
+      setBatchRetrying(false);
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (filteredTransactions.length === 0) return;
+    const headers = [
+      'Order ID',
+      'Customer Name',
+      'Customer Email',
+      'Customer Phone',
+      'Amount (INR)',
+      'Recovered Amount',
+      'Status',
+      'Failure Category',
+      'Failure Reason',
+      'Recovery Channel',
+      'Created At (IST)',
+    ];
+
+    const rows = filteredTransactions.map((t) => [
+      `"${t.razorpay_order_id || ''}"`,
+      `"${(t.customer_name || '').replace(/"/g, '""')}"`,
+      `"${t.customer_email || ''}"`,
+      `"${t.customer_phone || ''}"`,
+      t.amount,
+      t.recovered_amount ?? '',
+      `"${t.status}"`,
+      `"${t.failure_category}"`,
+      `"${(t.failure_reason || '').replace(/"/g, '""')}"`,
+      `"${t.recovery_channel || ''}"`,
+      `"${formatToIST(t.created_at, true)}"`,
+    ]);
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute(
+      'download',
+      `shark_recovery_ledger_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  React.useEffect(() => {
+    if (selectedRowIndex >= 0 && selectedRowIndex < filteredTransactions.length) {
+      const current = filteredTransactions[selectedRowIndex];
+      if (current) {
+        setAnnouncement(
+          `Row ${selectedRowIndex + 1} of ${filteredTransactions.length}: Order ${current.razorpay_order_id}, ${current.customer_name}, amount ₹${current.amount}, status ${current.status}`
+        );
+      }
+    }
+  }, [selectedRowIndex, filteredTransactions]);
+
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
@@ -132,6 +253,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           if (targetTxn && targetTxn.status !== 'recovered') {
             e.preventDefault();
             handleRowRetry(targetTxn.id);
+          }
+        } else if ((e.key === 'x' || e.key === 'X') && selectedRowIndex >= 0 && selectedRowIndex < filteredTransactions.length) {
+          const targetTxn = filteredTransactions[selectedRowIndex];
+          if (targetTxn) {
+            e.preventDefault();
+            toggleSelectRow(targetTxn.id);
           }
         }
       }
@@ -200,7 +327,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           </kbd>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <label htmlFor="transaction-status-filter" className="text-xs font-subheading font-semibold text-zinc-700 dark:text-zinc-300 hidden sm:inline">
             Status:
           </label>
@@ -208,11 +335,61 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             value={statusFilter}
             onChange={setStatusFilter}
             options={statusOptions}
-            className="w-full sm:w-56"
+            className="w-full sm:w-52"
             align="right"
           />
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            disabled={filteredTransactions.length === 0}
+            aria-label="Export filtered transactions as CSV"
+            className="h-9 px-3 rounded-md bg-white dark:bg-[#18181b] hover:bg-zinc-100 dark:hover:bg-[#27272a] text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors disabled:opacity-50 focus-rzp shrink-0"
+            title="Export filtered transactions to CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <span className="hidden sm:inline">Export CSV</span>
+          </button>
         </div>
       </div>
+
+      {/* Screen reader live announcement for keyboard navigation (Sam Persona: Accessibility) */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </div>
+
+      {/* Batch Action Bar (Alex Persona: FinOps Bulk Triage) */}
+      {selectedIds.size > 0 && (
+        <div
+          role="region"
+          aria-label="Batch action bar"
+          className="p-2.5 px-4 bg-blue-50/90 dark:bg-blue-950/40 border-b border-blue-200 dark:border-blue-900/60 flex items-center justify-between gap-3 text-xs animate-in fade-in duration-150"
+        >
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-blue-900 dark:text-blue-200 font-subheading">
+              {selectedIds.size} {selectedIds.size === 1 ? 'order' : 'orders'} selected
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-mono cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleBatchRetry}
+              disabled={batchRetrying}
+              className="h-7.5 px-3 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors focus-rzp disabled:opacity-50"
+            >
+              <RotateCw className={`w-3 h-3 ${batchRetrying ? 'animate-spin' : ''}`} />
+              <span>{batchRetrying ? 'Retrying...' : `Retry Selected (${selectedIds.size})`}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Stacked Card View (< 640px) */}
       <div className="block sm:hidden divide-y divide-zinc-200 dark:divide-[#27272a]">
@@ -225,21 +402,40 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             No matching transactions found.
           </div>
         ) : (
-          filteredTransactions.map((txn) => (
-            <div key={txn.id} className="p-4 space-y-3 bg-white dark:bg-[#121215]">
+          filteredTransactions.map((txn) => {
+            const isRowChecked = selectedIds.has(txn.id);
+            const acronymInfo = getAcronymExplanation(txn.failure_category);
+            return (
+            <div
+              key={txn.id}
+              className={`p-4 space-y-3 transition-colors ${
+                isRowChecked
+                  ? 'bg-blue-50/50 dark:bg-blue-950/20'
+                  : 'bg-white dark:bg-[#121215]'
+              }`}
+            >
               {/* Top Row: Customer, Amount, Status */}
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <div className="font-semibold font-subheading text-zinc-900 dark:text-white text-xs truncate">
-                    {txn.customer_name}
-                  </div>
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
-                    {txn.customer_email}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] font-mono mt-0.5">
-                    <span className="text-blue-600 dark:text-blue-400 font-medium truncate">{txn.razorpay_order_id}</span>
-                    <span className="text-zinc-400 dark:text-zinc-500">•</span>
-                    <span className="text-zinc-500 dark:text-zinc-400 tabular-nums">{formatToIST(txn.created_at, true)}</span>
+                <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                  <input
+                    type="checkbox"
+                    checked={isRowChecked}
+                    onChange={(e) => toggleSelectRow(txn.id, e as any)}
+                    aria-label={`Select transaction ${txn.razorpay_order_id}`}
+                    className="mt-0.5 rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4 shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold font-subheading text-zinc-900 dark:text-white text-xs truncate">
+                      {txn.customer_name}
+                    </div>
+                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                      {txn.customer_email}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px] font-mono mt-0.5">
+                      <span className="text-blue-600 dark:text-blue-400 font-medium truncate">{txn.razorpay_order_id}</span>
+                      <span className="text-zinc-400 dark:text-zinc-500">•</span>
+                      <span className="text-zinc-500 dark:text-zinc-400 tabular-nums">{formatToIST(txn.created_at, true)}</span>
+                    </div>
                   </div>
                 </div>
                 <div className="text-right shrink-0">
@@ -253,7 +449,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               {/* Middle Row: Failure Diagnostics */}
               <div className="bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-[#27272a] rounded p-2.5 space-y-1 text-xs">
                 <div className="flex items-center justify-between text-[10px] font-mono">
-                  <span className="font-bold text-rose-600 dark:text-rose-400 uppercase tracking-tight">
+                  <span
+                    className="font-bold text-rose-600 dark:text-rose-400 uppercase tracking-tight cursor-help"
+                    title={acronymInfo || txn.failure_category}
+                  >
                     {txn.failure_category.replace(/_/g, ' ')}
                   </span>
                   {txn.status === 'recovered' && (
@@ -262,7 +461,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-body leading-relaxed line-clamp-2">
+                {acronymInfo && (
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-sans italic">
+                    ℹ️ {acronymInfo}
+                  </div>
+                )}
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-body leading-relaxed line-clamp-2" title={txn.failure_reason || ''}>
                   {txn.failure_reason || 'No description provided'}
                 </p>
               </div>
@@ -326,49 +530,85 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 </div>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 
       {/* Desktop & Tablet Table (>= 640px) */}
       <div className="hidden sm:block w-full overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs table-fixed min-w-[700px]">
+        <table
+          id="transaction-table"
+          aria-activedescendant={
+            selectedRowIndex >= 0 && filteredTransactions[selectedRowIndex]
+              ? `txn-row-${filteredTransactions[selectedRowIndex].id}`
+              : undefined
+          }
+          className="w-full text-left border-collapse text-xs table-fixed min-w-[700px]"
+        >
           <thead>
             <tr className="border-b border-zinc-200 dark:border-[#27272a] bg-zinc-50/80 dark:bg-[#09090b] text-zinc-600 dark:text-zinc-400 uppercase font-mono font-bold text-[10px] tracking-wider">
-              <th scope="col" className="py-3 px-4 w-[24%]">Customer & Order ID</th>
+              <th scope="col" className="py-3 px-3 w-[4%] text-center">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={toggleSelectAll}
+                  aria-label="Select all transactions"
+                  className="rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500 cursor-pointer w-3.5 h-3.5"
+                />
+              </th>
+              <th scope="col" className="py-3 px-4 w-[23%]">Customer & Order ID</th>
               <th scope="col" className="py-3 px-4 w-[13%]">Amount</th>
               <th scope="col" className="py-3 px-4 w-[25%]">Diagnostics</th>
-              <th scope="col" className="py-3 px-4 w-[13%]">Status</th>
-              <th scope="col" className="py-3 px-4 w-[13%]">Outreach</th>
-              <th scope="col" className="py-3 px-4 w-[12%] text-right">Actions</th>
+              <th scope="col" className="py-3 px-4 w-[12%]">Status</th>
+              <th scope="col" className="py-3 px-4 w-[12%]">Outreach</th>
+              <th scope="col" className="py-3 px-4 w-[11%] text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-[#27272a]/70 text-zinc-800 dark:text-zinc-200 font-body">
             {loading ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-zinc-500 dark:text-zinc-400 font-medium">
+                <td colSpan={7} className="py-12 text-center text-zinc-500 dark:text-zinc-400 font-medium">
                   Loading transaction ledger...
                 </td>
               </tr>
             ) : filteredTransactions.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-zinc-500 dark:text-zinc-400 font-medium">
+                <td colSpan={7} className="py-12 text-center text-zinc-500 dark:text-zinc-400 font-medium">
                   No matching transactions found.
                 </td>
               </tr>
             ) : (
               filteredTransactions.map((txn, index) => {
                 const isSelected = selectedRowIndex === index;
+                const isRowChecked = selectedIds.has(txn.id);
+                const acronymInfo = getAcronymExplanation(txn.failure_category);
                 return (
                   <tr
                     key={txn.id}
+                    id={`txn-row-${txn.id}`}
+                    role="row"
+                    aria-selected={isSelected}
                     onClick={() => setSelectedRowIndex(index)}
                     className={`transition-colors cursor-pointer ${
                       isSelected
                         ? 'bg-blue-50/70 dark:bg-blue-950/30 ring-1 ring-inset ring-blue-500/40'
+                        : isRowChecked
+                        ? 'bg-blue-50/30 dark:bg-blue-950/20'
                         : 'hover:bg-zinc-50/80 dark:hover:bg-[#18181b]/50'
                     }`}
                   >
+                    {/* Checkbox */}
+                    <td className="py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={isRowChecked}
+                        onChange={(e) => toggleSelectRow(txn.id, e as any)}
+                        aria-label={`Select transaction ${txn.razorpay_order_id}`}
+                        className="rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500 cursor-pointer w-3.5 h-3.5"
+                      />
+                    </td>
+
                     {/* Customer & Order */}
                     <td className="py-3 px-4 truncate">
                       <div className="font-semibold font-subheading text-zinc-900 dark:text-white text-xs truncate">
@@ -398,8 +638,19 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
                   {/* Failure Diagnostic */}
                   <td className="py-3 px-4 overflow-hidden">
-                    <div className="font-mono text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-tight truncate">
-                      {txn.failure_category.replace(/_/g, ' ')}
+                    <div
+                      className="font-mono text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-tight truncate inline-flex items-center gap-1 cursor-help"
+                      title={acronymInfo || txn.failure_category}
+                    >
+                      <span>{txn.failure_category.replace(/_/g, ' ')}</span>
+                      {acronymInfo && (
+                        <span
+                          className="text-[9px] px-1 rounded border border-rose-200 dark:border-rose-900/60 font-sans font-normal"
+                          title={acronymInfo}
+                        >
+                          Glossary
+                        </span>
+                      )}
                     </div>
                     <div className="text-[11px] text-zinc-600 dark:text-zinc-400 truncate mt-0.5 font-body" title={txn.failure_reason || ''}>
                       {txn.failure_reason || 'No description provided'}
@@ -501,6 +752,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       <div className="hidden sm:flex items-center justify-between px-4 py-2 bg-zinc-50/90 dark:bg-[#0c0c0e] border-t border-zinc-200 dark:border-[#27272a] text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
         <div className="flex items-center gap-3">
           <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">j</kbd> / <kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">k</kbd> Navigate rows</span>
+          <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">x</kbd> Select row</span>
           <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">r</kbd> Retry row</span>
           <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">/</kbd> Focus search</span>
           <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded text-[10px]">esc</kbd> Dismiss</span>
