@@ -83,15 +83,15 @@ async def trigger_outbound_call(
     """
     # Fetch transaction from database
     stmt = select(Transaction).where(Transaction.id == req.transaction_id)
-    res = await db.exec(stmt)
-    txn = res.first()
+    res = await db.execute(stmt)
+    txn = res.scalars().first()
     if not txn:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
     customer = None
     if txn.customer_id:
-        cust_res = await db.exec(select(Customer).where(Customer.id == txn.customer_id))
-        customer = cust_res.first()
+        cust_res = await db.execute(select(Customer).where(Customer.id == txn.customer_id))
+        customer = cust_res.scalars().first()
 
     customer_name = customer.name if customer else "Valued Customer"
     customer_phone = customer.phone if customer else None

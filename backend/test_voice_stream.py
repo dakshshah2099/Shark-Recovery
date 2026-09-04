@@ -81,3 +81,42 @@ async def test_twiml_endpoint():
         assert "<Response>" in resp.text
         assert "<Stream" in resp.text
         assert "sess_test123" in resp.text
+
+
+@pytest.mark.asyncio
+async def test_outbound_call_endpoint():
+    """Verifies that the /api/voice/outbound-call endpoint queries DB and returns 200 without error."""
+    import uuid
+    from backend.database import async_session_maker
+    from backend.models.customer import Customer
+    from backend.models.transaction import Transaction, TransactionStatus
+
+    txn_id = f"txn_test_{uuid.uuid4().hex[:6]}"
+    cust_id = f"cust_test_{uuid.uuid4().hex[:6]}"
+    async with async_session_maker() as session:
+        cust = Customer(id=cust_id, name="Test Outbound Cust", phone="+919876543210", email="test@example.com")
+        session.add(cust)
+        txn = Transaction(
+            id=txn_id,
+            customer_id=cust_id,
+            razorpay_order_id=f"order_{uuid.uuid4().hex[:8]}",
+            amount=5000.0,
+            status=TransactionStatus.FAILED,
+            failure_reason="Checkout Dropout",
+        )
+        session.add(txn)
+        await session.commit()
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.post(
+            "/api/voice/outbound-call",
+            json={
+                "transaction_id": txn_id,
+                "provider": "simulation_browser",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+        assert "session_id" in data
