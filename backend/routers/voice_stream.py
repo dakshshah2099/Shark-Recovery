@@ -601,43 +601,71 @@ async def browser_live_chat_websocket(
     websocket: WebSocket,
     session_id: str,
     model: Optional[str] = Query(None),
+    txn_id: Optional[str] = Query(None),
+    customer_name: Optional[str] = Query(None),
+    customer_phone: Optional[str] = Query(None),
+    customer_email: Optional[str] = Query(None),
+    order_amount: Optional[float] = Query(None),
+    discount_percent: Optional[float] = Query(None),
+    failure_reason: Optional[str] = Query(None),
 ):
     """
     Interactive Browser WebSocket for direct operator microphone testing with Gemini Live API.
     Streams customer speech from browser mic, and returns live agent voice and transcript subtitles.
-    AI Agent (Gemini / Priya) speaks FIRST immediately on connection.
+    AI Agent (Gemini / Priya) speaks FIRST immediately on connection with exact payment context.
     """
     await websocket.accept()
-    logger.info(f"Browser Live Chat connected for session {session_id} (model requested: {model})")
+    logger.info(f"Browser Live Chat connected for session {session_id} (model: {model}, txn_id: {txn_id}, customer: {customer_name})")
 
-    # Fetch context from session_id
-    customer_id = None
-    customer_name = "Customer"
-    customer_phone = "+919876543210"
-    customer_email = "customer@example.com"
-    order_amount = 14999.0
-    failure_reason = "Checkout Dropout - Payment Lag"
-    discount_percent = 0.0
-    raw_txn_id = session_id.replace("voice_", "").replace("call_", "").replace("live_", "").split("_")[0]
+    resolved_txn_id = txn_id or session_id.replace("voice_", "").replace("call_", "").replace("live_", "").split("_")[0]
+    resolved_customer_id = None
+    resolved_customer_name = customer_name or "Deepak Gupta"
+    resolved_customer_phone = customer_phone or "+919876543210"
+    resolved_customer_email = customer_email or "customer@example.com"
+    resolved_order_amount = float(order_amount) if order_amount is not None else 14999.0
+    resolved_failure_reason = failure_reason or "Checkout Dropout - Bank OTP Timeout"
+    resolved_discount_percent = float(discount_percent) if discount_percent is not None else 0.0
 
     try:
         async with async_session_maker() as session:
-            res = await session.execute(select(Transaction).where(Transaction.id.contains(raw_txn_id)))
-            txn = res.scalars().first()
+            txn = None
+            if resolved_txn_id and not resolved_txn_id.isdigit():
+                res = await session.execute(select(Transaction).where(Transaction.id.contains(resolved_txn_id)))
+                txn = res.scalars().first()
+            if not txn and resolved_txn_id and not resolved_txn_id.isdigit():
+                res = await session.execute(select(Transaction).where(Transaction.razorpay_order_id.contains(resolved_txn_id)))
+                txn = res.scalars().first()
+            if not txn and order_amount is None:
+                # Load latest transaction from DB
+                res = await session.execute(select(Transaction).order_by(Transaction.created_at.desc()).limit(1))
+                txn = res.scalars().first()
+
             if txn:
-                raw_txn_id = txn.id
-                customer_id = txn.customer_id
-                order_amount = txn.amount
-                failure_reason = txn.failure_reason or "Checkout Dropout"
-                discount_percent = txn.discount_applied_percent or 0.0
+                resolved_txn_id = txn.id
+                resolved_customer_id = txn.customer_id
+                if order_amount is None:
+                    resolved_order_amount = txn.amount
+                if failure_reason is None:
+                    resolved_failure_reason = txn.failure_reason or "Checkout Dropout"
+                if discount_percent is None:
+                    resolved_discount_percent = txn.discount_applied_percent or 0.0
+
                 cust_res = await session.execute(select(Customer).where(Customer.id == txn.customer_id))
                 cust = cust_res.scalar_one_or_none()
                 if cust:
-                    customer_name = cust.name
-                    customer_phone = cust.phone
-                    customer_email = getattr(cust, "email", "customer@example.com") or "customer@example.com"
+                    if not customer_name:
+                        resolved_customer_name = cust.name
+                    if not customer_phone:
+                        resolved_customer_phone = cust.phone
+                    if not customer_email:
+                        resolved_customer_email = getattr(cust, "email", "customer@example.com") or "customer@example.com"
     except Exception as e:
         logger.warning(f"Error resolving transaction context for session {session_id}: {e}")
+
+    logger.info(
+        f"Resolved Live Voice Context: Cust='{resolved_customer_name}', Amount=INR {resolved_order_amount}, "
+        f"Reason='{resolved_failure_reason}', Discount={resolved_discount_percent}%, Txn='{resolved_txn_id}'"
+    )
 
     # Tool execution callback for live function calls
     async def handle_live_tool_call(tool_name: str, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -645,24 +673,24 @@ async def browser_live_chat_websocket(
             tool_name=tool_name,
             args=args,
             session_id=session_id,
-            txn_id=raw_txn_id,
-            cust_id=customer_id,
-            cust_name=customer_name,
-            cust_phone=customer_phone,
-            cust_email=customer_email,
-            amount=order_amount,
-            default_discount=discount_percent,
+            txn_id=resolved_txn_id,
+            cust_id=resolved_customer_id,
+            cust_name=resolved_customer_name,
+            cust_phone=resolved_customer_phone,
+            cust_email=resolved_customer_email,
+            amount=resolved_order_amount,
+            default_discount=resolved_discount_percent,
         )
 
     active_model = model or getattr(settings, "GEMINI_LIVE_MODEL", "models/gemini-2.0-flash-exp")
     live_session = GeminiLiveSession(
         session_id=session_id,
-        customer_name=customer_name,
-        customer_phone=customer_phone,
-        customer_email=customer_email,
-        order_amount=order_amount,
-        failure_reason=failure_reason,
-        discount_percent=discount_percent,
+        customer_name=resolved_customer_name,
+        customer_phone=resolved_customer_phone,
+        customer_email=resolved_customer_email,
+        order_amount=resolved_order_amount,
+        failure_reason=resolved_failure_reason,
+        discount_percent=resolved_discount_percent,
         model_name=active_model,
         on_tool_call=handle_live_tool_call,
     )
@@ -674,10 +702,12 @@ async def browser_live_chat_websocket(
         "session_id": session_id,
         "status": live_session.connection_status,
         "model": active_model if not live_session._mock_mode else "Kokoro Neural Voice (Local)",
-        "customer_name": customer_name,
-        "customer_email": customer_email,
-        "order_amount": order_amount,
-        "discount_percent": discount_percent,
+        "customer_name": resolved_customer_name,
+        "customer_phone": resolved_customer_phone,
+        "customer_email": resolved_customer_email,
+        "order_amount": resolved_order_amount,
+        "discount_percent": resolved_discount_percent,
+        "failure_reason": resolved_failure_reason,
         "error_note": live_session.connection_error,
     }))
 

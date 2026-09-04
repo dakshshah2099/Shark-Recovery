@@ -298,11 +298,23 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
             return
 
         first_name = self.customer_name.split()[0] if self.customer_name else "Customer"
+        discount_desc = (
+            f"mention that a special {self.discount_percent:.0f}% incentive discount has been applied, "
+            if self.discount_percent > 0
+            else "mention that their cart is reserved on priority (DO NOT mention the word discount), "
+        )
         prompt_text = (
-            f"The call with customer {self.customer_name} (Phone: {self.customer_phone}) is connected. "
-            f"Start speaking immediately: Greet {first_name} ji warmly in polite conversational Hinglish as Priya from Shark Payment Care for Razorpay, "
-            f"mention their pending cart of Rs {self.order_amount:,.2f}, and politely offer assistance. "
-            f"Ask whether they would prefer the 1-click retry link on WhatsApp, SMS, or Email. Do NOT call any tools yet."
+            f"You are Priya from Shark Payment Care for Razorpay merchants. The live call with customer {self.customer_name} "
+            f"(Phone: {self.customer_phone}, Email: {self.customer_email}) is now connected. "
+            f"CRITICAL GROUND TRUTH CONTEXT: "
+            f"- Customer Name: {self.customer_name} (Greet as '{first_name} ji') "
+            f"- Order Amount: precisely INR {self.order_amount:,.2f} "
+            f"- Failure Cause: '{self.failure_reason}' "
+            f"- Incentive Policy: {self.discount_percent:.0f}% discount approved. "
+            f"DO NOT guess, invent, or hallucinate any other amount, name, or reason. "
+            f"Start speaking immediately right now: Greet {first_name} ji warmly in polite conversational Hinglish ('Namaste {first_name} ji! Main Shark Payment Care se Priya bol rahi hoon...'), "
+            f"inform them that their order of INR {self.order_amount:,.0f} was interrupted due to {self.failure_reason}, {discount_desc}"
+            f"and ask if they would like the 1-click retry link sent on WhatsApp, SMS, or Email. Do NOT call any tools yet."
         )
 
         client_turn = {
@@ -320,7 +332,7 @@ STAGE 4 - NEVER HANG UP & CONTINUOUS ASSISTANCE:
             async with self._lock:
                 if self._ws:
                     await self._ws.send(json.dumps(client_turn))
-                    logger.info(f"GeminiLiveSession[{self.session_id}] Sent initial first-speaker greeting trigger.")
+                    logger.info(f"GeminiLiveSession[{self.session_id}] Sent first-speaker greeting trigger with context (Name={self.customer_name}, Amount=INR {self.order_amount}, Cause={self.failure_reason}).")
         except Exception as e:
             logger.warning(f"Error sending first turn trigger to Gemini Live: {e}")
 
