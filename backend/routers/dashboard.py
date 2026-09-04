@@ -226,6 +226,12 @@ async def mark_transaction_recovered(
 @router.post("/db/clear")
 async def clear_database(session: AsyncSession = Depends(get_session)) -> Dict[str, Any]:
     """Clears all transactions, customers, and audit logs."""
+    is_debug = bool(getattr(settings, "DEBUG_MODE", False) or getattr(settings, "DEBUG", False))
+    if not is_debug:
+        raise HTTPException(
+            status_code=403,
+            detail="Database wipe is disabled outside debug mode.",
+        )
     from sqlmodel import delete
 
     await session.execute(delete(AuditLog))
@@ -238,6 +244,12 @@ async def clear_database(session: AsyncSession = Depends(get_session)) -> Dict[s
 @router.post("/db/seed")
 async def trigger_seed_database() -> Dict[str, Any]:
     """Re-seeds database with realistic transactions."""
+    is_debug = bool(getattr(settings, "DEBUG_MODE", False) or getattr(settings, "DEBUG", False))
+    if not is_debug:
+        raise HTTPException(
+            status_code=403,
+            detail="Database seeding is disabled outside debug mode.",
+        )
     try:
         from backend.seed import seed_database
     except ImportError:
