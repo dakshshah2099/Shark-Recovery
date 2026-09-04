@@ -101,16 +101,25 @@ async def list_transactions(
     session: AsyncSession = Depends(get_session),
 ) -> List[Dict[str, Any]]:
     """Lists transactions with embedded customer metadata."""
-    query = select(Transaction).order_by(Transaction.created_at.desc()).limit(limit)
+    query = (
+        select(Transaction, Customer)
+        .outerjoin(Customer, Transaction.customer_id == Customer.id)
+        .order_by(Transaction.created_at.desc())
+        .limit(limit)
+    )
     if status:
-        query = select(Transaction).where(Transaction.status == status).order_by(Transaction.created_at.desc()).limit(limit)
+        query = (
+            select(Transaction, Customer)
+            .outerjoin(Customer, Transaction.customer_id == Customer.id)
+            .where(Transaction.status == status)
+            .order_by(Transaction.created_at.desc())
+            .limit(limit)
+        )
 
-    txns = (await session.execute(query)).scalars().all()
+    rows = (await session.execute(query)).all()
     results: List[Dict[str, Any]] = []
 
-    for t in txns:
-        cust_query = await session.execute(select(Customer).where(Customer.id == t.customer_id))
-        cust = cust_query.scalar_one_or_none()
+    for t, cust in rows:
         results.append({
             "id": t.id,
             "razorpay_order_id": t.razorpay_order_id,
@@ -121,18 +130,18 @@ async def list_transactions(
             "customer_phone": cust.phone if cust else "Unknown",
             "amount": t.amount,
             "currency": t.currency,
-            "status": t.status.value,
+            "status": t.status.value if hasattr(t.status, "value") else str(t.status),
             "failure_code": t.failure_code,
             "failure_reason": t.failure_reason,
-            "failure_category": t.failure_category.value if t.failure_category else "unknown",
+            "failure_category": t.failure_category.value if t.failure_category and hasattr(t.failure_category, "value") else (str(t.failure_category) if t.failure_category else "unknown"),
             "retry_count": t.retry_count,
             "max_retries": t.max_retries,
             "recovery_link": t.recovery_link,
             "recovery_channel": t.recovery_channel,
             "discount_applied_percent": t.discount_applied_percent,
             "recovered_amount": t.recovered_amount,
-            "created_at": t.created_at.isoformat(),
-            "updated_at": t.updated_at.isoformat(),
+            "created_at": t.created_at.isoformat() if t.created_at else "",
+            "updated_at": t.updated_at.isoformat() if t.updated_at else "",
         })
 
     return results
