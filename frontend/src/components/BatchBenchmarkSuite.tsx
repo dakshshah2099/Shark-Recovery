@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, PhoneCall, Calendar, Loader2, Sparkles, Layers } from 'lucide-react';
+import { Play, PhoneCall, Calendar, Loader2, Sparkles, Layers, RotateCcw } from 'lucide-react';
 import { VoiceCallModal } from './VoiceCallModal';
 
 interface TransactionItem {
@@ -110,24 +110,38 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleRunBenchmark}
-            disabled={running}
-            className="h-10 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50 transition-all focus-rzp shrink-0"
-          >
-            {running ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Orchestrating Multi-Agent Suite...</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Execute Multi-Vector Benchmark</span>
-              </>
+          <div className="flex items-center gap-2.5 shrink-0">
+            {report && (
+              <button
+                type="button"
+                onClick={handleClearReport}
+                disabled={running}
+                className="h-10 px-4 rounded-md border border-zinc-200 dark:border-[#27272a] bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#222227] text-zinc-700 dark:text-zinc-300 font-heading font-semibold text-xs inline-flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Benchmark</span>
+              </button>
             )}
-          </button>
+
+            <button
+              type="button"
+              onClick={handleRunBenchmark}
+              disabled={running}
+              className="h-10 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-heading font-bold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50 transition-all focus-rzp"
+            >
+              {running ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Orchestrating Multi-Agent Suite...</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>{report ? 'Re-run Benchmark' : 'Execute Multi-Vector Benchmark'}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* 6 Loss Vectors Overview Badges */}

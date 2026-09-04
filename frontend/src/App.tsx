@@ -232,6 +232,7 @@ export const App: React.FC = () => {
     try {
       const res = await fetch('/api/db/clear', { method: 'POST' });
       if (res.ok) {
+        sessionStorage.removeItem('shark_benchmark_report');
         showNotification('🗑️ Database and audit logs cleared completely.', 'success', 4000);
         await fetchData();
       } else {

@@ -13,6 +13,10 @@ import {
   Check,
   CreditCard,
   User,
+  Lock,
+  Smile,
+  Paperclip,
+  Mic,
 } from 'lucide-react';
 import type { WhatsAppMessage } from '../types';
 import { formatToIST } from '../utils/date';
@@ -98,23 +102,20 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header Banner */}
-      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <MessageSquare className="w-4.5 h-4.5" />
+      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg px-4 py-3 sm:px-5 sm:py-3.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-md bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <MessageSquare className="w-4 h-4" />
             </div>
-            <h2 className="font-heading font-extrabold text-lg sm:text-xl text-zinc-900 dark:text-white">
+            <h2 className="font-heading font-extrabold text-base sm:text-lg text-zinc-900 dark:text-white">
               WhatsApp Outreach Feed & Simulator
             </h2>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              Debug Demo
-            </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading">
-            Live stream of autonomous WhatsApp recovery messages dispatched via Twilio Sandbox & Hinglish Copywriting Agent.
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-subheading">
+            Live stream of autonomous WhatsApp payment recovery outreach messages.
           </p>
         </div>
 
@@ -132,9 +133,9 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
       </div>
 
       {/* Main Two-Column Device Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Column: Dispatches List (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg shadow-xs overflow-hidden flex flex-col h-[640px]">
+        <div className="lg:col-span-5 bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg shadow-xs overflow-hidden flex flex-col h-[540px] xl:h-[580px]">
           {/* Search Header */}
           <div className="p-3 border-b border-zinc-200 dark:border-[#27272a] bg-zinc-50/70 dark:bg-[#151518]">
             <div className="relative">
@@ -154,7 +155,7 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
           </div>
 
           {/* Contact List */}
-          <div className="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-[#1f1f23]">
+          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-zinc-100 dark:divide-[#1f1f23]">
             {filtered.length === 0 ? (
               <div className="p-8 text-center space-y-2 text-zinc-400 dark:text-zinc-500">
                 <AlertCircle className="w-6 h-6 mx-auto stroke-1" />
@@ -214,7 +215,7 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
         </div>
 
         {/* Right Column: Interactive WhatsApp Replica (7 cols) */}
-        <div className="lg:col-span-7 bg-[#efeae2] dark:bg-[#0c1317] border border-zinc-300 dark:border-[#27272a] rounded-lg shadow-md overflow-hidden flex flex-col h-[640px] relative">
+        <div className="lg:col-span-7 bg-[#efeae2] dark:bg-[#0c1317] border border-zinc-300 dark:border-[#27272a] rounded-lg shadow-md overflow-hidden flex flex-col h-[540px] xl:h-[580px] relative">
           {/* WhatsApp Header Bar */}
           <div className="bg-[#008069] dark:bg-[#1f2c34] text-white px-4 py-3 flex items-center justify-between shadow-xs z-10">
             <div className="flex items-center gap-3">
@@ -246,24 +247,17 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
           </div>
 
           {/* WhatsApp Message Container */}
-          <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-[#efeae2] dark:bg-[#0b141a] bg-opacity-95">
+          <div className="flex-1 min-h-0 p-4 sm:p-5 overflow-y-auto space-y-3 bg-[#efeae2] dark:bg-[#0b141a] bg-opacity-95 overscroll-contain">
             {/* End-to-end encryption notice pill */}
-            <div className="text-center">
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-[10px] font-mono bg-amber-100/90 dark:bg-[#182229] text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50 shadow-2xs">
-                <ShieldCheck className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                Messages are end-to-end encrypted with Razorpay Sandbox TLS.
+            <div className="text-center my-1">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] font-medium bg-[#ffeecd] dark:bg-[#182229] text-[#54656f] dark:text-[#ffd279] shadow-2xs">
+                <Lock className="w-3 h-3 text-[#54656f] dark:text-[#ffd279] shrink-0" />
+                Messages and calls are end-to-end encrypted. No one outside of this chat can read or listen to them.
               </span>
             </div>
 
             {selectedMsg ? (
               <div className="space-y-3">
-                {/* Pre-approved Twilio Sandbox Template Notice */}
-                <div className="text-center">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-200/80 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400">
-                    Twilio WhatsApp Sandbox • Pre-approved Cart Recovery Template
-                  </span>
-                </div>
-
                 {/* Agent Outbound Message Bubble */}
                 <div className="flex justify-start">
                   <div className="max-w-[88%] sm:max-w-[78%] bg-white dark:bg-[#202c33] text-zinc-900 dark:text-zinc-100 rounded-lg rounded-tl-none p-3.5 shadow-sm border border-black/5 dark:border-white/5 space-y-3">
@@ -323,7 +317,7 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
                             <span>
                               {payingId === selectedMsg.transaction_id
                                 ? 'Simulating Settlement...'
-                                : 'Simulate Customer Payment'}
+                                : 'Complete Payment'}
                             </span>
                           </button>
 
@@ -359,13 +353,36 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
             )}
           </div>
 
-          {/* Bottom Chat Bar (Read-only simulation indicator) */}
-          <div className="bg-white dark:bg-[#202c33] border-t border-zinc-200 dark:border-zinc-700 px-4 py-2.5 flex items-center justify-between text-xs text-zinc-400 font-mono">
-            <span>Powered by Twilio WhatsApp Business API</span>
-            <span className="flex items-center gap-1 text-emerald-500 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Live Ingestion Active
-            </span>
+          {/* Authentic WhatsApp Message Input Bar */}
+          <div className="bg-[#f0f2f5] dark:bg-[#202c33] px-3.5 py-2 flex items-center gap-2.5 border-t border-zinc-200 dark:border-zinc-700 shrink-0">
+            <button
+              type="button"
+              className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer p-1"
+              title="Emoji"
+            >
+              <Smile className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer p-1"
+              title="Attach"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <div className="flex-1 bg-white dark:bg-[#111b21] rounded-lg px-3 py-1.5 border border-zinc-200 dark:border-zinc-700">
+              <input
+                type="text"
+                placeholder="Type a message"
+                className="w-full bg-transparent outline-none text-xs text-zinc-800 dark:text-zinc-200 placeholder-zinc-400"
+              />
+            </div>
+            <button
+              type="button"
+              className="w-8 h-8 rounded-full bg-[#00a884] hover:bg-[#00705c] text-white flex items-center justify-center cursor-pointer shadow-xs shrink-0"
+              title="Voice Message"
+            >
+              <Mic className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>

@@ -190,20 +190,58 @@ async def get_whatsapp_feed(
         .limit(limit)
     )
     logs = (await session.execute(query)).scalars().all()
+    
+    # Collect customer IDs and transaction IDs to batch fetch
+    cust_ids = {log.customer_id for log in logs if log.customer_id}
+    txn_ids = {log.transaction_id for log in logs if log.transaction_id}
+    
+    customers_map: Dict[str, Customer] = {}
+    if cust_ids:
+        c_res = await session.execute(select(Customer).where(Customer.id.in_(cust_ids)))
+        customers_map = {c.id: c for c in c_res.scalars().all()}
+        
+    transactions_map: Dict[str, Transaction] = {}
+    if txn_ids:
+        t_res = await session.execute(select(Transaction).where(Transaction.id.in_(txn_ids)))
+        transactions_map = {t.id: t for t in t_res.scalars().all()}
+
     feed: List[Dict[str, Any]] = []
     for log in logs:
         try:
             payload = json.loads(log.input_payload or "{}")
         except Exception:
             payload = {}
+
+        cust = customers_map.get(log.customer_id) if log.customer_id else None
+        txn = transactions_map.get(log.transaction_id) if log.transaction_id else None
+
+        customer_name = (
+            payload.get("recipient_name")
+            or (cust.name if cust else None)
+            or "Customer"
+        )
+        recipient_phone = (
+            payload.get("recipient_phone")
+            or payload.get("recipient")
+            or (cust.phone if cust else "Unknown")
+        )
+        payment_link = payload.get("payment_link") or (
+            f"https://rzp.io/i/{log.transaction_id[:8]}" if log.transaction_id else None
+        )
+        discount_pct = 0.0
+        if isinstance(payload.get("params"), dict):
+            discount_pct = float(payload.get("params", {}).get("discount", 0.0))
+        elif txn and txn.discount_applied_percent:
+            discount_pct = float(txn.discount_applied_percent)
+
         feed.append({
             "id": log.id,
             "transaction_id": log.transaction_id,
-            "recipient_phone": payload.get("recipient_phone", "Unknown"),
-            "customer_name": payload.get("recipient_name", "Customer"),
+            "recipient_phone": recipient_phone,
+            "customer_name": customer_name,
             "message": payload.get("message", ""),
-            "payment_link": payload.get("payment_link"),
-            "discount_percentage": payload.get("params", {}).get("discount", 0.0) if isinstance(payload.get("params"), dict) else 0.0,
+            "payment_link": payment_link,
+            "discount_percentage": discount_pct,
             "status": log.status.value if hasattr(log.status, "value") else str(log.status),
             "sent_at": log.created_at.isoformat() if log.created_at else "",
         })
