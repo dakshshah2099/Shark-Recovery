@@ -90,13 +90,25 @@ export const App: React.FC = () => {
     return saved === 'true';
   });
 
-  const toggleSidebarCollapse = () => {
+  const toggleSidebarCollapse = useCallback(() => {
     setSidebarCollapsed((prev) => {
       const next = !prev;
       localStorage.setItem('sidebar_collapsed', String(next));
       return next;
     });
-  };
+  }, []);
+
+  // Global Alt+S keyboard shortcut to toggle sidebar collapse
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        toggleSidebarCollapse();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleSidebarCollapse]);
 
   // Dark / Light Theme State with LocalStorage persistence
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -374,12 +386,12 @@ export const App: React.FC = () => {
 
           {activeTab === 'agent-flow' && debugMode && (
             <div className="space-y-6">
-              <div>
-                <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-zinc-900 dark:text-white flex items-center gap-2">
+              <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs transition-colors space-y-1.5">
+                <h2 className="font-heading font-extrabold text-lg sm:text-xl text-zinc-900 dark:text-white flex items-center gap-2">
                   <Cpu className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   <span>Autonomous Multi-Agent Telemetry Flow & Gateway Performance</span>
                 </h2>
-                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
+                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading">
                   Real-time gateway degradation health monitor and deterministic multi-agent reasoning pipeline.
                 </p>
               </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { MetricCards } from '../components/MetricCards';
+import { OverviewCharts } from '../components/OverviewCharts';
 import {
   Table,
   ShieldCheck,
@@ -63,7 +64,10 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       {/* 2. Key Metrics Grid */}
       <MetricCards metrics={metrics} />
 
-      {/* 3. Active Recovery Pipeline */}
+      {/* 3. Recovery Velocity & Category Breakdown Graphs */}
+      <OverviewCharts metrics={metrics} transactions={transactions} />
+
+      {/* 4. Active Recovery Pipeline */}
       <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs transition-colors space-y-4">
         <div className="flex items-center justify-between pb-3.5 border-b border-zinc-100 dark:border-[#27272a]">
           <div>

@@ -34,6 +34,7 @@ interface EnvConfig {
   groq_api_key?: string;
   gemini_api_key?: string;
   llm_model?: string;
+  gemini_live_model?: string;
   razorpay_key_id?: string;
   razorpay_key_secret?: string;
   razorpay_webhook_secret?: string;
@@ -75,6 +76,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [groqKey, setGroqKey] = useState('');
   const [geminiKey, setGeminiKey] = useState('');
   const [llmModel, setLlmModel] = useState('groq/openai/gpt-oss-120b');
+  const [geminiLiveModel, setGeminiLiveModel] = useState('models/gemini-2.0-flash-exp');
   const [rzpKeyId, setRzpKeyId] = useState('');
   const [rzpKeySecret, setRzpKeySecret] = useState('');
   const [rzpWebhookSecret, setRzpWebhookSecret] = useState('');
@@ -114,6 +116,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           setGroqKey(data.groq_api_key || '');
           setGeminiKey(data.gemini_api_key || '');
           setLlmModel(data.llm_model || 'groq/openai/gpt-oss-120b');
+          setGeminiLiveModel(data.gemini_live_model || 'models/gemini-2.0-flash-exp');
           setRzpKeyId(data.razorpay_key_id || '');
           setRzpKeySecret(data.razorpay_key_secret || '');
           setRzpWebhookSecret(data.razorpay_webhook_secret || '');
@@ -154,6 +157,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           groq_api_key: groqKey,
           gemini_api_key: geminiKey,
           llm_model: llmModel,
+          gemini_live_model: geminiLiveModel,
           razorpay_key_id: rzpKeyId,
           razorpay_key_secret: rzpKeySecret,
           razorpay_webhook_secret: rzpWebhookSecret,
@@ -204,12 +208,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   return (
     <div className="space-y-6 w-full">
-      <div>
-        <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-zinc-900 dark:text-white flex items-center gap-2">
+      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs transition-colors space-y-1.5">
+        <h2 className="font-heading font-extrabold text-lg sm:text-xl text-zinc-900 dark:text-white flex items-center gap-2">
           <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <span>System & Gateway Settings</span>
         </h2>
-        <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading mt-0.5">
+        <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-subheading">
           Configure Razorpay live webhook ingesters, runtime environment credentials, and database persistence.
         </p>
       </div>
@@ -361,7 +365,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
               <div>
                 <label htmlFor="settings-llm-model" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
-                  LLM_MODEL
+                  LLM_MODEL (Multi-Agent Reasoning Engine)
                 </label>
                 <div className="flex flex-col sm:flex-row gap-2.5">
                   <input
@@ -383,17 +387,46 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
               </div>
 
+              <div>
+                <label htmlFor="settings-gemini-live-model" className="block text-xs font-subheading font-semibold text-zinc-800 dark:text-zinc-200 mb-1">
+                  GEMINI_LIVE_MODEL (Multimodal Live Voice & Telephony Stream)
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <input
+                    id="settings-gemini-live-model"
+                    type="text"
+                    value={geminiLiveModel}
+                    onChange={(e) => setGeminiLiveModel(e.target.value)}
+                    placeholder="models/gemini-2.0-flash-exp or models/gemini-3.0-flash"
+                    className="flex-1 h-9 bg-zinc-50 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-xs text-zinc-900 dark:text-white rounded-md px-3 font-mono focus-rzp transition-colors"
+                  />
+                  <CustomSelect
+                    value={geminiLiveModel}
+                    onChange={setGeminiLiveModel}
+                    options={[
+                      'models/gemini-2.0-flash-exp',
+                      'models/gemini-3.0-flash',
+                      'models/gemini-2.5-flash',
+                      'models/gemini-2.0-flash-realtime-exp',
+                    ]}
+                    placeholder="Select Live Voice Model"
+                    className="w-full sm:w-64"
+                    align="right"
+                  />
+                </div>
+              </div>
+
               <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-mono font-semibold">Quick Select:</span>
-                {groqModelsList.slice(0, 6).map((m) => (
+                <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-mono font-semibold">Live Model Presets:</span>
+                {['models/gemini-2.0-flash-exp', 'models/gemini-3.0-flash', 'models/gemini-2.5-flash'].map((m) => (
                   <button
                     key={m}
                     type="button"
-                    onClick={() => setLlmModel(m)}
-                    aria-pressed={llmModel === m}
+                    onClick={() => setGeminiLiveModel(m)}
+                    aria-pressed={geminiLiveModel === m}
                     className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors cursor-pointer ${
-                      llmModel === m
-                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                      geminiLiveModel === m
+                        ? 'bg-rose-600 text-white font-semibold shadow-xs'
                         : 'bg-zinc-100 dark:bg-[#18181b] text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-[#27272a]'
                     }`}
                   >
@@ -450,15 +483,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <div className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                <span>Twilio WhatsApp API (Trial & Sandbox Template Compatible)</span>
+                <span>Twilio WhatsApp API (Sandbox & Production Template Compatible)</span>
               </div>
 
               <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 rounded-md p-3 text-xs text-emerald-900 dark:text-emerald-200">
                 <p className="font-semibold flex items-center gap-1.5 font-subheading">
-                  <span>💡 Twilio Trial Sandbox Template:</span>
+                  <span>💡 Twilio Template Dispatch:</span>
                 </p>
                 <p className="mt-0.5 text-[11px] text-emerald-800 dark:text-emerald-300 font-body leading-relaxed">
-                  Twilio trial accounts strictly require pre-approved Sandbox templates. Outgoing recovery links will be formatted into your selected template.
+                  Outgoing recovery links will be formatted into your selected pre-approved Sandbox or production template.
                 </p>
               </div>
 

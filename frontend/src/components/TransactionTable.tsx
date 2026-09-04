@@ -6,8 +6,10 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
+  Phone,
 } from 'lucide-react';
 import { CustomSelect, type SelectOption } from './CustomSelect';
+import { VoiceCallModal } from './VoiceCallModal';
 import type { TransactionItem, TransactionStatus } from '../types';
 import { formatToIST } from '../utils/date';
 
@@ -28,6 +30,18 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [retryingIds, setRetryingIds] = useState<Record<string, boolean>>({});
   const [payingIds, setPayingIds] = useState<Record<string, boolean>>({});
+  const [selectedVoiceSession, setSelectedVoiceSession] = useState<any | null>(null);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState<boolean>(false);
+
+  const handleOpenVoiceTranscript = (transcriptJson: string) => {
+    try {
+      const data = typeof transcriptJson === 'string' ? JSON.parse(transcriptJson) : transcriptJson;
+      setSelectedVoiceSession(data);
+      setIsVoiceModalOpen(true);
+    } catch (e) {
+      console.error('Failed to parse voice transcript:', e);
+    }
+  };
 
   const statusOptions: SelectOption[] = [
     { value: 'ALL', label: `All Dispositions (${transactions.length})` },
@@ -351,6 +365,20 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     ) : (
                       <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">—</span>
                     )}
+
+                    {txn.voice_call_transcript && (
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenVoiceTranscript(txn.voice_call_transcript!)}
+                          className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-mono font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 cursor-pointer transition-colors focus-rzp"
+                          title="Listen to Hinglish Voice AI Call Transcript"
+                        >
+                          <Phone className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 animate-pulse" />
+                          <span>Voice AI</span>
+                        </button>
+                      </div>
+                    )}
                   </td>
 
                   {/* Actions */}
@@ -397,6 +425,13 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           </tbody>
         </table>
       </div>
+
+      {/* Voice Call Modal */}
+      <VoiceCallModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        sessionData={selectedVoiceSession}
+      />
     </div>
   );
 };

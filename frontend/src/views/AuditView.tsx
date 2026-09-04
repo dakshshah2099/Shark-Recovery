@@ -79,7 +79,7 @@ export const AuditView: React.FC<AuditViewProps> = ({ logs, onRefresh }) => {
   return (
     <div className="space-y-6 w-full animate-in fade-in duration-150">
       {/* Header & Filter Control Strip */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-6 shadow-xs transition-colors">
         <div>
           <div className="flex items-center gap-2.5">
             <h2 className="font-heading font-extrabold text-lg sm:text-xl text-zinc-900 dark:text-white flex items-center gap-2">
