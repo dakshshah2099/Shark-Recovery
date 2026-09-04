@@ -24,7 +24,7 @@ from backend.tools.smtp_tool import send_recovery_email
 from backend.tools.whatsapp_tool import send_whatsapp_message
 
 
-async def run_all_phase_2_tests():
+async def test_all_phase_2_agents():
     print("\n--- Starting Phase 2 Agent & Orchestration Tests ---")
     await init_db()
 
@@ -138,5 +138,7 @@ async def run_all_phase_2_tests():
     print("\n--- ALL PHASE 2 TESTS PASSED PERFECTLY ---")
 
 
+run_all_phase_2_tests = test_all_phase_2_agents
+
 if __name__ == "__main__":
-    asyncio.run(run_all_phase_2_tests())
+    asyncio.run(test_all_phase_2_agents())
