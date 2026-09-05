@@ -309,8 +309,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <span>Loading environment configuration...</span>
           </div>
         ) : envConfig?.debug_mode ? (
-          /* Editable Live Form */
-          <form onSubmit={(e) => { e.preventDefault(); handleSaveEnv(); }} className="space-y-4">
+          /* Editable Live Settings */
+          <div className="space-y-4">
             {/* Inline Dynamic Status Feedback Banner */}
             {saveStatus && (
               <div
@@ -378,7 +378,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             {/* 1. AI & LLM Keys */}
             {(activeTab === 'all' || activeTab === 'ai') && (
-            <div className="space-y-2.5">
+            <form id="settings-ai-form" onSubmit={(e) => { e.preventDefault(); handleSaveEnv(); }} className="space-y-2.5">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                 <span>LiteLLM Multi-Model Engine (Groq & Google Gemini)</span>
@@ -391,6 +391,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <input
                     id="settings-groq-key"
                     type="password"
+                    autoComplete="off"
                     value={groqKey}
                     onChange={(e) => setGroqKey(e.target.value)}
                     placeholder="gsk_..."
@@ -404,6 +405,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <input
                     id="settings-gemini-key"
                     type="password"
+                    autoComplete="off"
                     value={geminiKey}
                     onChange={(e) => setGeminiKey(e.target.value)}
                     placeholder="AIzaSy..."
@@ -483,12 +485,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </button>
                 ))}
               </div>
-            </div>
+            </form>
             )}
 
             {/* 2. Razorpay Credentials */}
             {(activeTab === 'all' || activeTab === 'payment') && (
-            <div className="space-y-2.5 pt-2">
+            <form id="settings-razorpay-form" onSubmit={(e) => { e.preventDefault(); handleSaveEnv(); }} className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                 <span>Razorpay API Keys</span>
@@ -510,6 +512,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <input
                     id="settings-rzp-key-secret"
                     type="password"
+                    autoComplete="off"
                     value={rzpKeySecret}
                     onChange={(e) => setRzpKeySecret(e.target.value)}
                     placeholder="Secret..."
@@ -521,6 +524,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <input
                     id="settings-rzp-webhook-secret"
                     type="password"
+                    autoComplete="off"
                     value={rzpWebhookSecret}
                     onChange={(e) => setRzpWebhookSecret(e.target.value)}
                     placeholder="Webhook secret..."
@@ -528,14 +532,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   />
                 </div>
               </div>
-            </div>
+            </form>
             )}
 
             {/* 3 & 4. Outreach Channels (Twilio WhatsApp & SMTP) */}
             {(activeTab === 'all' || activeTab === 'channels') && (
               <>
                 {/* 3. Twilio WhatsApp */}
-                <div className="space-y-2.5 pt-2">
+                <form id="settings-twilio-form" onSubmit={(e) => { e.preventDefault(); handleSaveEnv(); }} className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 <span>Twilio WhatsApp API (Sandbox & Production Template Compatible)</span>
@@ -572,6 +576,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <input
                     id="settings-twilio-secret"
                     type="password"
+                    autoComplete="off"
                     value={twilioApiSecret}
                     onChange={(e) => setTwilioApiSecret(e.target.value)}
                     placeholder="API Secret..."
@@ -656,10 +661,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </button>
                 </div>
               </div>
-            </div>
+            </form>
 
             {/* 4. SMTP Email */}
-            <div className="space-y-2.5 pt-2">
+            <form id="settings-smtp-form" onSubmit={(e) => { e.preventDefault(); handleSaveEnv(); }} className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                 <span>SMTP Email Gateway</span>
@@ -705,6 +710,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <input
                     id="settings-smtp-pass"
                     type="password"
+                    autoComplete="off"
                     value={smtpPass}
                     onChange={(e) => setSmtpPass(e.target.value)}
                     placeholder="App password..."
@@ -723,13 +729,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   />
                 </div>
               </div>
-            </div>
+            </form>
             </>
             )}
 
             {/* 5. Deterministic Guardrails & Retry Policy */}
             {(activeTab === 'all' || activeTab === 'guardrails') && (
-            <div className="space-y-2.5 pt-2">
+            <form id="settings-guardrails-form" onSubmit={(e) => { e.preventDefault(); handleSaveEnv(); }} className="space-y-2.5 pt-2">
               <div className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 <span>Deterministic Guardrails & Recovery Policy</span>
@@ -771,7 +777,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </div>
                 </div>
               </div>
-            </div>
+            </form>
             )}
 
             {/* Submit Bar */}
@@ -792,7 +798,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
 
               <button
-                type="submit"
+                type="button"
+                onClick={handleSaveEnv}
                 disabled={savingEnv}
                 className="h-9 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all focus-rzp"
               >
@@ -809,7 +816,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 )}
               </button>
             </div>
-          </form>
+          </div>
         ) : (
           /* Read-Only Notice when DEBUG_MODE is False */
           <div className="bg-zinc-50 dark:bg-[#09090b] p-5 rounded-md border border-zinc-200/80 dark:border-[#27272a] text-xs space-y-1.5">
