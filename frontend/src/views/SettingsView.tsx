@@ -310,7 +310,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         ) : envConfig?.debug_mode ? (
           /* Editable Live Form */
-          <div className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveEnv(); }} className="space-y-4">
             {/* Inline Dynamic Status Feedback Banner */}
             {saveStatus && (
               <div
@@ -792,8 +792,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
 
               <button
-                type="button"
-                onClick={handleSaveEnv}
+                type="submit"
                 disabled={savingEnv}
                 className="h-9 px-5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-subheading font-semibold text-xs inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 transition-all focus-rzp"
               >
@@ -810,7 +809,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 )}
               </button>
             </div>
-          </div>
+          </form>
         ) : (
           /* Read-Only Notice when DEBUG_MODE is False */
           <div className="bg-zinc-50 dark:bg-[#09090b] p-5 rounded-md border border-zinc-200/80 dark:border-[#27272a] text-xs space-y-1.5">
