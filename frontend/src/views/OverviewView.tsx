@@ -12,6 +12,7 @@ import {
   Clock,
 } from 'lucide-react';
 import type { DashboardMetrics, TransactionItem } from '../types';
+import { formatIndianCurrency, formatIndianCompact, formatIndianWords } from '../utils/currency';
 
 interface OverviewViewProps {
   metrics: DashboardMetrics | null;
@@ -114,8 +115,16 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-heading font-bold text-zinc-900 dark:text-white text-sm">
-                    ₹{t.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  <div
+                    className="font-heading font-bold text-zinc-900 dark:text-white text-sm flex items-center justify-end gap-1.5"
+                    title={formatIndianWords(t.amount, { includeRupees: true })}
+                  >
+                    <span>{formatIndianCurrency(t.amount)}</span>
+                    {t.amount >= 1000 && (
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-[#18181b] text-zinc-600 dark:text-zinc-400 font-normal border border-zinc-200 dark:border-[#27272a]">
+                        {formatIndianCompact(t.amount, { showSymbol: false })}
+                      </span>
+                    )}
                   </div>
                   <span className="text-[11px] text-blue-600 dark:text-blue-400 font-mono font-medium">
                     {t.recovery_channel === 'whatsapp' ? '💬 WhatsApp' : '✉️ Email'} ({t.discount_applied_percent}% OFF)
@@ -197,8 +206,16 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                   </div>
 
                   <div className="text-right">
-                    <div className="font-heading font-bold text-zinc-900 dark:text-white text-sm">
-                      ₹{t.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    <div
+                      className="font-heading font-bold text-zinc-900 dark:text-white text-sm flex items-center justify-end gap-1.5"
+                      title={formatIndianWords(t.amount, { includeRupees: true })}
+                    >
+                      <span>{formatIndianCurrency(t.amount)}</span>
+                      {t.amount >= 1000 && (
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-[#18181b] text-zinc-600 dark:text-zinc-400 font-normal border border-zinc-200 dark:border-[#27272a]">
+                          {formatIndianCompact(t.amount, { showSymbol: false })}
+                        </span>
+                      )}
                     </div>
                     <span className="text-[11px] text-purple-600 dark:text-purple-400 font-mono font-medium">
                       PTP Locked via Voice AI

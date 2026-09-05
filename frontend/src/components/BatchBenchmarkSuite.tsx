@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Play, PhoneCall, Calendar, Loader2, Sparkles, Layers, RotateCcw } from 'lucide-react';
 import { VoiceCallModal } from './VoiceCallModal';
+import { formatIndianCurrency, formatIndianCompact, formatIndianWords } from '../utils/currency';
 
 interface TransactionItem {
   id: string;
@@ -81,7 +82,7 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
             console.warn('SessionStorage quota exceeded:', e);
           }
         }
-        showNotification(`🎉 Benchmark Completed! Measured ₹${data.total_money_recovered.toLocaleString('en-IN')} recovered (${data.net_recovery_rate_percent}% recovery rate).`, 'success', 5000);
+        showNotification(`🎉 Benchmark Completed! Measured ${formatIndianCurrency(data.total_money_recovered)} (${formatIndianWords(data.total_money_recovered)}) recovered (${data.net_recovery_rate_percent}% recovery rate).`, 'success', 5000);
         onSuccess();
       } else {
         const err = await res.json().catch(() => ({}));
@@ -168,16 +169,32 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <div className="p-4 rounded-lg bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] shadow-xs">
               <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading block">Revenue At Risk</span>
-              <strong className="font-mono font-bold text-sm sm:text-base text-zinc-900 dark:text-white tabular-nums">
-                ₹{report.total_revenue_at_risk.toLocaleString('en-IN')}
+              <strong
+                className="font-mono font-bold text-sm sm:text-base text-zinc-900 dark:text-white tabular-nums block truncate"
+                title={formatIndianWords(report.total_revenue_at_risk, { includeRupees: true })}
+              >
+                {formatIndianCurrency(report.total_revenue_at_risk, { decimals: 0 })}
               </strong>
+              {report.total_revenue_at_risk >= 1000 && (
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">
+                  {formatIndianWords(report.total_revenue_at_risk)}
+                </span>
+              )}
             </div>
 
             <div className="p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 shadow-xs">
               <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-subheading block">Measured Money Recovered</span>
-              <strong className="font-mono font-bold text-sm sm:text-base text-emerald-600 dark:text-emerald-400 tabular-nums">
-                ₹{report.total_money_recovered.toLocaleString('en-IN')}
+              <strong
+                className="font-mono font-bold text-sm sm:text-base text-emerald-600 dark:text-emerald-400 tabular-nums block truncate"
+                title={formatIndianWords(report.total_money_recovered, { includeRupees: true })}
+              >
+                {formatIndianCurrency(report.total_money_recovered, { decimals: 0 })}
               </strong>
+              {report.total_money_recovered >= 1000 && (
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+                  {formatIndianWords(report.total_money_recovered)}
+                </span>
+              )}
             </div>
 
             <div className="p-4 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 shadow-xs">
@@ -262,8 +279,18 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
                           </span>
                         </td>
 
-                        <td className="p-3 font-mono font-semibold text-zinc-800 dark:text-zinc-200 tabular-nums">
-                          ₹{t.amount.toLocaleString('en-IN')}
+                        <td
+                          className="p-3 font-mono font-semibold text-zinc-800 dark:text-zinc-200 tabular-nums"
+                          title={formatIndianWords(t.amount, { includeRupees: true })}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span>{formatIndianCurrency(t.amount, { decimals: 0 })}</span>
+                            {t.amount >= 1000 && (
+                              <span className="text-[10px] font-normal px-1 py-0.2 rounded bg-zinc-100 dark:bg-[#18181b] text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-[#27272a]">
+                                {formatIndianCompact(t.amount, { showSymbol: false })}
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         <td className="p-3 max-w-xs truncate text-zinc-600 dark:text-zinc-400 font-body">
@@ -283,8 +310,11 @@ export const BatchBenchmarkSuite: React.FC<BatchBenchmarkSuiteProps> = ({ onSucc
 
                         <td className="p-3">
                           {isRecovered ? (
-                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                              ₹{t.recovered_amount.toLocaleString('en-IN')}
+                            <span
+                              className="font-mono font-bold text-emerald-600 dark:text-emerald-400 tabular-nums"
+                              title={formatIndianWords(t.recovered_amount, { includeRupees: true })}
+                            >
+                              {formatIndianCurrency(t.recovered_amount, { decimals: 0 })}
                             </span>
                           ) : isHalted ? (
                             <span className="font-mono text-rose-600 dark:text-rose-400 text-[11px]">

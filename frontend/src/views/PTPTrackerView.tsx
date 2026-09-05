@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { VoiceCallModal } from '../components/VoiceCallModal';
 import { RecoverySchedulerCard } from '../components/RecoverySchedulerCard';
+import { formatIndianCurrency, formatIndianCompact, formatIndianWords } from '../utils/currency';
 
 export interface PTPRecord {
   id: string;
@@ -205,7 +206,7 @@ export const PTPTrackerView: React.FC<PTPTrackerViewProps> = ({
       });
 
       if (showNotification) {
-        showNotification(`Commitment fulfilled! ₹${rec.amount.toLocaleString('en-IN')} recovered.`, 'success');
+        showNotification(`Commitment fulfilled! ${formatIndianCurrency(rec.amount)} (${formatIndianWords(rec.amount)}) recovered.`, 'success');
       }
       await fetchPtpData(true);
     } catch (err: any) {
@@ -328,12 +329,16 @@ export const PTPTrackerView: React.FC<PTPTrackerViewProps> = ({
             <span>Total Locked Commitments</span>
             <Calendar className="w-4 h-4 text-purple-500" />
           </div>
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 flex-wrap">
             <span className="font-heading font-black text-2xl sm:text-3xl text-zinc-900 dark:text-white">
               {summary.total_commitments}
             </span>
-            <span className="text-xs font-mono font-semibold text-zinc-500 dark:text-zinc-400">
-              (₹{summary.total_committed_revenue.toLocaleString('en-IN')})
+            <span
+              className="text-xs font-mono font-semibold text-zinc-600 dark:text-zinc-400"
+              title={formatIndianWords(summary.total_committed_revenue, { includeRupees: true })}
+            >
+              ({formatIndianCurrency(summary.total_committed_revenue, { decimals: 0 })}
+              {summary.total_committed_revenue >= 1000 ? ` • ${formatIndianWords(summary.total_committed_revenue)}` : ''})
             </span>
           </div>
           <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading flex items-center gap-1">
@@ -347,12 +352,16 @@ export const PTPTrackerView: React.FC<PTPTrackerViewProps> = ({
             <span>Active Liquidity Pipeline</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 flex-wrap">
             <span className="font-heading font-black text-2xl sm:text-3xl text-amber-600 dark:text-amber-400">
               {summary.active_commitments}
             </span>
-            <span className="text-xs font-mono font-semibold text-amber-700/80 dark:text-amber-400/80">
-              ₹{summary.at_risk_committed_revenue.toLocaleString('en-IN')} pending
+            <span
+              className="text-xs font-mono font-semibold text-amber-700 dark:text-amber-400"
+              title={formatIndianWords(summary.at_risk_committed_revenue, { includeRupees: true })}
+            >
+              {formatIndianCurrency(summary.at_risk_committed_revenue, { decimals: 0 })}
+              {summary.at_risk_committed_revenue >= 1000 ? ` (${formatIndianWords(summary.at_risk_committed_revenue)})` : ''} pending
             </span>
           </div>
           <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading flex items-center gap-1">
@@ -367,12 +376,16 @@ export const PTPTrackerView: React.FC<PTPTrackerViewProps> = ({
             <span>Fulfilled / Recovered</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 flex-wrap">
             <span className="font-heading font-black text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400">
               {summary.fulfilled_commitments}
             </span>
-            <span className="text-xs font-mono font-semibold text-emerald-700/80 dark:text-emerald-400/80">
-              ₹{summary.recovered_committed_revenue.toLocaleString('en-IN')}
+            <span
+              className="text-xs font-mono font-semibold text-emerald-700 dark:text-emerald-400"
+              title={formatIndianWords(summary.recovered_committed_revenue, { includeRupees: true })}
+            >
+              {formatIndianCurrency(summary.recovered_committed_revenue, { decimals: 0 })}
+              {summary.recovered_committed_revenue >= 1000 ? ` (${formatIndianWords(summary.recovered_committed_revenue)})` : ''}
             </span>
           </div>
           <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-subheading font-medium flex items-center gap-1">
@@ -630,8 +643,16 @@ export const PTPTrackerView: React.FC<PTPTrackerViewProps> = ({
                         <Calendar className="w-3 h-3 text-purple-500 shrink-0" />
                         <span>{rec.promise_to_pay_date || 'Immediate'}</span>
                       </div>
-                      <div className="text-sm font-mono font-black text-zinc-900 dark:text-white pt-1">
-                        ₹{rec.amount.toLocaleString('en-IN')}
+                      <div
+                        className="text-sm font-mono font-black text-zinc-900 dark:text-white pt-1 flex items-center justify-start lg:justify-end gap-1.5"
+                        title={formatIndianWords(rec.amount, { includeRupees: true })}
+                      >
+                        <span>{formatIndianCurrency(rec.amount, { decimals: 0 })}</span>
+                        {rec.amount >= 1000 && (
+                          <span className="text-[10px] font-normal px-1.5 py-0.2 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-900/60">
+                            {formatIndianCompact(rec.amount, { showSymbol: false })}
+                          </span>
+                        )}
                       </div>
                     </div>
 

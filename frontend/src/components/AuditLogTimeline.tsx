@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import type { AuditLogItem } from '../types';
 import { formatToIST, formatFullIST } from '../utils/date';
+import { formatIndianCurrency, formatIndianWords } from '../utils/currency';
 import { VoiceCallModal } from './VoiceCallModal';
 
 interface AuditLogTimelineProps {
@@ -204,7 +205,9 @@ const parsePayloadIntelligence = (log: AuditLogItem): ParsedIntelligence => {
   // Payment Link
   if (outputObj.short_url || outputObj.link_id || inputObj.amount) {
     const amt = outputObj.amount || inputObj.amount;
-    const formattedAmt = amt ? `₹${Number(amt).toLocaleString('en-IN')}` : '';
+    const formattedAmt = amt
+      ? `${formatIndianCurrency(Number(amt), { decimals: 0 })}${Number(amt) >= 1000 ? ` (${formatIndianWords(Number(amt))})` : ''}`
+      : '';
     headline = `Payment Link Generated${formattedAmt ? ` (${formattedAmt})` : ''}`;
     if (formattedAmt) keyValues.push({ label: 'Amount', value: formattedAmt, highlight: true });
     if (outputObj.short_url) {

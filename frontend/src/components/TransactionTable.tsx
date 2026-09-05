@@ -14,6 +14,7 @@ import { CustomSelect, type SelectOption } from './CustomSelect';
 import { VoiceCallModal } from './VoiceCallModal';
 import type { TransactionItem, TransactionStatus } from '../types';
 import { formatToIST } from '../utils/date';
+import { formatIndianCurrency, formatIndianCompact, formatIndianWords } from '../utils/currency';
 
 const ACRONYM_GLOSSARY: Record<string, string> = {
   UPI: 'Unified Payments Interface - Instant real-time payment system developed by NPCI',
@@ -570,9 +571,17 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-heading font-extrabold text-zinc-900 dark:text-white text-sm tabular-nums">
-                    ₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  <div
+                    className="font-heading font-extrabold text-zinc-900 dark:text-white text-sm tabular-nums"
+                    title={formatIndianWords(txn.amount, { includeRupees: true })}
+                  >
+                    {formatIndianCurrency(txn.amount)}
                   </div>
+                  {txn.amount >= 1000 && (
+                    <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+                      {formatIndianCompact(txn.amount)}
+                    </div>
+                  )}
                   <div className="mt-1 flex flex-col items-end gap-1">
                     {getStatusBadge(txn.status)}
                     {renderSchedulerBadges(txn)}
@@ -590,8 +599,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     {txn.failure_category.replace(/_/g, ' ')}
                   </span>
                   {txn.status === 'recovered' && (
-                    <span className="text-emerald-700 dark:text-emerald-400 font-semibold tabular-nums">
-                      Paid: ₹{(txn.recovered_amount ?? txn.amount).toFixed(2)}
+                    <span
+                      className="text-emerald-700 dark:text-emerald-400 font-semibold tabular-nums"
+                      title={formatIndianWords(txn.recovered_amount ?? txn.amount, { includeRupees: true })}
+                    >
+                      Paid: {formatIndianCurrency(txn.recovered_amount ?? txn.amount)}
                     </span>
                   )}
                 </div>
@@ -782,12 +794,28 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
                     {/* Amount & Recovered */}
                     <td className="py-3 px-4">
-                      <div className="font-heading font-bold text-zinc-900 dark:text-white text-sm whitespace-nowrap tabular-nums">
-                        ₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      <div
+                        className="font-heading font-bold text-zinc-900 dark:text-white text-sm whitespace-nowrap tabular-nums flex items-center gap-1.5"
+                        title={formatIndianWords(txn.amount, { includeRupees: true })}
+                      >
+                        <span>{formatIndianCurrency(txn.amount)}</span>
+                        {txn.amount >= 1000 && (
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-[#18181b] text-zinc-600 dark:text-zinc-400 font-normal border border-zinc-200 dark:border-[#27272a]">
+                            {formatIndianCompact(txn.amount, { showSymbol: false })}
+                          </span>
+                        )}
                       </div>
                       {txn.status === 'recovered' && (
-                        <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono mt-0.5 whitespace-nowrap font-medium tabular-nums">
-                          Paid: ₹{(txn.recovered_amount ?? txn.amount).toFixed(2)}
+                        <div
+                          className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono mt-0.5 whitespace-nowrap font-medium tabular-nums flex items-center gap-1"
+                          title={formatIndianWords(txn.recovered_amount ?? txn.amount, { includeRupees: true })}
+                        >
+                          <span>Paid: {formatIndianCurrency(txn.recovered_amount ?? txn.amount)}</span>
+                          {(txn.recovered_amount ?? txn.amount) >= 1000 && (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                              ({formatIndianCompact(txn.recovered_amount ?? txn.amount, { showSymbol: false })})
+                            </span>
+                          )}
                         </div>
                       )}
                     </td>

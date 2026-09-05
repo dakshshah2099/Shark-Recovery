@@ -4,6 +4,7 @@ import {
   PieChart,
 } from 'lucide-react';
 import type { DashboardMetrics, TransactionItem } from '../types';
+import { formatIndianCurrency, formatIndianCompact, formatIndianWords } from '../utils/currency';
 
 interface OverviewChartsProps {
   metrics: DashboardMetrics | null;
@@ -35,10 +36,7 @@ const CATEGORY_COLORS: Record<string, { bar: string; text: string }> = {
 };
 
 const formatAxisCurrency = (val: number): string => {
-  if (val <= 0) return '₹0';
-  if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
-  if (val >= 1000) return `₹${(val / 1000).toFixed(0)}k`;
-  return `₹${Math.round(val)}`;
+  return formatIndianCompact(val, { decimals: 1, spaceBeforeUnit: false });
 };
 
 export const OverviewCharts: React.FC<OverviewChartsProps> = ({ metrics, transactions }) => {
@@ -314,24 +312,33 @@ export const OverviewCharts: React.FC<OverviewChartsProps> = ({ metrics, transac
                   </div>
                   {renderPoints[hoveredPoint].amount !== undefined && (
                     <div className="text-[10px] text-zinc-400">
-                      Txn: ₹{renderPoints[hoveredPoint].amount?.toLocaleString('en-IN')}
+                      Txn: {formatIndianCurrency(renderPoints[hoveredPoint].amount, { decimals: 0 })}
+                      {(renderPoints[hoveredPoint].amount ?? 0) >= 1000 && ` (${formatIndianWords(renderPoints[hoveredPoint].amount)})`}
                     </div>
                   )}
                   <div className="text-[11px] text-rose-400">
-                    Cum. Failed: ₹{renderPoints[hoveredPoint].cumFailed.toLocaleString('en-IN')}
+                    Cum. Failed: {formatIndianCurrency(renderPoints[hoveredPoint].cumFailed, { decimals: 0 })} ({formatIndianWords(renderPoints[hoveredPoint].cumFailed)})
                   </div>
                   <div className="text-[11px] text-emerald-400 font-semibold">
-                    Cum. Recovered: ₹{renderPoints[hoveredPoint].cumRecovered.toLocaleString('en-IN')} ({renderPoints[hoveredPoint].rate}%)
+                    Cum. Recovered: {formatIndianCurrency(renderPoints[hoveredPoint].cumRecovered, { decimals: 0 })} ({formatIndianWords(renderPoints[hoveredPoint].cumRecovered)} • {renderPoints[hoveredPoint].rate}%)
                   </div>
                 </div>
               )}
             </div>
 
             {/* Metric Footer Pill */}
-            <div className="flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-[#27272a]">
+            <div className="flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-[#27272a] flex-wrap gap-2">
               <span className="font-subheading">Net Yield Efficiency:</span>
-              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                ₹{Number(metrics?.total_recovered_revenue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({metrics?.recovery_rate_percent || 0}% overall)
+              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 flex-wrap">
+                <span>{formatIndianCurrency(Number(metrics?.total_recovered_revenue || 0))}</span>
+                {Number(metrics?.total_recovered_revenue || 0) >= 1000 && (
+                  <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                    ({formatIndianWords(Number(metrics?.total_recovered_revenue || 0))})
+                  </span>
+                )}
+                <span className="text-zinc-400 dark:text-zinc-500 font-normal">
+                  ({metrics?.recovery_rate_percent || 0}% overall)
+                </span>
               </span>
             </div>
           </div>

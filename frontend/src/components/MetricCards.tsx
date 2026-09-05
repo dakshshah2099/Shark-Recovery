@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUpRight, MessageSquare, AlertCircle, Percent } from 'lucide-react';
 import type { DashboardMetrics } from '../types';
+import { formatIndianCurrency, formatIndianWords } from '../utils/currency';
 
 interface MetricCardsProps {
   metrics: DashboardMetrics | null;
@@ -32,8 +33,18 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               {recoveryRate}%
             </span>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight tabular-nums">
-            ₹{recoveredRev.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <div className="mt-2 flex items-baseline gap-2 flex-wrap">
+            <span
+              className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white tracking-tight tabular-nums"
+              title={formatIndianWords(recoveredRev, { includeRupees: true })}
+            >
+              {formatIndianCurrency(recoveredRev)}
+            </span>
+            {recoveredRev >= 1000 && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-mono shrink-0">
+                {formatIndianWords(recoveredRev)}
+              </span>
+            )}
           </div>
         </div>
 
@@ -63,8 +74,18 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               <AlertCircle className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white mt-2.5 tracking-tight tabular-nums">
-            ₹{revAtRisk.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <div className="mt-2 flex items-baseline gap-2 flex-wrap">
+            <span
+              className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-zinc-900 dark:text-white tracking-tight tabular-nums"
+              title={formatIndianWords(revAtRisk, { includeRupees: true })}
+            >
+              {formatIndianCurrency(revAtRisk)}
+            </span>
+            {revAtRisk >= 1000 && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 font-mono shrink-0">
+                {formatIndianWords(revAtRisk)}
+              </span>
+            )}
           </div>
         </div>
 
@@ -86,8 +107,18 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
               <Percent className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-amber-700 dark:text-amber-400 mt-2.5 tracking-tight tabular-nums">
-            ₹{discountLoss.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <div className="mt-2 flex items-baseline gap-2 flex-wrap">
+            <span
+              className="font-heading font-extrabold text-2xl sm:text-[1.85rem] text-amber-700 dark:text-amber-400 tracking-tight tabular-nums"
+              title={formatIndianWords(discountLoss, { includeRupees: true })}
+            >
+              {formatIndianCurrency(discountLoss)}
+            </span>
+            {discountLoss >= 1000 && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 font-mono shrink-0">
+                {formatIndianWords(discountLoss)}
+              </span>
+            )}
           </div>
         </div>
 
