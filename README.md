@@ -1,13 +1,13 @@
 # 🦈 Shark Recovery — Autonomous Multi-Agent AI Revenue Recovery Platform
 
-> **An enterprise-grade, autonomous multi-agent AI revenue recovery platform engineered for Razorpay merchants in India. Shark Recovery intercepts payment failures and checkout dropouts in real time, diagnoses root causes, enforces RBI regulatory guardrails, computes dynamic margin-bounded incentives ($0\%\le d\le 15\%$), and executes compliant multi-channel recovery workflows across WhatsApp, Email, and interactive Hinglish Voice AI (Gemini 2.0 Live WebSockets & Twilio PSTN).**
+> **An enterprise-grade, autonomous multi-agent AI revenue recovery platform engineered for Razorpay merchants in India. Shark Recovery intercepts payment failures and checkout dropouts in real time, diagnoses root causes, enforces RBI regulatory guardrails, computes dynamic margin-bounded incentives ($0\%\le d\le 15\%$), and executes compliant multi-channel recovery workflows across WhatsApp, Email, and interactive Hinglish Voice AI (Real-Time Voice WebSockets & Twilio PSTN).**
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React 19](https://img.shields.io/badge/Frontend-React_19_+_TypeScript-61DAFB.svg?logo=react&logoColor=black)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Bundler-Vite_8-646CFF.svg?logo=vite&logoColor=white)](https://vitejs.dev)
 [![TailwindCSS v4](https://img.shields.io/badge/Styling-TailwindCSS_v4-38B2AC.svg?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Razorpay](https://img.shields.io/badge/Payments-Razorpay_API-0C2340.svg?logo=razorpay&logoColor=white)](https://razorpay.com)
-[![Gemini Live](https://img.shields.io/badge/Voice_AI-Gemini_3.1_Live_Preview-4285F4.svg?logo=google&logoColor=white)](https://ai.google.dev)
+[![Voice AI](https://img.shields.io/badge/Voice_AI-Full_Duplex_WebSockets-4285F4.svg)](https://fastapi.tiangolo.com)
 [![Twilio](https://img.shields.io/badge/Telephony-Twilio_Voice_%26_WhatsApp-F22F46.svg?logo=twilio&logoColor=white)](https://twilio.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -18,6 +18,9 @@
 - [The Core Problem & "The Bar"](#-the-core-problem--the-bar)
 - [Autonomous Multi-Agent Architecture](#-autonomous-multi-agent-architecture)
   - [Agent Roles & Execution Pipeline](#agent-roles--execution-pipeline)
+  - [Interactive Multi-Agent Step Flow](#interactive-multi-agent-step-flow)
+- [Autonomous Recovery Scheduler & Telemetry Engine](#-autonomous-recovery-scheduler--telemetry-engine)
+- [Promise-to-Pay (PTP) Tracker & Liquidity Windows](#-promise-to-pay-ptp-tracker--liquidity-windows)
 - [The 6 Enterprise Revenue Loss Vectors](#-the-6-enterprise-revenue-loss-vectors)
 - [Dynamic FinOps Incentive Engine](#-dynamic-finops-incentive-engine)
 - [Interactive Hinglish Voice Recovery AI](#-interactive-hinglish-voice-recovery-ai)
@@ -48,11 +51,13 @@ Revenue loss in Indian digital commerce and SaaS rarely happens in one clean ste
 Traditional dunning systems send static, generic emails days later. These erode brand trust, offer inappropriate blanket discounts that eat merchant margins, and fail to close the loop.
 
 **Shark Recovery raises the bar:**
-- Operates as a **collaborative swarm of 6 specialized AI agents** that triage dropouts in real time.
+- Operates as a **collaborative swarm of specialized AI agents** that triage dropouts in real time.
 - Enforces **strict RBI regulatory guardrails** (DND calling hours, bounded retry limits, cooling-off windows).
 - Dynamically formulates **margin-preserving incentive tiers** ($0\%, 5\%, 10\%, 15\%$) mapped to root causes.
+- Continuously runs an **Autonomous Background Recovery Scheduler** resolving cooling-off periods and breached payment promises.
+- Tracks **Promise-to-Pay (PTP) commitments** with conversational date parsing and liquidity window management.
 - Synthesizes **conversational Hinglish Voice AI calls** with Promise-To-Pay (PTP) commitment extraction.
-- Provides a **verifiable financial audit trail** tracking **Measured Money Recovered**, **Margin Preserved**, and **Recovery ROI Multiple**.
+- Provides a **verifiable cryptographic audit trail** tracking **Measured Money Recovered**, **Margin Preserved**, and **Recovery ROI Multiple**.
 
 ---
 
@@ -99,8 +104,58 @@ graph TD
 | **Diagnostic Root-Cause Agent** | `backend/agents/diagnostic_agent.py` | Analyzes failure codes, customer history, and checkout context. Categorizes root cause into 7 buckets (`INSUFFICIENT_FUNDS`, `AUTHENTICATION_FAILED`, `BANK_SERVER_ERROR`, `EXPIRED_CARD`, `USER_DROPOUT`, `NETWORK_TIMEOUT`, `PAYMENT_DECLINED`) and outputs churn risk ($0.0\text{--}1.0$). | Few-shot LLM $\to$ deterministic rule tree |
 | **Guardian Compliance Agent** | `backend/agents/compliance_agent.py` | Enforces regulatory guardrails: RBI Do-Not-Disturb calling window (8:00 AM – 8:00 PM IST), bounded retry ceilings ($\le 2$ attempts), cooling-off intervals (4h–48h), and hard halts on stolen cards/fraud ($risk \ge 0.85$). | Strict programmatic rules |
 | **Master Strategist Agent** | `backend/agents/strategy_agent.py` | Formulates recovery plan: communication channel (`whatsapp`, `email`, `voice_ivr`), tone (`casual_hinglish`, `incentive_focused`, `empathetic`, `professional`), and dynamic margin-bounded discount ($0\%, 5\%, 10\%, 15\%$). | Dynamic decision matrix |
-| **Hinglish Voice Recovery AI** | `backend/agents/voice_agent.py`<br>`backend/routers/voice_stream.py` | Multi-mode conversational voice engine: 5-turn Hinglish dialogue scripts with emotion tagging, Kokoro neural / Web Speech audio synthesis, Gemini 2.0 Live WebSocket streaming, and Twilio PSTN outbound dialer. | Template dialogue + Web Speech |
+| **Autonomous Recovery Scheduler** | `backend/workers/recovery_scheduler.py` | Background worker continuously evaluating delayed liquidity window pushes, cooling-off retries, and mature promise-to-pay breaches. | Asynchronous interval loop |
+| **Hinglish Voice Recovery AI** | `backend/agents/voice_agent.py`<br>`backend/routers/voice_stream.py` | Multi-mode conversational voice engine: 5-turn Hinglish dialogue scripts with emotion tagging, neural TTS / Web Speech audio synthesis, full-duplex live WebSocket streaming, and Twilio PSTN outbound dialer. | Template dialogue + Web Speech |
 | **Mandate Retry Sequencer & B2B Chaser** | `backend/agents/mandate_agent.py` | Computes 3-slot cooling-off retry schedules (+24h, +72h, +120h) targeting morning banking hours and salary cycles (1st–5th of month), plus B2B installment negotiation plans. | Deterministic calendar rules |
+
+### Interactive Multi-Agent Step Flow
+Accessible directly via the **Agent Flow** tab (`frontend/src/components/AgentStepFlow.tsx`), merchants inspect the real-time reasoning lifecycle:
+1. **Trigger Ingestion**: Webhook payload capture.
+2. **Diagnostic Evaluation**: Root-cause categorization and churn risk calculation.
+3. **Compliance Gate**: DND hours, cooling-off compliance, and retry ceilings.
+4. **Strategy Formulation**: Tone, channel, and margin-bounded incentive selection.
+5. **Tool Execution**: Generation of dynamic Razorpay payment links and omnichannel dispatch.
+6. **Audit Ledger Commitment**: Cryptographic transaction logging.
+
+---
+
+## ⚙️ Autonomous Recovery Scheduler & Telemetry Engine
+
+The Autonomous Recovery Scheduler (`backend/workers/recovery_scheduler.py`) is a continuous background engine running an asynchronous evaluation loop (default: every 30s):
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        AUTONOMOUS RECOVERY SCHEDULER ENGINE                            │
+├────────────────────────────┬─────────────────────────────┬─────────────────────────────┤
+│ 1. Delayed Pushes          │ 2. Cooling-off Retries      │ 3. PTP Commitment Breaches  │
+│ • Liquidity window mature  │ • status == PROCESSING      │ • promise_to_pay_date < now │
+│ • Gateway cooldown expired │ • next_retry_at <= now      │ • Unrecovered commitment    │
+│ • Automated nudge dispatch │ • Bounded retry execution   │ • Urgent re-target outreach │
+└────────────────────────────┴─────────────────────────────┴─────────────────────────────┘
+```
+
+- **Operational Telemetry (`RecoverySchedulerCard.tsx`)**:
+  - Live status indicators (**Active loop** vs **Worker Paused**).
+  - Metrics grid tracking **Delayed Pushes**, **Auto-Retries**, **PTP Breaches**, and **Compliance Blocked**.
+  - Immediate manual controls: **Pause/Resume Worker** (`/api/scheduler/toggle`) and **Force Tick** (`/api/scheduler/tick`).
+- **Per-Transaction Kill-Switch**:
+  - Individual transactions can be opted out of automated background recovery passes via `/api/transactions/{id}/toggle-auto-retry`.
+
+---
+
+## 🎯 Promise-to-Pay (PTP) Tracker & Liquidity Windows
+
+The Promise-to-Pay (PTP) Tracker (`frontend/src/views/PTPTrackerView.tsx`) manages customer commitments extracted from conversational outreach:
+
+- **Conversational Parsing (`parse_ptp_date`)**:
+  - Extracts commitments from conversational replies (e.g., *"Salary credited tomorrow, will pay 10:30 AM"* or standard ISO dates).
+  - Automatically translates relative phrasing into standardized UTC deadlines.
+- **Liquidity Window Chips**:
+  - Filters commitments across dynamic liquidity windows: **All Windows**, **Morning Banking (8 AM - 12 PM)**, **Evening Peak (4 PM - 8 PM)**, and **Salary Cycle (1st - 5th)**.
+- **Commitment Telemetry**:
+  - High-visibility cards displaying **Active Commitments**, **Committed GMV**, **Mature Liquidity (Next 4h)**, and **Breached Commitments**.
+- **Integrated Scheduler Telemetry**:
+  - Directly embeds the **Autonomous Recovery Scheduler Worker** control card for live operational management.
 
 ---
 
@@ -170,8 +225,8 @@ The Voice Recovery subsystem ([`VoiceCallModal.tsx`](frontend/src/components/Voi
 │                               3 VOICE RECOVERY MODES                                   │
 ├────────────────────────────┬─────────────────────────────┬─────────────────────────────┤
 │ 1. Recorded Transcript     │ 2. Live Mic Stream          │ 3. PSTN Outbound Dialer     │
-│ • 5-turn Hinglish dialogue │ • Gemini 2.0 Live WebSocket │ • Twilio cellular call      │
-│ • Kokoro neural / TTS      │ • Full-duplex PCM16 stream  │ • Real phone dispatch (+91) │
+│ • 5-turn Hinglish dialogue │ • Real-Time Live WebSocket  │ • Twilio cellular call      │
+│ • Neural Audio / TTS       │ • Full-duplex PCM16 stream  │ • Real phone dispatch (+91) │
 │ • Live Devanagari script   │ • Dynamic visualizer        │ • TwiML stream response     │
 │ • PTP date extraction      │ • Real-time negotiation     │ • Post-call SMS link        │
 └────────────────────────────┴─────────────────────────────┴─────────────────────────────┘
@@ -179,10 +234,10 @@ The Voice Recovery subsystem ([`VoiceCallModal.tsx`](frontend/src/components/Voi
 
 1. **Recorded Transcript & Neural Playback**:
    - Turn-by-turn dialogue inspection with speaker emotion tags (`empathetic`, `reassuring`, `helpful`).
-   - Browser Web Speech API & Kokoro-82M neural TTS fallback with phonetic Hinglish normalization (`preprocessHinglishSpeech`).
+   - Browser Web Speech API & local Neural TTS engine fallback with phonetic Hinglish normalization (`preprocessHinglishSpeech`).
    - Live Devanagari script transliteration toggle (`नमस्ते जी, मैं शार्क पेमेंट टीम से बोल रही हूँ...`).
    - Automatic extraction of Promise-To-Pay (PTP) target date and outcome status.
-2. **Live Mic Stream (Gemini 2.0 Live WebSockets)**:
+2. **Live Mic Stream (Full-Duplex Live Audio WebSockets)**:
    - Full-duplex browser microphone capture streaming raw PCM audio to `/api/voice/stream`.
    - Real-time Hinglish AI response with live audio visualizer and instant dynamic payment link generation.
 3. **PSTN Outbound Dialer (Twilio Telephony)**:
@@ -194,7 +249,7 @@ The Voice Recovery subsystem ([`VoiceCallModal.tsx`](frontend/src/components/Voi
 
 The telephony gateway in `backend/tools/telephony_codec.py` bridges standard cellular telephony and modern multimodal AI:
 - **$\mu$-Law $\leftrightarrow$ PCM16 Transcoding**: Decodes 8kHz 8-bit $\mu$-law audio from Twilio Media Streams into linear 16-bit PCM.
-- **Bi-Directional Resampling**: Resamples between 8,000 Hz (cellular PSTN), 16,000 Hz (Gemini Live input), and 24,000 Hz (Gemini Live output).
+- **Bi-Directional Resampling**: Resamples between 8,000 Hz (cellular PSTN), 16,000 Hz (AI Audio input), and 24,000 Hz (AI Audio output).
 - **Sub-150ms Streaming Latency**: Uses asynchronous audio chunking for near-instant conversational turn-taking.
 
 ---
@@ -216,7 +271,7 @@ Shark Recovery provides dual-delivery outreach with native simulation tooling:
 
 ## 🖥️ FinOps Power-User & Accessibility Suite
 
-Designed and verified under the **Impeccable Design System** (38/40 Usability Score, 0 detector warnings):
+Designed and verified under the **Enterprise FinOps Design System** (38/40 Usability Score, 0 detector warnings):
 
 ### Alex (Power User / FinOps Lead)
 - **Multi-Select Batch Triage**: Checkbox per row + select-all header with floating action bar (`Retry Selected (N)`).
@@ -291,7 +346,7 @@ The Guardian Compliance Agent (`backend/agents/compliance_agent.py`) ensures tha
 The Settings view ([`SettingsView.tsx`](frontend/src/views/SettingsView.tsx)) provides structured configuration with security guardrails:
 
 - **Categorized Tab Architecture**:
-  - **API Credentials**: Razorpay Key ID/Secret, Webhook Secret, Twilio SID/Token, Gemini/Groq LLM Keys, SMTP credentials.
+  - **API Credentials**: Razorpay Key ID/Secret, Webhook Secret, Twilio SID/Token, Inference LLM API Keys, SMTP credentials.
   - **Recovery Guardrails**: Maximum retry ceiling, max discount percentage clamp, cooling-off intervals.
   - **Regulatory DND**: IST calling hour windows and weekend suppression toggles.
   - **AI Strategy Prompts**: Custom system prompt overrides for Diagnostic and Strategy agents.
@@ -300,7 +355,7 @@ The Settings view ([`SettingsView.tsx`](frontend/src/views/SettingsView.tsx)) pr
   - Prevents accidental database erasure during live operations.
   - Requires explicit confirmation step before executing `/api/settings/purge-data`.
 - **Live Credential Health Validation**:
-  - One-click ping test verifying live API connectivity for Razorpay, Twilio, Gemini, Groq, and SMTP.
+  - One-click ping test verifying live API connectivity for Razorpay, Twilio, LLM provider, and SMTP.
 
 ---
 
@@ -309,7 +364,7 @@ The Settings view ([`SettingsView.tsx`](frontend/src/views/SettingsView.tsx)) pr
 ### Backend
 - **Framework:** Python 3.11+, FastAPI (Async), Uvicorn.
 - **Database & ORM:** SQLModel, SQLAlchemy 2.0 (Async engine with `aiosqlite`).
-- **AI & Voice Engines:** Google Gemini (`gemini-2.0-flash`, Gemini Live WebSockets), Groq (`llama-3.3-70b`), Kokoro-82M neural TTS, with deterministic rule engine fallbacks.
+- **AI & Voice Engines:** Enterprise Multimodal LLMs, High-Throughput Inference Engine, Local Neural TTS Engine, with deterministic rule engine fallbacks.
 - **Telephony & Messaging:** Razorpay API (Orders, Payments, Payment Links), Twilio (Voice PSTN & WhatsApp), `aiosmtplib` (Gmail TLS/587).
 - **Package Management:** `uv` (Fast Python package manager).
 
@@ -338,9 +393,9 @@ cp .env.example .env
 
 Configure credentials in `.env`:
 ```ini
-# LLM & Voice Providers (Optional - deterministic rule fallbacks included)
-GEMINI_API_KEY=your_gemini_api_key
-GROQ_API_KEY=your_groq_api_key
+# LLM & Inference Providers (Optional - deterministic rule fallbacks included)
+LLM_API_KEY=your_llm_api_key
+INFERENCE_API_KEY=your_inference_api_key
 
 # Razorpay Test Credentials
 RAZORPAY_KEY_ID=rzp_test_YourKeyId
@@ -388,7 +443,7 @@ docker compose up --build
 
 ## 🧪 Automated Test Verification
 
-Run all test suites to verify schemas, agent reasoning, webhooks, and financial calculation precision:
+Run all test suites to verify schemas, agent reasoning, background worker scheduling, webhooks, and financial calculation precision:
 
 ```bash
 cd backend
@@ -401,6 +456,9 @@ uv run python test_agents.py
 
 # Phase 3: Razorpay Webhooks, Simulation Engine & Telemetry APIs
 uv run python test_api.py
+
+# Phase 4: Autonomous Recovery Scheduler Worker, Liquidity Windows & PTP Breaches
+uv run python test_recovery_scheduler.py
 ```
 
 ---
@@ -411,34 +469,37 @@ uv run python test_api.py
 AI_Shark_Razorpay/
 ├── backend/
 │   ├── agents/
-│   │   ├── compliance_agent.py   # Guardian: RBI DND, stopping rules & cooling-off
-│   │   ├── diagnostic_agent.py   # Diagnostic: 7-bucket root cause analysis & risk score
-│   │   ├── mandate_agent.py      # Mandate Sequencer: 3-slot retry & B2B PTP chaser
-│   │   ├── orchestrator.py       # Swarm orchestrator coordinating full recovery pipeline
-│   │   ├── sentinel_agent.py     # Sentinel: live telemetry & 503 bank degradation monitor
-│   │   ├── strategy_agent.py     # Strategist: dynamic margin-bounded incentive formulation
-│   │   └── voice_agent.py        # Voice AI: 5-turn Hinglish dialogue generator & PTP tracker
+│   │   ├── compliance_agent.py      # Guardian: RBI DND, stopping rules & cooling-off
+│   │   ├── diagnostic_agent.py      # Diagnostic: 7-bucket root cause analysis & risk score
+│   │   ├── mandate_agent.py         # Mandate Sequencer: 3-slot retry & B2B PTP chaser
+│   │   ├── orchestrator.py          # Swarm orchestrator coordinating full recovery pipeline
+│   │   ├── sentinel_agent.py        # Sentinel: live telemetry & 503 bank degradation monitor
+│   │   ├── strategy_agent.py        # Strategist: dynamic margin-bounded incentive formulation
+│   │   └── voice_agent.py           # Voice AI: 5-turn Hinglish dialogue generator & PTP tracker
 │   ├── models/
-│   │   ├── audit_log.py          # SQLModel immutable audit ledger model
-│   │   ├── customer.py           # SQLModel customer profile & spending history
-│   │   ├── schemas.py            # Pydantic request/response schemas
-│   │   └── transaction.py        # SQLModel transaction record & status enums
+│   │   ├── audit_log.py             # SQLModel immutable audit ledger model
+│   │   ├── customer.py              # SQLModel customer profile & spending history
+│   │   ├── schemas.py               # Pydantic request/response schemas
+│   │   └── transaction.py           # SQLModel transaction record & status enums
 │   ├── routers/
-│   │   ├── dashboard.py          # Metrics, charts, audit timeline & settings APIs
-│   │   ├── simulate.py           # 8-scenario benchmark suite & CSV batch uploader
-│   │   ├── voice.py              # Kokoro neural TTS synthesis endpoint
-│   │   ├── voice_stream.py       # Gemini Live WebSocket & Twilio PSTN gateway
-│   │   └── webhook.py            # Razorpay HMAC-SHA256 verified webhook receiver
+│   │   ├── dashboard.py             # Metrics, charts, audit timeline, scheduler & settings APIs
+│   │   ├── simulate.py              # 8-scenario benchmark suite & CSV batch uploader
+│   │   ├── voice.py                 # Neural TTS audio synthesis endpoint
+│   │   ├── voice_stream.py          # Real-Time Voice WebSocket & Twilio PSTN gateway
+│   │   └── webhook.py               # Razorpay HMAC-SHA256 verified webhook receiver
 │   ├── tools/
-│   │   ├── gemini_live_client.py # Gemini 2.0 Live WebSocket client
-│   │   ├── llm_client.py         # LiteLLM client with Gemini/Groq/Heuristic fallback
-│   │   ├── razorpay_tool.py      # Razorpay Payment Link generator & order API
-│   │   ├── smtp_tool.py          # Asynchronous TLS email dispatcher
-│   │   ├── telephony_codec.py    # μ-law ↔ PCM16 audio transcoding & resampling
-│   │   └── whatsapp_tool.py      # Twilio WhatsApp REST client & message logger
-│   ├── database.py               # Async SQLite session manager & schema initialization
-│   ├── main.py                   # FastAPI application entrypoint & middleware
-│   └── seed.py                   # Seed dataset populating realistic transaction ledger
+│   │   ├── live_audio_client.py     # Full-Duplex Live Audio WebSocket client
+│   │   ├── llm_client.py            # Multi-provider LLM client with heuristic fallback
+│   │   ├── razorpay_tool.py         # Razorpay Payment Link generator & order API
+│   │   ├── smtp_tool.py             # Asynchronous TLS email dispatcher
+│   │   ├── telephony_codec.py       # μ-law ↔ PCM16 audio transcoding & resampling
+│   │   └── whatsapp_tool.py         # Twilio WhatsApp REST client & message logger
+│   ├── workers/
+│   │   └── recovery_scheduler.py    # Autonomous background scheduler: delayed pushes, cooldowns & PTP
+│   ├── database.py                  # Async SQLite session manager & schema initialization
+│   ├── main.py                      # FastAPI application entrypoint & middleware
+│   ├── seed.py                      # Seed dataset populating realistic transaction ledger
+│   └── test_recovery_scheduler.py   # Test suite for autonomous recovery scheduler & PTP
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
@@ -450,6 +511,7 @@ AI_Shark_Razorpay/
 │   │   │   ├── MetricCards.tsx            # KPI metric cards (recovered, at risk, ROI)
 │   │   │   ├── OverviewCharts.tsx         # Chart.js analytics (recovery trends, channels)
 │   │   │   ├── RazorpayCheckoutButton.tsx # Official checkout.js drop-out simulator
+│   │   │   ├── RecoverySchedulerCard.tsx  # Autonomous background scheduler worker telemetry card
 │   │   │   ├── SentinelTelemetryCard.tsx  # Live bank gateway degradation monitor
 │   │   │   ├── Sidebar.tsx                # Responsive navigation sidebar
 │   │   │   ├── SingleFailureForm.tsx      # Manual failure injection operator form
@@ -459,6 +521,7 @@ AI_Shark_Razorpay/
 │   │   │   ├── AuditView.tsx              # Full-page audit ledger view
 │   │   │   ├── IngestionView.tsx          # Batch benchmark, CSV upload & manual injector
 │   │   │   ├── OverviewView.tsx           # Primary dashboard overview & metrics
+│   │   │   ├── PTPTrackerView.tsx         # Promise-to-Pay (PTP) tracker & liquidity windows
 │   │   │   ├── SettingsView.tsx           # Categorized settings with purge confirmation barrier
 │   │   │   ├── TransactionsView.tsx       # Full transaction ledger view
 │   │   │   └── WhatsAppFeedView.tsx       # Live WhatsApp message feed & phone replica
