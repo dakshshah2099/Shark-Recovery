@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { OverviewView } from './views/OverviewView';
 import { TransactionsView } from './views/TransactionsView';
+import { PTPTrackerView } from './views/PTPTrackerView';
 import { IngestionView } from './views/IngestionView';
 import { AuditView } from './views/AuditView';
 import { SettingsView } from './views/SettingsView';
@@ -21,7 +22,7 @@ export interface ToastNotification {
   message: string;
 }
 
-const VALID_TABS = ['overview', 'transactions', 'ingest', 'agent-flow', 'whatsapp-feed', 'audit', 'settings'] as const;
+const VALID_TABS = ['overview', 'transactions', 'ptp-tracker', 'ingest', 'agent-flow', 'whatsapp-feed', 'audit', 'settings'] as const;
 type TabType = (typeof VALID_TABS)[number];
 
 const getTabFromPath = (): TabType => {
@@ -77,6 +78,7 @@ export const App: React.FC = () => {
     const titles: Record<string, string> = {
       overview: 'Shark Recovery — Overview',
       transactions: 'Shark Recovery — Transactions Ledger',
+      'ptp-tracker': 'Shark Recovery — Promise-to-Pay Tracker',
       ingest: 'Shark Recovery — Autonomous Ingestion Hub',
       'agent-flow': 'Shark Recovery — Agent Flow & Performance',
       'whatsapp-feed': 'Shark Recovery — WhatsApp Feed',
@@ -377,6 +379,13 @@ export const App: React.FC = () => {
               loading={loading}
               onRetry={handleRetry}
               onSimulatePay={handleSimulatePay}
+            />
+          )}
+
+          {activeTab === 'ptp-tracker' && (
+            <PTPTrackerView
+              onSimulatePay={handleSimulatePay}
+              showNotification={showNotification}
             />
           )}
 

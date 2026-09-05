@@ -2,6 +2,7 @@ import React from 'react';
 import {
   LayoutDashboard,
   Table,
+  CalendarCheck,
   Zap,
   Activity,
   Cpu,
@@ -49,6 +50,12 @@ const MAIN_NAV_ITEMS: NavItemDef[] = [
     label: 'Transactions',
     icon: Table,
     desc: 'Live recovery ledger',
+  },
+  {
+    id: 'ptp-tracker',
+    label: 'Promise to Pay',
+    icon: CalendarCheck,
+    desc: 'Customer commitments & liquidity',
   },
 ];
 

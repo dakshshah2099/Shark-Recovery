@@ -544,9 +544,12 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
             const reason = data.reason || 'Customer confirmed satisfaction and call is concluded';
             setLiveStatusInfo(`Call Concluded: ${reason}`);
             setAutoEndStatus(reason);
+            // Wait for any remaining queued audio chunks to finish playing before tearing down AudioContext
+            const remainingSec = Math.max(0, (nextLiveAudioPlayTimeRef.current || 0) - (audioCtx.currentTime || 0));
+            const safeHangupDelayMs = Math.max(4500, Math.ceil((remainingSec + 1.5) * 1000));
             setTimeout(() => {
               stopLiveInteractiveCall();
-            }, 2200);
+            }, safeHangupDelayMs);
           } else if (data.event === 'audio') {
             playRawPcm24k(data.pcm_base64, audioCtx);
           } else if (data.event === 'tool_executed') {
@@ -556,11 +559,13 @@ export const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose,
             ]);
             if (data.tool_name === 'end_call' || data.tool_name === 'complete_recovery_call') {
               const reason = data.arguments?.reason || 'Customer confirmed satisfaction';
-              setLiveStatusInfo(`Customer Satisfied — Auto-Ending Call...`);
+              setLiveStatusInfo(`Customer Satisfied — Concluding Call...`);
               setAutoEndStatus(reason);
+              const remainingSec = Math.max(0, (nextLiveAudioPlayTimeRef.current || 0) - (audioCtx.currentTime || 0));
+              const safeHangupDelayMs = Math.max(5000, Math.ceil((remainingSec + 1.8) * 1000));
               setTimeout(() => {
                 stopLiveInteractiveCall();
-              }, 2500);
+              }, safeHangupDelayMs);
             }
           } else if (data.event === 'error') {
             setLiveError(data.message || 'Error received from voice stream');

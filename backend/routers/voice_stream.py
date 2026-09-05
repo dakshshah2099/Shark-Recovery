@@ -858,8 +858,8 @@ async def browser_live_chat_websocket(
                         "result": event["result"],
                     }))
                     if event["tool_name"] in ["end_call", "complete_recovery_call"]:
-                        logger.info(f"Session {session_id}: end_call tool executed. Terminating call gracefully.")
-                        await asyncio.sleep(2.0)
+                        logger.info(f"Session {session_id}: end_call tool executed. Allowing audio stream to flush gracefully.")
+                        await asyncio.sleep(4.5)
                         await websocket.send_text(json.dumps({
                             "event": "call_ended",
                             "reason": event["arguments"].get("reason", "Customer confirmed satisfaction and call is concluded"),

@@ -78,6 +78,17 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     }
   };
 
+  const isVoiceAllowedByAgent = (txn: TransactionItem): boolean => {
+    if (txn.status === 'abandoned') return false;
+    return Boolean(
+      txn.voice_call_transcript ||
+      txn.recovery_channel === 'voice_ivr' ||
+      txn.loss_vector === 'voice_recovery' ||
+      (txn.escalation_level && txn.escalation_level >= 3) ||
+      txn.amount >= 5000
+    );
+  };
+
   const handleOpenVoiceForTxn = (txn: TransactionItem) => {
     if (txn.voice_call_transcript) {
       handleOpenVoiceTranscript(txn.voice_call_transcript, txn);
@@ -617,15 +628,17 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     </a>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => handleOpenVoiceForTxn(txn)}
-                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-mono font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 cursor-pointer transition-colors focus-rzp"
-                    title="Open Hinglish Voice AI & Promise-to-Pay Screening"
-                  >
-                    <Phone className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 animate-pulse" />
-                    <span>Voice AI</span>
-                  </button>
+                  {isVoiceAllowedByAgent(txn) && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenVoiceForTxn(txn)}
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-mono font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 cursor-pointer transition-colors focus-rzp"
+                      title="Decision Agent Approved: Open Hinglish Voice AI"
+                    >
+                      <Phone className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 animate-pulse" />
+                      <span>Voice AI</span>
+                    </button>
+                  )}
 
                   {txn.promise_to_pay_date && (
                     <span
@@ -834,15 +847,17 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     )}
 
                     <div className="flex items-center gap-1.5 flex-wrap mt-1">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenVoiceForTxn(txn)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-mono font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 cursor-pointer transition-colors focus-rzp"
-                        title="Open Hinglish Voice AI & Promise-to-Pay Screening"
-                      >
-                        <Phone className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 animate-pulse" />
-                        <span>Voice AI</span>
-                      </button>
+                      {isVoiceAllowedByAgent(txn) && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenVoiceForTxn(txn)}
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-mono font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 cursor-pointer transition-colors focus-rzp"
+                          title="Open Hinglish Voice AI & Promise-to-Pay Screening"
+                        >
+                          <Phone className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 animate-pulse" />
+                          <span>Voice AI</span>
+                        </button>
+                      )}
 
                       {txn.promise_to_pay_date && (
                         <span

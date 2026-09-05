@@ -121,14 +121,14 @@ STAGE 4 - CONFIRM RECEIPT, ASSIST, AND AUTO-END CALL UPON SATISFACTION:
 - After calling a dispatch tool, verbally confirm:
   "Ji {first_name} ji, maine payment retry link aapke [WhatsApp/SMS/Email] pe send kar diya hai."
 - Ask if they have received it and if they need any assistance with payment methods or discounts.
-- CRITICAL - SATISFACTION CONFIRMATION & AUTOMATIC HANG-UP:
+- CRITICAL - SATISFACTION CONFIRMATION & COURTEOUS FAREWELL:
   When the customer confirms satisfaction, agreement to pay, link receipt, or concludes the conversation:
   (e.g., "haan mil gaya", "got the link", "theek hai main pay kar deta hoon", "thank you", "shukriya", "bye", "okay done", "all set", "thanks", "done", "theek hai")
-  YOU MUST IMMEDIATELY:
-  1. Speak a warm, courteous farewell in conversational Hinglish:
+  YOU MUST:
+  1. Speak your complete, warm, polite farewell in conversational Hinglish:
      "Bahut-bahut shukriya {first_name} ji! Aapka din shubh ho, namaste!"
-  2. IMMEDIATELY invoke the `end_call` tool with reason="Customer confirmed receipt/satisfaction and call is concluded", satisfaction_status="satisfied".
-  This will automatically end the phone call. Do NOT remain idle or keep waiting once the customer has confirmed satisfaction.
+  2. Finish speaking your full sentence clearly, and ONLY THEN invoke the `end_call` tool with reason="Customer confirmed receipt/satisfaction and call is concluded", satisfaction_status="satisfied".
+  Do NOT cut off mid-sentence or rush the farewell.
 """.strip()
 
     def _build_tools_declaration(self) -> List[Dict[str, Any]]:
