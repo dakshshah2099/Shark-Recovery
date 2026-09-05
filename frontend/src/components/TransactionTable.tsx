@@ -8,6 +8,7 @@ import {
   Clock,
   Phone,
   Download,
+  Calendar,
 } from 'lucide-react';
 import { CustomSelect, type SelectOption } from './CustomSelect';
 import { VoiceCallModal } from './VoiceCallModal';
@@ -68,11 +69,37 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         data.order_amount = txn.amount || data.order_amount;
         data.failure_reason = txn.failure_reason || data.failure_reason;
         data.discount_offered = txn.discount_applied_percent ?? data.discount_offered ?? 0;
+        data.promise_to_pay_date = txn.promise_to_pay_date || data.promise_to_pay_date || null;
       }
       setSelectedVoiceSession(data);
       setIsVoiceModalOpen(true);
     } catch (e) {
       console.error('Failed to parse voice transcript:', e);
+    }
+  };
+
+  const handleOpenVoiceForTxn = (txn: TransactionItem) => {
+    if (txn.voice_call_transcript) {
+      handleOpenVoiceTranscript(txn.voice_call_transcript, txn);
+    } else {
+      const data = {
+        call_id: `call_${txn.id.slice(0, 8)}`,
+        transaction_id: txn.id,
+        customer_name: txn.customer_name,
+        customer_phone: txn.customer_phone,
+        customer_email: txn.customer_email,
+        order_amount: txn.amount,
+        discount_offered: txn.discount_applied_percent ?? 0,
+        dialogue: [],
+        customer_intent: txn.promise_to_pay_date ? 'PROMISE_TO_PAY' : 'UNKNOWN',
+        promise_to_pay_date: txn.promise_to_pay_date || null,
+        call_outcome: txn.promise_to_pay_date ? 'PROMISED' : 'PENDING',
+        call_duration_seconds: 0,
+        sms_payment_link_triggered: !!txn.recovery_link,
+        failure_reason: txn.failure_reason,
+      };
+      setSelectedVoiceSession(data);
+      setIsVoiceModalOpen(true);
     }
   };
 
@@ -472,8 +499,8 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               </div>
 
               {/* Bottom Row: Outreach & Actions */}
-              <div className="flex items-center justify-between gap-2 pt-1">
-                <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                <div className="flex items-center gap-2 text-xs flex-wrap">
                   <span className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
                     {txn.recovery_channel === 'whatsapp' ? '💬 WhatsApp' : '✉️ Email'}
                     {txn.discount_applied_percent > 0 && (
@@ -492,6 +519,26 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                       <span>Link</span>
                       <ExternalLink className="w-2.5 h-2.5" />
                     </a>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpenVoiceForTxn(txn)}
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-mono font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 cursor-pointer transition-colors focus-rzp"
+                    title="Open Hinglish Voice AI & Promise-to-Pay Screening"
+                  >
+                    <Phone className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 animate-pulse" />
+                    <span>Voice AI</span>
+                  </button>
+
+                  {txn.promise_to_pay_date && (
+                    <span
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 text-[10px] font-mono font-bold truncate max-w-[130px]"
+                      title={`Promise-to-Pay Confirmed: ${txn.promise_to_pay_date}`}
+                    >
+                      <Calendar className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400 shrink-0" />
+                      <span className="truncate">PTP: {txn.promise_to_pay_date}</span>
+                    </span>
                   )}
                 </div>
 
@@ -687,19 +734,27 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                       <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">—</span>
                     )}
 
-                    {txn.voice_call_transcript && (
-                      <div>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenVoiceTranscript(txn.voice_call_transcript!, txn)}
-                          className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-mono font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 cursor-pointer transition-colors focus-rzp"
-                          title="Listen to Hinglish Voice AI Call Transcript"
+                    <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenVoiceForTxn(txn)}
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-[10px] font-mono font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 cursor-pointer transition-colors focus-rzp"
+                        title="Open Hinglish Voice AI & Promise-to-Pay Screening"
+                      >
+                        <Phone className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 animate-pulse" />
+                        <span>Voice AI</span>
+                      </button>
+
+                      {txn.promise_to_pay_date && (
+                        <span
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 text-[10px] font-mono font-bold truncate max-w-[140px]"
+                          title={`Promise-to-Pay Confirmed: ${txn.promise_to_pay_date}`}
                         >
-                          <Phone className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400 animate-pulse" />
-                          <span>Voice AI</span>
-                        </button>
-                      </div>
-                    )}
+                          <Calendar className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400 shrink-0" />
+                          <span className="truncate">PTP: {txn.promise_to_pay_date}</span>
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Actions */}

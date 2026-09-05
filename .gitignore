@@ -67,3 +67,6 @@ kokoro_weights/
 backend/kokoro_weights/
 *.onnx
 *.bin
+
+# Tool artifacts
+.impeccable/

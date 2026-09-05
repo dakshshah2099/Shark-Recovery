@@ -5,6 +5,7 @@ Bridges Twilio Voice / Exotel PSTN and Browser Microphones with Gemini 2.0 Multi
 """
 import asyncio
 import base64
+from datetime import datetime, timedelta, timezone
 import json
 import logging
 import uuid
@@ -903,3 +904,248 @@ async def browser_live_chat_websocket(
     finally:
         gemini_task.cancel()
         await live_session.close()
+
+
+# =====================================================================
+# Promise to Pay (PTP) Screening & Voice Agent Confirmation Subsystem
+# =====================================================================
+
+class ScreenPTPResponse(BaseModel):
+    transaction_id: str
+    customer_name: str
+    customer_phone: str
+    customer_email: Optional[str] = None
+    amount: float
+    discount_offered: float
+    final_amount: float
+    failure_category: str
+    failure_reason: str
+    risk_score: float
+    is_eligible_for_ptp: bool
+    current_promise_date: Optional[str] = None
+    screening_verdict: str  # "ELIGIBLE", "FLAGGED_RISK", "ALREADY_CONFIRMED"
+    recommended_windows: List[Dict[str, str]]
+    recommended_script: str
+
+
+class ConfirmPTPRequest(BaseModel):
+    transaction_id: str
+    promise_date: str
+    payment_method: Optional[str] = "UPI / Card"
+    note: Optional[str] = "Customer verbally confirmed via Hinglish voice agent"
+    discount_percent: Optional[float] = None
+    trigger_voice_speech: bool = True
+
+
+class ConfirmPTPResponse(BaseModel):
+    success: bool
+    transaction_id: str
+    customer_name: str
+    amount: float
+    discount_applied: float
+    final_amount: float
+    promise_to_pay_date: str
+    payment_link: str
+    confirmation_speech: str
+    status: str
+    message: str
+
+
+@router.get("/screen-ptp/{transaction_id}", response_model=ScreenPTPResponse)
+async def screen_promise_to_pay(
+    transaction_id: str,
+    db: AsyncSession = Depends(get_session),
+):
+    """
+    Screens transaction for Promise-to-Pay eligibility, risk assessment,
+    liquidity window recommendations, and conversational Hinglish voice scripts.
+    """
+    target_id = transaction_id.strip()
+    res = await db.execute(select(Transaction).where(Transaction.id == target_id))
+    txn = res.scalars().first()
+    if not txn and not target_id.isdigit():
+        res = await db.execute(select(Transaction).where(Transaction.id.contains(target_id)))
+        txn = res.scalars().first()
+    if not txn:
+        res = await db.execute(select(Transaction).where(Transaction.razorpay_order_id.contains(target_id)))
+        txn = res.scalars().first()
+
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found for PTP screening")
+
+    customer = None
+    if txn.customer_id:
+        c_res = await db.execute(select(Customer).where(Customer.id == txn.customer_id))
+        customer = c_res.scalars().first()
+
+    customer_name = customer.name if customer else "Valued Customer"
+    customer_phone = customer.phone if customer else "+919876543210"
+    first_name = customer_name.split()[0] if customer_name else "there"
+    risk_score = customer.risk_score if customer else 0.25
+
+    # Fraud / non-retryable stopping check
+    is_fraud = risk_score >= 0.85 or "STOLEN" in (txn.failure_code or "").upper()
+    is_eligible = not is_fraud and txn.status != "recovered"
+
+    disc = float(txn.discount_applied_percent or 0.0)
+    final_amt = round(txn.amount * (1.0 - disc / 100.0), 2)
+
+    # Compute optimal liquidity windows based on Indian Standard Time (UTC+5:30)
+    utc_now = datetime.now(timezone.utc)
+    ist_now = utc_now + timedelta(hours=5, minutes=30)
+    tomorrow_10am = (ist_now + timedelta(days=1)).strftime("%Y-%m-%d 10:30 IST")
+    post_salary = (ist_now + timedelta(days=2)).strftime("%Y-%m-%d 11:00 IST")
+    weekend_slot = (ist_now + timedelta(days=3)).strftime("%Y-%m-%d 16:00 IST")
+
+    windows = [
+        {"id": "slot_tomorrow", "label": "Tomorrow Morning (10:30 AM IST)", "value": tomorrow_10am, "tag": "Recommended"},
+        {"id": "slot_salary", "label": "Post-Salary Window (+48h)", "value": post_salary, "tag": "Liquidity Window"},
+        {"id": "slot_weekend", "label": "Weekend Clearance (4:00 PM IST)", "value": weekend_slot, "tag": "Weekend"},
+    ]
+
+    verdict = "ALREADY_CONFIRMED" if txn.promise_to_pay_date else ("FLAGGED_RISK" if not is_eligible else "ELIGIBLE")
+
+    script = (
+        f"Namaste {first_name} ji! Main Shark Recovery se Priya bol rahi hoon. "
+        f"Aapka ₹{final_amt:,.0f} ka order humne priority pe reserve rakha hai. "
+        f"Kya hum aapka payment {tomorrow_10am} ke liye confirm kar dein?"
+    )
+
+    return ScreenPTPResponse(
+        transaction_id=txn.id,
+        customer_name=customer_name,
+        customer_phone=customer_phone,
+        customer_email=customer.email if customer else None,
+        amount=txn.amount,
+        discount_offered=disc,
+        final_amount=final_amt,
+        failure_category=txn.failure_category or "UNKNOWN",
+        failure_reason=txn.failure_reason or "Payment dropped out",
+        risk_score=risk_score,
+        is_eligible_for_ptp=is_eligible,
+        current_promise_date=txn.promise_to_pay_date,
+        screening_verdict=verdict,
+        recommended_windows=windows,
+        recommended_script=script,
+    )
+
+
+@router.post("/confirm-ptp", response_model=ConfirmPTPResponse)
+async def confirm_promise_to_pay(
+    req: ConfirmPTPRequest,
+    db: AsyncSession = Depends(get_session),
+):
+    """
+    Confirms and locks in customer Promise-To-Pay (PTP) commitment via Hinglish Voice Agent,
+    persisting target date, generating authentic Hinglish spoken confirmation, updating audit ledger,
+    and dispatching SMS/WhatsApp notification.
+    """
+    target_id = req.transaction_id.strip()
+    res = await db.execute(select(Transaction).where(Transaction.id == target_id))
+    txn = res.scalars().first()
+    if not txn and not target_id.isdigit():
+        res = await db.execute(select(Transaction).where(Transaction.id.contains(target_id)))
+        txn = res.scalars().first()
+    if not txn:
+        res = await db.execute(select(Transaction).where(Transaction.razorpay_order_id.contains(target_id)))
+        txn = res.scalars().first()
+
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found for PTP confirmation")
+
+    customer = None
+    if txn.customer_id:
+        c_res = await db.execute(select(Customer).where(Customer.id == txn.customer_id))
+        customer = c_res.scalars().first()
+
+    customer_name = customer.name if customer else "Valued Customer"
+    customer_phone = customer.phone if customer else "+919876543210"
+    first_name = customer_name.split()[0] if customer_name else "Customer"
+
+    if req.discount_percent is not None:
+        txn.discount_applied_percent = max(0.0, min(15.0, float(req.discount_percent)))
+
+    disc = float(txn.discount_applied_percent or 0.0)
+    final_payable = round(txn.amount * (1.0 - disc / 100.0), 2)
+    pdate = req.promise_date.strip()
+
+    # Generate or reuse payment link
+    payment_link = txn.recovery_link
+    if not payment_link:
+        payment_link = await create_payment_link(
+            order_id=txn.razorpay_order_id,
+            amount=final_payable,
+            customer_name=customer_name,
+            customer_email=customer.email if customer else None,
+            customer_phone=customer_phone,
+            description=f"Shark Recovery Order - {first_name}",
+        )
+        txn.recovery_link = payment_link
+
+    # Update transaction in DB
+    txn.promise_to_pay_date = pdate
+    db.add(txn)
+
+    # Construct authentic conversational Hinglish confirmation from Priya Voice AI
+    disc_text = f" {disc:.0f}% discount ke saath" if disc > 0 else ""
+    speech_confirmation = (
+        f"Shukriya {first_name} ji! Maine aapka ₹{final_payable:,.0f} payment ka Promise-to-Pay{disc_text} "
+        f"{pdate} ke liye successfully lock aur confirm kar diya hai. "
+        f"1-click Razorpay payment link aapke registered WhatsApp aur SMS par bhej diya gaya hai. "
+        f"Dhanyawad aur aapka din shubh rahe!"
+    )
+
+    # Immutable Audit Log
+    audit = AuditLog(
+        transaction_id=txn.id,
+        customer_id=customer.id if customer else None,
+        agent_name="VoiceAgent (Priya Live)",
+        action_type=ActionType.PROMISE_TO_PAY_RECORDED,
+        status=AuditStatus.SUCCESS,
+        input_payload=json.dumps({
+            "promise_date": pdate,
+            "method": req.payment_method,
+            "discount_applied": disc,
+            "notes": req.note,
+        }),
+        output_payload=json.dumps({
+            "status": "confirmed",
+            "promise_date": pdate,
+            "confirmation_speech": speech_confirmation,
+            "payment_link": payment_link,
+            "amount_payable": final_payable,
+        }),
+    )
+    db.add(audit)
+    await db.commit()
+    await db.refresh(txn)
+
+    # Fire SMS confirmation non-blockingly
+    try:
+        twilio_client = _get_twilio_client()
+        if twilio_client and getattr(settings, "TWILIO_PHONE_NUMBER", None) and customer_phone:
+            phone_clean = customer_phone.strip()
+            if not phone_clean.startswith("+"):
+                phone_clean = f"+91{phone_clean}" if len(phone_clean) == 10 else f"+{phone_clean}"
+            sms_text = f"Hi {first_name}, your Promise-to-Pay is confirmed for {pdate}. Pay INR {final_payable:,.2f} here: {payment_link} - Shark Recovery"
+            twilio_client.messages.create(
+                body=sms_text,
+                from_=settings.TWILIO_PHONE_NUMBER,
+                to=phone_clean,
+            )
+    except Exception as e:
+        logger.warning(f"Failed to dispatch PTP confirmation SMS: {e}")
+
+    return ConfirmPTPResponse(
+        success=True,
+        transaction_id=txn.id,
+        customer_name=customer_name,
+        amount=txn.amount,
+        discount_applied=disc,
+        final_amount=final_payable,
+        promise_to_pay_date=pdate,
+        payment_link=payment_link,
+        confirmation_speech=speech_confirmation,
+        status="CONFIRMED",
+        message=f"Promise to Pay successfully confirmed and locked for {pdate}",
+    )

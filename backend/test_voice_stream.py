@@ -4,7 +4,10 @@ Unit tests for Telephony Codec, Gemini Multimodal Live Session, and Outbound Cal
 """
 import pytest
 from httpx import AsyncClient, ASGITransport
+from sqlmodel import select
 from backend.main import app
+from backend.database import async_session_maker
+from backend.models.transaction import Transaction
 from backend.tools.telephony_codec import (
     mulaw_to_pcm16,
     pcm16_to_mulaw,
@@ -137,4 +140,42 @@ async def test_outbound_call_endpoint():
         assert data_tw["status"] in ("failed", "unconfigured")
         assert "Twilio" in data_tw["message"]
         assert "Live Mic Interactive Call" in data_tw["message"]
+
+
+@pytest.mark.asyncio
+async def test_screen_and_confirm_promise_to_pay():
+    """Verifies PTP screening recommendations and Hinglish Voice Agent confirmation workflow."""
+    async with async_session_maker() as session:
+        txn = (await session.execute(select(Transaction))).scalars().first()
+        assert txn is not None
+        txn_id = txn.id
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. Test Screen PTP
+        screen_resp = await client.get(f"/api/voice/screen-ptp/{txn_id}")
+        assert screen_resp.status_code == 200
+        screen_data = screen_resp.json()
+        assert screen_data["transaction_id"] == txn_id
+        assert len(screen_data["recommended_windows"]) >= 2
+        assert "Namaste" in screen_data["recommended_script"]
+        assert screen_data["is_eligible_for_ptp"] is True
+
+        # 2. Test Confirm PTP
+        confirm_resp = await client.post(
+            "/api/voice/confirm-ptp",
+            json={
+                "transaction_id": txn_id,
+                "promise_date": "Tomorrow 10:30 AM IST",
+                "payment_method": "UPI DeepLink",
+                "discount_percent": 10.0,
+            },
+        )
+        assert confirm_resp.status_code == 200
+        confirm_data = confirm_resp.json()
+        assert confirm_data["success"] is True
+        assert confirm_data["promise_to_pay_date"] == "Tomorrow 10:30 AM IST"
+        assert "Shukriya" in confirm_data["confirmation_speech"]
+        assert confirm_data["final_amount"] > 0
+        assert confirm_data["status"] == "CONFIRMED"
 
