@@ -57,8 +57,7 @@ class Settings(BaseSettings):
     TWILIO_API_KEY: str = ""
     TWILIO_API_SECRET: str = ""
     TWILIO_PHONE_NUMBER: str = ""
-    TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"
-    TWILIO_SANDBOX_TEMPLATE: str = "appointment"  # "appointment", "code", "order", "raw"
+    TWILIO_WHATSAPP_FROM: str = ""
     
     # Exotel Indian Cloud Telephony (strictly from .env)
     EXOTEL_API_KEY: str = ""

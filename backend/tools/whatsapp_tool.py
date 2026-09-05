@@ -37,35 +37,10 @@ def _get_twilio_client():
     return None
 
 
-def format_twilio_message(payload: WhatsAppPayload, from_whatsapp: str) -> str:
-    """
-    Formats the message body.
-    If using dedicated/paid WhatsApp Business number (non-sandbox), sends the actual message directly.
-    If using Twilio WhatsApp Sandbox (+14155238886), formats using pre-approved template for trial accounts.
-    """
-    # If using dedicated paid WhatsApp sender or raw template, send authentic Hinglish copy directly
-    template = getattr(settings, "TWILIO_SANDBOX_TEMPLATE", "appointment").lower()
-    is_sandbox = "+14155238886" in from_whatsapp
-
-    if not is_sandbox or template == "raw":
-        return payload.message
-
-    app_name = "Shark Recovery"
-    link = payload.payment_link or "https://razorpay.com"
-
-    if template == "code":
-        return f"Your {app_name} code is {link}"
-    elif template == "order":
-        return f"Your {app_name} order of pending items has shipped and should be delivered on today. Details: {link}"
-    else:
-        # Default pre-approved sandbox template
-        return f"Your {app_name} appointment is coming up on {link}"
-
-
 async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
     """
-    Dispatches a WhatsApp message via Twilio API using pre-approved sandbox template
-    for trial accounts, and records to local outreach store.
+    Dispatches a WhatsApp message via official Twilio WhatsApp Business API
+    using merchant's dedicated sender, and records to local outreach store.
     """
     message_id = f"wam_{uuid.uuid4().hex[:10]}"
     twilio_sid = None
@@ -81,13 +56,12 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
             phone_clean = f"+91{phone_clean}"
 
     to_whatsapp = f"whatsapp:{phone_clean}" if not phone_clean.startswith("whatsapp:") else phone_clean
-    raw_from = (settings.TWILIO_WHATSAPP_FROM or "whatsapp:+14155238886").strip()
+    raw_from = (settings.TWILIO_WHATSAPP_FROM or "").strip()
     from_whatsapp = raw_from if raw_from.startswith("whatsapp:") else f"whatsapp:{raw_from}"
 
     client = _get_twilio_client()
-    if client:
-        # Format outbound body: raw Hinglish copy for dedicated senders, or pre-approved template for sandbox
-        outbound_body = format_twilio_message(payload, from_whatsapp)
+    if client and raw_from:
+        outbound_body = payload.message
         try:
             def _sync_send():
                 return client.messages.create(
@@ -100,7 +74,7 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
             twilio_sid = msg.sid
             delivery_status = msg.status or "sent"
             dispatch_mode = "twilio_live"
-            logger.info(f"Twilio WhatsApp template message dispatched successfully: SID {twilio_sid} to {to_whatsapp}")
+            logger.info(f"Twilio WhatsApp message dispatched successfully: SID {twilio_sid} to {to_whatsapp}")
         except Exception as e:
             err_msg = str(e)
             logger.warning(f"Twilio WhatsApp dispatch warning ({err_msg}). Recording to audit ledger.")
