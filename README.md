@@ -423,21 +423,16 @@ MAX_DISCOUNT_PERCENT=15.0
 
 ### 3. Launch Platform
 
-#### Option A: One-Command Local Runner
 From repository root:
 ```bash
 python run_demo.py
 ```
+Or on Windows:
+```cmd
+start.bat
+```
 - **Dashboard Frontend:** [http://localhost:5173](http://localhost:5173)
 - **Backend API Swagger:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-
-#### Option B: Docker Compose (Production Multi-Container)
-```bash
-docker compose up --build
-```
-- **Dashboard Frontend (Nginx SPA):** [http://localhost:3000](http://localhost:3000)
-- **Backend API Swagger:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- **Persistent SQLite Volume:** `recovery_data` mounted at `/app/data/recovery.db`
 
 ---
 
@@ -531,10 +526,9 @@ AI_Shark_Razorpay/
 │   │   └── index.css                      # TailwindCSS styles & focus ring design tokens
 │   ├── package.json                       # Frontend dependencies & build scripts
 │   └── vite.config.ts                     # Vite 8 configuration
-├── docker-compose.yml                     # Multi-container production deployment
-├── Dockerfile.backend                     # Backend Docker container specification
-├── Dockerfile.frontend                    # Frontend Nginx container specification
 ├── run_demo.py                            # One-command dual runner (FastAPI + Vite)
+├── run_dev.bat                            # Windows development dual launcher
+├── start.bat                              # One-click Windows startup script
 └── README.md                              # Complete platform documentation
 ```
 
