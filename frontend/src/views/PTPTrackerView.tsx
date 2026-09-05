@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { VoiceCallModal } from '../components/VoiceCallModal';
+import { RecoverySchedulerCard } from '../components/RecoverySchedulerCard';
 
 export interface PTPRecord {
   id: string;
@@ -399,6 +400,12 @@ export const PTPTrackerView: React.FC<PTPTrackerViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 2.5 Autonomous Recovery Scheduler Engine & Live Telemetry */}
+      <RecoverySchedulerCard
+        onTickCompleted={() => fetchPtpData(true)}
+        showNotification={showNotification}
+      />
 
       {/* 3. Liquidity Window Chips */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
