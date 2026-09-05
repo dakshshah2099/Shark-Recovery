@@ -52,12 +52,13 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "recovery@sharkagent.local"
 
-    # Twilio & Telephony Configuration (strictly from .env using API Key & Secret)
+    # Twilio & Telephony Configuration (strictly from .env using API Key & Secret or Account SID & Auth Token)
+    TWILIO_ACCOUNT_SID: str = ""
     TWILIO_API_KEY: str = ""
     TWILIO_API_SECRET: str = ""
     TWILIO_PHONE_NUMBER: str = ""
     TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"
-    TWILIO_SANDBOX_TEMPLATE: str = "appointment"  # "appointment", "code", "order"
+    TWILIO_SANDBOX_TEMPLATE: str = "appointment"  # "appointment", "code", "order", "raw"
     
     # Exotel Indian Cloud Telephony (strictly from .env)
     EXOTEL_API_KEY: str = ""

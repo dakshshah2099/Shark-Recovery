@@ -23,6 +23,9 @@ except ImportError:
     from config import settings
 
 
+import pytest
+
+@pytest.mark.asyncio
 async def test_all_phase_3_api():
     print("\n--- Starting Phase 3 API, Webhook & Simulation Tests ---")
     await init_db()

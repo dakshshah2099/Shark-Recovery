@@ -1072,14 +1072,17 @@ async def confirm_promise_to_pay(
     # Generate or reuse payment link
     payment_link = txn.recovery_link
     if not payment_link:
-        payment_link = await create_payment_link(
-            order_id=txn.razorpay_order_id,
+        link_req = RazorpayPaymentLinkCreate(
             amount=final_payable,
-            customer_name=customer_name,
-            customer_email=customer.email if customer else None,
-            customer_phone=customer_phone,
+            currency=txn.currency or "INR",
             description=f"Shark Recovery Order - {first_name}",
+            customer_name=customer_name,
+            customer_email=customer.email if customer and "@" in customer.email else "customer@example.com",
+            customer_contact=customer_phone,
+            notes={"transaction_id": txn.id, "ptp_date": pdate},
         )
+        link_res = await create_payment_link(link_req)
+        payment_link = link_res.short_url
         txn.recovery_link = payment_link
 
     # Update transaction in DB

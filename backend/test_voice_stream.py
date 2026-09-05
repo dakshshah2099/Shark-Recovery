@@ -145,9 +145,28 @@ async def test_outbound_call_endpoint():
 @pytest.mark.asyncio
 async def test_screen_and_confirm_promise_to_pay():
     """Verifies PTP screening recommendations and Hinglish Voice Agent confirmation workflow."""
+    from backend.models.customer import Customer
+    from backend.models.transaction import FailureCategory, TransactionStatus
+
     async with async_session_maker() as session:
-        txn = (await session.execute(select(Transaction))).scalars().first()
-        assert txn is not None
+        cust = Customer(name="PTP Test User", email="ptp_user@example.com", phone="+919876599999", risk_score=0.1)
+        session.add(cust)
+        await session.commit()
+        await session.refresh(cust)
+
+        txn = Transaction(
+            razorpay_order_id="order_ptp_fresh_001",
+            customer_id=cust.id,
+            amount=3500.0,
+            status=TransactionStatus.FAILED,
+            failure_category=FailureCategory.INSUFFICIENT_FUNDS,
+            failure_reason="Daily limit exceeded",
+            retry_count=0,
+            max_retries=3,
+        )
+        session.add(txn)
+        await session.commit()
+        await session.refresh(txn)
         txn_id = txn.id
 
     transport = ASGITransport(app=app)

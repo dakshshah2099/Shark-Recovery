@@ -37,6 +37,9 @@ except ImportError:
     )
 
 
+import pytest
+
+@pytest.mark.asyncio
 async def test_full_schema_lifecycle():
     await init_db()
     async with async_session_maker() as session:

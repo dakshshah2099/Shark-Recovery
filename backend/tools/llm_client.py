@@ -71,16 +71,26 @@ async def complete_json_prompt(
         )
 
         content = response.choices[0].message.content.strip()
-        # Strip markdown fences if present
-        if content.startswith("```json"):
-            content = content[7:]
-        elif content.startswith("```"):
-            content = content[3:]
-        if content.endswith("```"):
-            content = content[:-3]
-        content = content.strip()
+        import re
 
-        return json.loads(content)
+        # Strategy 1: Direct or regex JSON extraction
+        try:
+            return json.loads(content)
+        except Exception:
+            pass
+
+        # Strategy 2: Extract block between first { and last }
+        json_match = re.search(r"(\{.*\})", content, re.DOTALL)
+        if json_match:
+            try:
+                return json.loads(json_match.group(1).strip())
+            except Exception:
+                pass
+
+        # Strategy 3: Clean markdown fences
+        cleaned = re.sub(r"^```(?:json)?\s*", "", content, flags=re.MULTILINE)
+        cleaned = re.sub(r"\s*```$", "", cleaned, flags=re.MULTILINE).strip()
+        return json.loads(cleaned)
 
     except Exception as e:
         logger.warning(f"LiteLLM call failed on '{model}' ({type(e).__name__}: {e}). Falling back to heuristic rule engine.")

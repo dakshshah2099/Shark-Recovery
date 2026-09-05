@@ -15,30 +15,41 @@ logger = logging.getLogger(__name__)
 
 def _get_twilio_client():
     """
-    Initializes Twilio client using API Key & API Secret.
+    Initializes Twilio client using Account SID & Auth Token OR API Key & Secret.
     """
     api_key = (settings.TWILIO_API_KEY or "").strip()
     api_secret = (settings.TWILIO_API_SECRET or "").strip()
+    account_sid = (getattr(settings, "TWILIO_ACCOUNT_SID", "") or "").strip()
 
     if api_key and api_secret:
         from twilio.rest import Client
-        logger.info(f"Authenticating Twilio client using API Key ({api_key[:6]}...)")
-        return Client(api_key, api_secret)
+        # Case 1: Account SID provided directly as TWILIO_ACCOUNT_SID or in TWILIO_API_KEY
+        if api_key.startswith("AC"):
+            logger.info(f"Authenticating Twilio client using Account SID ({api_key[:6]}...)")
+            return Client(api_key, api_secret)
+        elif account_sid:
+            logger.info(f"Authenticating Twilio client using API Key ({api_key[:6]}...) with Account SID ({account_sid[:6]}...)")
+            return Client(api_key, api_secret, account_sid=account_sid)
+        else:
+            logger.info(f"Authenticating Twilio client using credentials ({api_key[:6]}...)")
+            return Client(api_key, api_secret)
 
     return None
 
 
-def format_twilio_sandbox_message(payload: WhatsAppPayload) -> str:
+def format_twilio_message(payload: WhatsAppPayload, from_whatsapp: str) -> str:
     """
-    Formats the message body to match Twilio WhatsApp Sandbox pre-approved templates
-    for trial accounts (required outside 24h conversation windows).
-    
-    Twilio Sandbox Supported Pre-approved Templates:
-    1. 'appointment': Your {{1}} appointment is coming up on {{2}}
-    2. 'code': Your {{1}} code is {{2}}
-    3. 'order': Your {{1}} order of {{2}} has shipped and should be delivered on {{3}}. Details: {{4}}
+    Formats the message body.
+    If using dedicated/paid WhatsApp Business number (non-sandbox), sends the actual message directly.
+    If using Twilio WhatsApp Sandbox (+14155238886), formats using pre-approved template for trial accounts.
     """
+    # If using dedicated paid WhatsApp sender or raw template, send authentic Hinglish copy directly
     template = getattr(settings, "TWILIO_SANDBOX_TEMPLATE", "appointment").lower()
+    is_sandbox = "+14155238886" in from_whatsapp
+
+    if not is_sandbox or template == "raw":
+        return payload.message
+
     app_name = "Shark Recovery"
     link = payload.payment_link or "https://razorpay.com"
 
@@ -46,9 +57,6 @@ def format_twilio_sandbox_message(payload: WhatsAppPayload) -> str:
         return f"Your {app_name} code is {link}"
     elif template == "order":
         return f"Your {app_name} order of pending items has shipped and should be delivered on today. Details: {link}"
-    elif template == "raw":
-        # Sends freeform message directly (for upgraded/paid accounts or active 24h sessions)
-        return payload.message
     else:
         # Default pre-approved sandbox template
         return f"Your {app_name} appointment is coming up on {link}"
@@ -78,8 +86,8 @@ async def send_whatsapp_message(payload: WhatsAppPayload) -> Dict[str, Any]:
 
     client = _get_twilio_client()
     if client:
-        # Format outbound body with pre-approved template for Twilio trial accounts
-        outbound_body = format_twilio_sandbox_message(payload)
+        # Format outbound body: raw Hinglish copy for dedicated senders, or pre-approved template for sandbox
+        outbound_body = format_twilio_message(payload, from_whatsapp)
         try:
             def _sync_send():
                 return client.messages.create(

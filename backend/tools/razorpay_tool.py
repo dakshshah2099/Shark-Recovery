@@ -40,21 +40,34 @@ async def create_payment_link(
 
     if client:
         try:
+            # Build strictly sanitized customer dictionary
+            customer_dict: Dict[str, str] = {}
+            if payload.customer_name and payload.customer_name.strip():
+                customer_dict["name"] = payload.customer_name.strip()
+            if payload.customer_email and "@" in payload.customer_email:
+                customer_dict["email"] = payload.customer_email.strip()
+            if payload.customer_contact:
+                import re
+                clean_phone = re.sub(r"[^\d+]", "", payload.customer_contact)
+                if len(clean_phone) >= 10:
+                    customer_dict["contact"] = clean_phone
+
+            # Ensure all notes values are strictly strings for Razorpay API compliance
+            sanitized_notes = {str(k): str(v) for k, v in (payload.notes or {}).items()}
+
             options: Dict[str, Any] = {
-                "amount": amount_paise,
-                "currency": payload.currency,
+                "amount": max(100, amount_paise),  # Minimum 1 INR (100 paise)
+                "currency": payload.currency or "INR",
                 "accept_partial": False,
-                "description": payload.description,
-                "customer": {
-                    "name": payload.customer_name,
-                    "email": payload.customer_email,
-                    "contact": payload.customer_contact,
-                },
+                "description": payload.description or "Shark Recovery Payment Link",
                 "notify": {"sms": False, "email": False},
                 "reminder_enable": True,
-                "notes": payload.notes,
+                "notes": sanitized_notes,
                 "expire_by": int(time.time()) + (payload.expire_by_minutes * 60),
             }
+            if customer_dict:
+                options["customer"] = customer_dict
+
             resp = client.payment_link.create(options)
             return RazorpayPaymentLinkResponse(
                 link_id=resp.get("id", f"plink_{uuid.uuid4().hex[:10]}"),

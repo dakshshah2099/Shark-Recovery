@@ -32,15 +32,24 @@ if "sqlite" in db_url and "///" in db_url:
 is_sqlite = "sqlite" in db_url.lower()
 is_postgres = "postgres" in db_url.lower()
 
+import sys
+import os
+from sqlalchemy.pool import NullPool
+
 # Async engine configuration with database-specific pooling
 engine_kwargs = {"echo": False}
 if is_sqlite:
     engine_kwargs["connect_args"] = {"check_same_thread": False}
 else:
-    # Enterprise PostgreSQL connection pool with proactive liveness checking
-    engine_kwargs["pool_size"] = 20
-    engine_kwargs["max_overflow"] = 10
-    engine_kwargs["pool_pre_ping"] = True
+    # Avoid asyncpg event loop binding collisions across test runners
+    if "pytest" in sys.modules or os.environ.get("PYTEST_CURRENT_TEST"):
+        engine_kwargs["poolclass"] = NullPool
+    else:
+        # Enterprise PostgreSQL connection pool with proactive liveness checking & recycling
+        engine_kwargs["pool_size"] = 20
+        engine_kwargs["max_overflow"] = 10
+        engine_kwargs["pool_pre_ping"] = True
+        engine_kwargs["pool_recycle"] = 300
 
 engine = create_async_engine(
     db_url,
