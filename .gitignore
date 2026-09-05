@@ -68,5 +68,37 @@ backend/kokoro_weights/
 *.onnx
 *.bin
 
-# Tool artifacts
+# Agent & Context & Design Files
+.agents/
+.agents
 .impeccable/
+.impeccable
+AGENTS.md
+agents.md
+AGENT.md
+agent.md
+CONTEXT.md
+context.md
+DESIGN.md
+design.md
+.context/
+.design/
+.claude/
+.cursor/
+.windsurf/
+.gemini/
+
+# Caches & Build Meta
+.cache/
+*.cache
+.pytest_cache/
+backend/.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.eslintcache
+.parcel-cache/
+*.tsbuildinfo
+.vite/
+frontend/.vite/
+**/node_modules/.cache/
+
