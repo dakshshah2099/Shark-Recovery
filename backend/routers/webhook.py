@@ -179,6 +179,8 @@ async def handle_razorpay_webhook(
         if txn:
             txn.status = TransactionStatus.RECOVERED
             txn.recovered_amount = amount_inr if amount_inr > 0 else txn.amount
+            if txn.promise_to_pay_date:
+                txn.ptp_status = "FULFILLED"
             txn.updated_at = datetime.utcnow()
             session.add(txn)
 

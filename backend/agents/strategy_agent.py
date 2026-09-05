@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 import logging
 from typing import Optional
 
@@ -88,9 +89,43 @@ Output:
 """
 
 
+def compute_liquidity_delay_seconds(utc_now: Optional[datetime] = None) -> int:
+    """
+    Computes optimal delay seconds for INSUFFICIENT_FUNDS / UPI Limits:
+    +4 hours default, or if landing inside RBI DND window (8 PM - 8 AM IST),
+    schedules for next morning's 10:30 AM IST banking liquidity window.
+    """
+    if not utc_now:
+        utc_now = datetime.now(timezone.utc)
+    ist_now = utc_now + timedelta(hours=5, minutes=30)
+
+    # Candidate 4-hour delay
+    tentative_ist = ist_now + timedelta(hours=4)
+    tentative_hour = tentative_ist.hour
+
+    # DND active 8 PM to 8 AM (20:00 to 08:00 IST) or evening past 17:30 IST
+    if tentative_hour >= 20 or tentative_hour < 8 or ist_now.hour >= 18:
+        # Schedule for next morning 10:30 AM IST
+        tomorrow_ist = ist_now + timedelta(days=1)
+        target_ist = tomorrow_ist.replace(hour=10, minute=30, second=0, microsecond=0)
+    else:
+        target_ist = tentative_ist
+
+    diff = int((target_ist - ist_now).total_seconds())
+    return max(60, diff)
+
+
+def compute_gateway_spike_delay_seconds() -> int:
+    """Short buffer delay (10 mins / 600s, within 5-15 mins) until sentinel confirms gateway recovery."""
+    return 600
+
+
 def heuristic_strategy(ctx: DiagnosticContext, diag: FailureDiagnosis) -> RecoveryStrategy:
     """Deterministic, high-conversion strategy engine."""
     first_name = ctx.customer_name.split()[0] if ctx.customer_name else "there"
+    delay_seconds = 0
+    delayed_dispatch = False
+    immediate_message: Optional[str] = None
 
     if diag.failure_category == FailureCategory.INSUFFICIENT_FUNDS:
         channel = RecoveryChannel.WHATSAPP if ctx.customer_phone else RecoveryChannel.EMAIL
@@ -103,7 +138,13 @@ def heuristic_strategy(ctx: DiagnosticContext, diag: FailureDiagnosis) -> Recove
             f"Koi tension nahi! Humne aapke liye instant 10% discount apply kar diya hai. "
             f"Neeche click karein aur Credit Card ya dusre UPI se 10 seconds mein complete karein!"
         )
-        rationale = "High churn risk due to balance constraint; 10% dynamic discount triggers instant checkout completion."
+        rationale = "High churn risk due to balance constraint; primary payment push scheduled for liquidity window with instant cart reservation."
+        delay_seconds = compute_liquidity_delay_seconds()
+        delayed_dispatch = True
+        immediate_message = (
+            f"Namaste {first_name} ji! Humne aapka cart reserve kar diya hai taaki aapka order hold rahe. "
+            f"Aap aaram se baad mein 1-click se complete kar sakte hain."
+        )
 
     elif diag.failure_category == FailureCategory.AUTHENTICATION_FAILED:
         channel = RecoveryChannel.WHATSAPP if ctx.customer_phone else RecoveryChannel.EMAIL
@@ -128,7 +169,13 @@ def heuristic_strategy(ctx: DiagnosticContext, diag: FailureDiagnosis) -> Recove
             f"Namaste {first_name}! Bank gateway lag ki wajah se aapka ₹{ctx.amount:,.0f} ka payment interrupt ho gaya tha. "
             f"System connection ab live hai aur aapka cart safe hai. Direct 1-click link se bina re-entry complete karein!"
         )
-        rationale = "Technical failure requires empathetic reassurance without eroding margin."
+        rationale = "Technical failure; short buffer delay scheduled until sentinel telemetry confirms gateway recovery."
+        delay_seconds = compute_gateway_spike_delay_seconds()
+        delayed_dispatch = True
+        immediate_message = (
+            f"Namaste {first_name} ji! Bank server lag ki wajah se payment pause ho gaya tha. "
+            f"Humne aapka cart hold kar liya hai. Server live hote hi hum direct link share karenge."
+        )
 
     elif diag.failure_category == FailureCategory.USER_DROPOUT:
         channel = RecoveryChannel.WHATSAPP if ctx.customer_phone else RecoveryChannel.EMAIL
@@ -165,6 +212,9 @@ def heuristic_strategy(ctx: DiagnosticContext, diag: FailureDiagnosis) -> Recove
         message_content=message,
         urgency_level="high" if discount > 0 else "medium",
         rationale=rationale,
+        delay_seconds=delay_seconds,
+        delayed_dispatch=delayed_dispatch,
+        immediate_message=immediate_message,
     )
 
 
@@ -216,6 +266,25 @@ Failure Diagnosis:
             # Clamp discount percentage to safe bounds [0.0, 15.0]
             disc = float(parsed.get("discount_percentage", 0.0))
             parsed["discount_percentage"] = max(0.0, min(15.0, round(disc, 1)))
+
+            # Handle intelligent delay & liquidity windows
+            first_name = ctx.customer_name.split()[0] if ctx.customer_name else "there"
+            if diag.failure_category == FailureCategory.INSUFFICIENT_FUNDS:
+                parsed["delayed_dispatch"] = True
+                parsed["delay_seconds"] = int(parsed.get("delay_seconds") or compute_liquidity_delay_seconds())
+                if not parsed.get("immediate_message"):
+                    parsed["immediate_message"] = (
+                        f"Namaste {first_name} ji! Humne aapka cart reserve kar diya hai taaki aapka order hold rahe. "
+                        f"Aap aaram se baad mein 1-click se complete kar sakte hain."
+                    )
+            elif diag.failure_category == FailureCategory.BANK_SERVER_ERROR:
+                parsed["delayed_dispatch"] = True
+                parsed["delay_seconds"] = int(parsed.get("delay_seconds") or compute_gateway_spike_delay_seconds())
+                if not parsed.get("immediate_message"):
+                    parsed["immediate_message"] = (
+                        f"Namaste {first_name} ji! Bank server lag ki wajah se payment pause ho gaya tha. "
+                        f"Humne aapka cart hold kar liya hai. Server live hote hi hum direct link share karenge."
+                    )
 
             parsed["transaction_id"] = ctx.transaction_id
             return RecoveryStrategy(**parsed)

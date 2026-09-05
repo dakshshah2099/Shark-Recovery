@@ -1,7 +1,7 @@
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -222,6 +222,14 @@ async def orchestrate_revenue_recovery(
         duration_ms=t_strat_ms,
     )
 
+    # Set cooling-off next retry and liquidity dispatch schedule
+    cooling_hours = compliance.cooling_off_hours_required if compliance.cooling_off_hours_required > 0 else 4
+    txn.next_retry_at = datetime.utcnow() + timedelta(hours=cooling_hours)
+    if getattr(strategy, "delayed_dispatch", False) and getattr(strategy, "delay_seconds", 0) > 0:
+        txn.dispatch_scheduled_at = datetime.utcnow() + timedelta(seconds=strategy.delay_seconds)
+    else:
+        txn.dispatch_scheduled_at = None
+
     # 7. Tool Execution 1: Generate Payment Link with dynamic incentive (Math Audit Verified)
     discount_pct = max(0.0, min(15.0, float(strategy.discount_percentage)))
     discount_amount = round(txn.amount * (discount_pct / 100.0), 2)
@@ -295,6 +303,8 @@ async def orchestrate_revenue_recovery(
         )
 
         if voice_res.promise_to_pay_date:
+            txn.ptp_status = "PENDING"
+            txn.ptp_reminder_sent = False
             await record_audit_log(
                 session=session,
                 agent_name="PromiseToPayTracker",
@@ -337,6 +347,8 @@ async def orchestrate_revenue_recovery(
         )
         b2b_plan_data = b2b_plan.model_dump()
         txn.promise_to_pay_date = b2b_plan.promise_date
+        txn.ptp_status = "PENDING"
+        txn.ptp_reminder_sent = False
 
         await record_audit_log(
             session=session,
@@ -363,13 +375,15 @@ async def orchestrate_revenue_recovery(
 
     # 9a. WhatsApp Outreach Dispatch (When chosen channel is WHATSAPP or SMS)
     if chosen_channel in (RecoveryChannel.WHATSAPP, RecoveryChannel.SMS) and cust.phone:
+        is_delayed = bool(getattr(strategy, "delayed_dispatch", False) and getattr(strategy, "immediate_message", None))
+        wa_text = strategy.immediate_message if is_delayed else f"{strategy.message_content}\n\n👉 Complete Payment: {link_resp.short_url}"
         wa_payload = WhatsAppPayload(
             transaction_id=txn.id,
             recipient_phone=cust.phone,
             recipient_name=cust.name,
-            message=f"{strategy.message_content}\n\n👉 Complete Payment: {link_resp.short_url}",
+            message=wa_text,
             payment_link=link_resp.short_url,
-            template_name="cart_recovery_incentive",
+            template_name="cart_reservation_notice" if is_delayed else "cart_recovery_incentive",
             params={"discount": strategy.discount_percentage, "code": strategy.offer_code or ""},
         )
         t_wa_start = time.perf_counter()
@@ -392,6 +406,10 @@ async def orchestrate_revenue_recovery(
 
     # 9b. Email Dispatch (When chosen channel is EMAIL or fallback)
     elif chosen_channel == RecoveryChannel.EMAIL and cust.email and "@" in cust.email and not cust.email.endswith("@example.internal"):
+        is_delayed = bool(getattr(strategy, "delayed_dispatch", False) and getattr(strategy, "immediate_message", None))
+        active_headline = "Order Cart Reserved: We held your items" if is_delayed else strategy.custom_headline
+        active_content = strategy.immediate_message if is_delayed else strategy.message_content
+
         discount_rows = f"""
         <tr>
           <td style="padding: 6px 0; color: #059669; font-weight: 600;">Special Recovery Discount ({discount_pct:.1f}%):</td>
@@ -410,8 +428,8 @@ async def orchestrate_revenue_recovery(
               <p style="color: #94a3b8; font-size: 12px; margin: 4px 0 0 0;">Autonomous Payment Recovery Engine</p>
             </div>
             <div style="padding: 28px 24px;">
-              <h2 style="color: #0f172a; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">{strategy.custom_headline}</h2>
-              <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 20px 0;">{strategy.message_content}</p>
+              <h2 style="color: #0f172a; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">{active_headline}</h2>
+              <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 20px 0;">{active_content}</p>
 
               <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 0 0 24px 0;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
@@ -447,9 +465,9 @@ async def orchestrate_revenue_recovery(
             transaction_id=txn.id,
             recipient_email=cust.email,
             recipient_name=cust.name,
-            subject=strategy.custom_headline,
+            subject=active_headline,
             body_html=email_html,
-            body_text=f"{strategy.message_content}\n\nPay Now (INR {payable_amount:.2f}): {link_resp.short_url}",
+            body_text=f"{active_content}\n\nPay Now (INR {payable_amount:.2f}): {link_resp.short_url}",
             payment_link=link_resp.short_url,
             discount_applied=strategy.discount_percentage,
             original_amount=txn.amount,
@@ -500,6 +518,9 @@ async def orchestrate_revenue_recovery(
         "strategy": strategy.model_dump(),
         "payment_link": link_resp.short_url,
         "payable_amount": payable_amount,
+        "next_retry_at": txn.next_retry_at.isoformat() if txn.next_retry_at else None,
+        "dispatch_scheduled_at": txn.dispatch_scheduled_at.isoformat() if txn.dispatch_scheduled_at else None,
+        "ptp_status": txn.ptp_status,
         "voice_session": voice_session_data,
         "mandate_schedule": mandate_schedule_data,
         "b2b_plan": b2b_plan_data,

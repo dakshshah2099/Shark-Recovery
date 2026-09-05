@@ -334,6 +334,99 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     }
   };
 
+  const renderSchedulerBadges = (txn: TransactionItem) => {
+    const badges: React.ReactNode[] = [];
+
+    // 1. Auto-Attempt Badge: 🔄 Auto-Attempt 2/3
+    if (txn.status !== 'recovered') {
+      if (txn.auto_retry_enabled === false) {
+        badges.push(
+          <span
+            key="retry-off"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 font-mono"
+            title="Auto-retry killswitch disabled for this order"
+          >
+            <span>⏸️ Auto-Retry Off</span>
+          </span>
+        );
+      } else if (txn.retry_count > 0 || txn.max_retries > 0) {
+        badges.push(
+          <span
+            key="auto-attempt"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 font-mono"
+            title={`Autonomous retry attempt ${txn.retry_count} of ${txn.max_retries}`}
+          >
+            <span>🔄 Auto-Attempt {txn.retry_count}/{txn.max_retries}</span>
+          </span>
+        );
+      }
+    }
+
+    // 2. Retry Due Badge: ⏳ Retry Due in Xh
+    if (txn.status === 'processing' && txn.auto_retry_enabled !== false) {
+      if (txn.dispatch_scheduled_at) {
+        const dispatchMs = new Date(txn.dispatch_scheduled_at).getTime() - Date.now();
+        if (dispatchMs > 0) {
+          const hours = Math.max(1, Math.ceil(dispatchMs / (1000 * 60 * 60)));
+          badges.push(
+            <span
+              key="dispatch-due"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 font-mono animate-pulse"
+              title={`Liquidity window primary dispatch scheduled in ${hours}h`}
+            >
+              <span>⏳ Push in {hours}h</span>
+            </span>
+          );
+        }
+      } else if (txn.next_retry_at) {
+        const retryMs = new Date(txn.next_retry_at).getTime() - Date.now();
+        if (retryMs > 0) {
+          const hours = Math.max(1, Math.ceil(retryMs / (1000 * 60 * 60)));
+          badges.push(
+            <span
+              key="retry-due"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-cyan-50 dark:bg-cyan-950/50 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800/60 font-mono"
+              title={`Cooling-off window active. Next retry scheduled in ${hours}h`}
+            >
+              <span>⏳ Retry Due in {hours}h</span>
+            </span>
+          );
+        } else {
+          badges.push(
+            <span
+              key="retry-now"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 font-mono"
+              title="Cooling-off completed. Eligible for automated retry."
+            >
+              <span>⏳ Retry Due Now</span>
+            </span>
+          );
+        }
+      }
+    }
+
+    // 3. PTP Breached Badge: ⏰ PTP Breached (Reminding)
+    const isPtpBreached =
+      txn.status !== 'recovered' &&
+      (txn.ptp_status === 'BREACHED' ||
+        txn.ptp_reminder_sent ||
+        (txn.promise_to_pay_date && new Date(txn.promise_to_pay_date).getTime() < Date.now()));
+
+    if (isPtpBreached) {
+      badges.push(
+        <span
+          key="ptp-breached"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 font-mono"
+          title="Committed promise-to-pay date passed. Autonomous breach reminder active."
+        >
+          <span>⏰ PTP Breached {txn.ptp_reminder_sent ? '(Reminded)' : '(Reminding)'}</span>
+        </span>
+      );
+    }
+
+    return badges;
+  };
+
   return (
     <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg overflow-hidden shadow-xs transition-colors w-full">
       {/* Search & Filter Toolbar */}
@@ -469,7 +562,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   <div className="font-heading font-extrabold text-zinc-900 dark:text-white text-sm tabular-nums">
                     ₹{txn.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
-                  <div className="mt-1">{getStatusBadge(txn.status)}</div>
+                  <div className="mt-1 flex flex-col items-end gap-1">
+                    {getStatusBadge(txn.status)}
+                    {renderSchedulerBadges(txn)}
+                  </div>
                 </div>
               </div>
 
@@ -706,7 +802,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
                   {/* Status Badge */}
                   <td className="py-3 px-4">
-                    {getStatusBadge(txn.status)}
+                    <div className="flex flex-col items-start gap-1">
+                      {getStatusBadge(txn.status)}
+                      {renderSchedulerBadges(txn)}
+                    </div>
                   </td>
 
                   {/* Outreach Channel & Link */}

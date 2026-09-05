@@ -72,6 +72,11 @@ async def init_db() -> None:
         ("mandate_retry_schedule", "TEXT"),
         ("voice_call_transcript", "TEXT"),
         ("is_benchmark", "BOOLEAN DEFAULT FALSE"),
+        ("next_retry_at", "TIMESTAMP"),
+        ("dispatch_scheduled_at", "TIMESTAMP"),
+        ("ptp_reminder_sent", "BOOLEAN DEFAULT FALSE"),
+        ("ptp_status", "VARCHAR"),
+        ("auto_retry_enabled", "BOOLEAN DEFAULT TRUE"),
     ]
     for col_name, col_def in migration_cols:
         try:
@@ -83,24 +88,45 @@ async def init_db() -> None:
         except Exception:
             pass
 
-    # Ensure foreign key cascade on postgres if constraint exists
+    # Resilient enum migration on PostgreSQL for newly introduced action types
+    if is_postgres:
+        new_enum_vals = [
+            "PTP_BREACH_REMINDER",
+            "RECOVERY_AUTO_RETRY",
+            "DELAYED_DISPATCH_TRIGGERED",
+            "ptp_breach_reminder",
+            "recovery_auto_retry",
+            "delayed_dispatch_triggered",
+        ]
+        for val in new_enum_vals:
+            try:
+                autocommit_engine = engine.execution_options(isolation_level="AUTOCOMMIT")
+                async with autocommit_engine.connect() as conn:
+                    await conn.execute(
+                        text(f"ALTER TYPE actiontype ADD VALUE IF NOT EXISTS '{val}'")
+                    )
+            except Exception:
+                pass
+
+    # Ensure foreign key cascade on postgres if constraint exists and not already CASCADE ('c')
     if is_postgres:
         try:
             async with engine.begin() as conn:
+                await conn.execute(text("SET LOCAL lock_timeout = '2s';"))
                 await conn.execute(text("""
                     DO $$
                     BEGIN
                         IF EXISTS (
-                            SELECT 1 FROM information_schema.table_constraints
-                            WHERE constraint_name = 'audit_log_transaction_id_fkey'
+                            SELECT 1 FROM pg_constraint
+                            WHERE conname = 'audit_log_transaction_id_fkey' AND confdeltype != 'c'
                         ) THEN
                             ALTER TABLE audit_log DROP CONSTRAINT audit_log_transaction_id_fkey;
                             ALTER TABLE audit_log ADD CONSTRAINT audit_log_transaction_id_fkey
                                 FOREIGN KEY (transaction_id) REFERENCES transaction(id) ON DELETE CASCADE;
                         END IF;
                         IF EXISTS (
-                            SELECT 1 FROM information_schema.table_constraints
-                            WHERE constraint_name = 'audit_log_customer_id_fkey'
+                            SELECT 1 FROM pg_constraint
+                            WHERE conname = 'audit_log_customer_id_fkey' AND confdeltype != 'c'
                         ) THEN
                             ALTER TABLE audit_log DROP CONSTRAINT audit_log_customer_id_fkey;
                             ALTER TABLE audit_log ADD CONSTRAINT audit_log_customer_id_fkey

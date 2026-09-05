@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Sparkles,
   ShieldCheck,
+  RotateCw,
 } from 'lucide-react';
 import { CustomSelect } from '../components/CustomSelect';
 
@@ -92,6 +93,81 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [maxRetries, setMaxRetries] = useState(2);
   const [activeTab, setActiveTab] = useState<'all' | 'ai' | 'payment' | 'channels' | 'guardrails'>('all');
   const [showPurgeModal, setShowPurgeModal] = useState<boolean>(false);
+  const [schedulerStatus, setSchedulerStatus] = useState<{
+    is_running: boolean;
+    is_paused: boolean;
+    last_tick_at?: string | null;
+    metrics?: {
+      delayed_dispatches: number;
+      retries_triggered: number;
+      ptp_breaches_handled: number;
+      blocked: number;
+    };
+  } | null>(null);
+  const [togglingScheduler, setTogglingScheduler] = useState<boolean>(false);
+  const [tickingScheduler, setTickingScheduler] = useState<boolean>(false);
+
+  const fetchSchedulerStatus = useCallback(async () => {
+    try {
+      const res = await fetch('/api/scheduler/status');
+      if (res.ok) {
+        const data = await res.json();
+        setSchedulerStatus(data);
+      }
+    } catch {
+      // Ignore background fetch error
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSchedulerStatus();
+    const interval = setInterval(fetchSchedulerStatus, 8000);
+    return () => clearInterval(interval);
+  }, [fetchSchedulerStatus]);
+
+  const handleToggleScheduler = async () => {
+    setTogglingScheduler(true);
+    try {
+      const res = await fetch('/api/scheduler/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paused: !schedulerStatus?.is_paused }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setSchedulerStatus(updated);
+        showNotification?.(
+          updated.is_paused
+            ? 'Recovery Scheduler paused. Autonomous retry loop suspended.'
+            : 'Recovery Scheduler resumed. Autonomous background recovery active.',
+          'success'
+        );
+      }
+    } catch (e: any) {
+      showNotification?.(`Failed to toggle scheduler: ${e.message}`, 'error');
+    } finally {
+      setTogglingScheduler(false);
+    }
+  };
+
+  const handleTriggerTick = async () => {
+    setTickingScheduler(true);
+    try {
+      const res = await fetch('/api/scheduler/tick', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setSchedulerStatus(data.scheduler);
+        showNotification?.(
+          `Scheduler tick ran: ${data.metrics.retries_triggered} retries, ${data.metrics.delayed_dispatches} delayed pushes, ${data.metrics.ptp_breaches_handled} PTP breaches handled.`,
+          'success'
+        );
+      }
+    } catch (e: any) {
+      showNotification?.(`Scheduler tick failed: ${e.message}`, 'error');
+    } finally {
+      setTickingScheduler(false);
+    }
+  };
 
   useEffect(() => {
     if (!showPurgeModal) return;
@@ -823,6 +899,98 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </p>
           </div>
         )}
+      </div>
+
+      {/* Autonomous Background Recovery Scheduler Control */}
+      <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-[#27272a] rounded-lg p-5 sm:p-7 space-y-4 shadow-xs transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-[#27272a] pb-4">
+          <div className="space-y-1">
+            <h3 className="font-heading font-bold text-sm sm:text-base text-zinc-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>Autonomous Recovery Scheduler Worker</span>
+            </h3>
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-body">
+              Background worker polling for delayed liquidity window dispatches, eligible cooling-off retries, and breached promise-to-pay commitments.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold font-mono border ${
+                schedulerStatus?.is_paused
+                  ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'
+                  : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  schedulerStatus?.is_paused
+                    ? 'bg-amber-500'
+                    : 'bg-emerald-500 animate-pulse'
+                }`}
+              />
+              <span>{schedulerStatus?.is_paused ? 'Paused' : 'Active (30s)'}</span>
+            </span>
+
+            <button
+              type="button"
+              onClick={handleToggleScheduler}
+              disabled={togglingScheduler}
+              className={`h-9 px-3.5 rounded-md text-xs font-subheading font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-xs focus-rzp ${
+                schedulerStatus?.is_paused
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a]'
+              }`}
+            >
+              {togglingScheduler ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : schedulerStatus?.is_paused ? (
+                <span>Resume Scheduler</span>
+              ) : (
+                <span>Pause Scheduler</span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleTriggerTick}
+              disabled={tickingScheduler}
+              className="h-9 px-3 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-[#18181b] dark:hover:bg-[#27272a] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-[#27272a] text-xs font-subheading font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors focus-rzp"
+              title="Force execute one evaluation pass right now"
+            >
+              <RotateCw className={`w-3 h-3 ${tickingScheduler ? 'animate-spin text-blue-500' : ''}`} />
+              <span>Tick Pass</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Worker Telemetry Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 text-xs">
+          <div className="bg-zinc-50 dark:bg-[#18181b] p-3 rounded-md border border-zinc-100 dark:border-[#27272a]">
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading">Delayed Pushes</div>
+            <div className="font-heading font-extrabold text-sm sm:text-base text-zinc-900 dark:text-white mt-0.5 tabular-nums">
+              {schedulerStatus?.metrics?.delayed_dispatches ?? 0}
+            </div>
+          </div>
+          <div className="bg-zinc-50 dark:bg-[#18181b] p-3 rounded-md border border-zinc-100 dark:border-[#27272a]">
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading">Auto-Retries</div>
+            <div className="font-heading font-extrabold text-sm sm:text-base text-zinc-900 dark:text-white mt-0.5 tabular-nums">
+              {schedulerStatus?.metrics?.retries_triggered ?? 0}
+            </div>
+          </div>
+          <div className="bg-zinc-50 dark:bg-[#18181b] p-3 rounded-md border border-zinc-100 dark:border-[#27272a]">
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading">PTP Breaches</div>
+            <div className="font-heading font-extrabold text-sm sm:text-base text-zinc-900 dark:text-white mt-0.5 tabular-nums">
+              {schedulerStatus?.metrics?.ptp_breaches_handled ?? 0}
+            </div>
+          </div>
+          <div className="bg-zinc-50 dark:bg-[#18181b] p-3 rounded-md border border-zinc-100 dark:border-[#27272a]">
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-subheading">Compliance Blocked</div>
+            <div className="font-heading font-extrabold text-sm sm:text-base text-zinc-900 dark:text-white mt-0.5 tabular-nums">
+              {schedulerStatus?.metrics?.blocked ?? 0}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Database State Management */}

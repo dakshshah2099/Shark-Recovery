@@ -78,6 +78,9 @@ class RecoveryStrategy(BaseModel):
     message_content: str = Field(description="Personalized message body tailored to the user and channel")
     urgency_level: str = Field(default="medium", description="Urgency tag (low, medium, high)")
     rationale: str = Field(description="Strategic justification for channel, tone, and discount selection")
+    delay_seconds: int = Field(default=0, description="Intelligent delay in seconds before primary outreach")
+    delayed_dispatch: bool = Field(default=False, description="Flag indicating primary payment outreach is delayed")
+    immediate_message: Optional[str] = Field(default=None, description="Immediate subtle notification copy (e.g. cart reserved)")
 
 
 class EmailPayload(BaseModel):
@@ -193,6 +196,11 @@ class TransactionRead(BaseModel):
     mandate_retry_schedule: Optional[str] = None
     voice_call_transcript: Optional[str] = None
     is_benchmark: bool = False
+    next_retry_at: Optional[datetime] = None
+    dispatch_scheduled_at: Optional[datetime] = None
+    ptp_reminder_sent: bool = False
+    ptp_status: Optional[str] = None
+    auto_retry_enabled: bool = True
     created_at: datetime
     updated_at: datetime
 

@@ -9,6 +9,7 @@ if str(_root_dir) not in sys.path:
 if str(_current_dir) not in sys.path:
     sys.path.insert(0, str(_current_dir))
 
+import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 from fastapi import FastAPI
@@ -19,12 +20,14 @@ try:
     from backend.models.transaction import Transaction
     from backend.routers import dashboard_router, simulate_router, voice_router, voice_stream_router, webhook_router
     from backend.seed import seed_database
+    from backend.workers.recovery_scheduler import recovery_scheduler_loop, stop_recovery_scheduler
 except ImportError:
     from config import settings
     from database import async_session_maker, init_db
     from models.transaction import Transaction
     from routers import dashboard_router, simulate_router, voice_router, voice_stream_router, webhook_router
     from seed import seed_database
+    from workers.recovery_scheduler import recovery_scheduler_loop, stop_recovery_scheduler
 from sqlmodel import select
 
 
@@ -33,8 +36,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifespan context manager for startup and shutdown events."""
     # Startup: Ensure SQLite tables exist
     await init_db()
+    # Start autonomous recovery scheduler background worker
+    scheduler_task = asyncio.create_task(recovery_scheduler_loop(interval_seconds=30))
     yield
-    # Shutdown: Cleanup if needed
+    # Shutdown: Cleanup background worker
+    stop_recovery_scheduler()
+    if scheduler_task and not scheduler_task.done():
+        scheduler_task.cancel()
+        try:
+            await scheduler_task
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(

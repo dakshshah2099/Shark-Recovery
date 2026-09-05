@@ -23,6 +23,12 @@ try:
     )
     from backend.models.transaction import Transaction, TransactionStatus
     from backend.tools.razorpay_tool import create_razorpay_order
+    from backend.workers.recovery_scheduler import (
+        get_scheduler_status,
+        pause_recovery_scheduler,
+        resume_recovery_scheduler,
+        run_scheduler_tick,
+    )
 except ImportError:
     from agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
     from config import settings
@@ -39,6 +45,12 @@ except ImportError:
     )
     from models.transaction import Transaction, TransactionStatus
     from tools.razorpay_tool import create_razorpay_order
+    from workers.recovery_scheduler import (
+        get_scheduler_status,
+        pause_recovery_scheduler,
+        resume_recovery_scheduler,
+        run_scheduler_tick,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -134,12 +146,22 @@ async def list_transactions(
             "failure_code": t.failure_code,
             "failure_reason": t.failure_reason,
             "failure_category": t.failure_category.value if t.failure_category and hasattr(t.failure_category, "value") else (str(t.failure_category) if t.failure_category else "unknown"),
+            "loss_vector": t.loss_vector.value if hasattr(t.loss_vector, "value") else str(t.loss_vector),
+            "escalation_level": t.escalation_level,
             "retry_count": t.retry_count,
             "max_retries": t.max_retries,
             "recovery_link": t.recovery_link,
             "recovery_channel": t.recovery_channel,
             "discount_applied_percent": t.discount_applied_percent,
             "recovered_amount": t.recovered_amount,
+            "promise_to_pay_date": t.promise_to_pay_date,
+            "mandate_retry_schedule": t.mandate_retry_schedule,
+            "voice_call_transcript": t.voice_call_transcript,
+            "next_retry_at": t.next_retry_at.isoformat() if getattr(t, "next_retry_at", None) else None,
+            "dispatch_scheduled_at": t.dispatch_scheduled_at.isoformat() if getattr(t, "dispatch_scheduled_at", None) else None,
+            "ptp_reminder_sent": getattr(t, "ptp_reminder_sent", False),
+            "ptp_status": getattr(t, "ptp_status", None),
+            "auto_retry_enabled": getattr(t, "auto_retry_enabled", True),
             "created_at": t.created_at.isoformat() if t.created_at else "",
             "updated_at": t.updated_at.isoformat() if t.updated_at else "",
         })
@@ -271,6 +293,8 @@ async def mark_transaction_recovered(
     payable = round(txn.amount * (1.0 - txn.discount_applied_percent / 100.0), 2)
     txn.status = TransactionStatus.RECOVERED
     txn.recovered_amount = payable
+    if txn.promise_to_pay_date:
+        txn.ptp_status = "FULFILLED"
     txn.updated_at = datetime.utcnow()
     session.add(txn)
 
@@ -580,6 +604,68 @@ async def report_checkout_failure_endpoint(
         "transaction_id": transaction.id,
         "recovery": recovery_result,
     }
+
+
+class SchedulerToggleRequest(BaseModel):
+    paused: Optional[bool] = None
+
+
+@router.get("/scheduler/status")
+async def get_scheduler_status_endpoint() -> Dict[str, Any]:
+    """Returns real-time operational telemetry for the autonomous background recovery worker."""
+    return get_scheduler_status()
+
+
+@router.post("/scheduler/toggle")
+async def toggle_scheduler_endpoint(payload: Optional[SchedulerToggleRequest] = None) -> Dict[str, Any]:
+    """Pauses or resumes the autonomous background recovery scheduler worker."""
+    current = get_scheduler_status()
+    if payload and payload.paused is not None:
+        target_paused = payload.paused
+    else:
+        target_paused = not current["is_paused"]
+
+    if target_paused:
+        pause_recovery_scheduler()
+    else:
+        resume_recovery_scheduler()
+
+    return get_scheduler_status()
+
+
+@router.post("/scheduler/tick")
+async def trigger_scheduler_tick_endpoint(
+    session: AsyncSession = Depends(get_session),
+) -> Dict[str, Any]:
+    """Manually triggers an immediate evaluation pass of the recovery scheduler worker."""
+    metrics = await run_scheduler_tick(session=session)
+    return {
+        "status": "success",
+        "metrics": metrics,
+        "scheduler": get_scheduler_status(),
+    }
+
+
+@router.post("/transactions/{transaction_id}/toggle-auto-retry")
+async def toggle_transaction_auto_retry(
+    transaction_id: str,
+    session: AsyncSession = Depends(get_session),
+) -> Dict[str, Any]:
+    """Toggles per-transaction automated recovery kill-switch."""
+    txn_res = await session.execute(select(Transaction).where(Transaction.id == transaction_id))
+    txn = txn_res.scalar_one_or_none()
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    txn.auto_retry_enabled = not getattr(txn, "auto_retry_enabled", True)
+    txn.updated_at = datetime.utcnow()
+    session.add(txn)
+    await session.commit()
+    return {
+        "status": "success",
+        "transaction_id": txn.id,
+        "auto_retry_enabled": txn.auto_retry_enabled,
+    }
+
 
 
 

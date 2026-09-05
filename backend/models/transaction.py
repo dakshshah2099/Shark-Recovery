@@ -120,6 +120,29 @@ class TransactionBase(SQLModel):
         index=True,
         description="Flag indicating if transaction is generated as part of a batch benchmark suite",
     )
+    next_retry_at: Optional[datetime] = Field(
+        default=None,
+        index=True,
+        description="Timestamp for next scheduled recovery attempt",
+    )
+    dispatch_scheduled_at: Optional[datetime] = Field(
+        default=None,
+        index=True,
+        description="Delayed dispatch timestamp for liquidity windows",
+    )
+    ptp_reminder_sent: bool = Field(
+        default=False,
+        description="Flags whether expired PTP reminder already dispatched",
+    )
+    ptp_status: Optional[str] = Field(
+        default=None,
+        index=True,
+        description="PTP status: PENDING, FULFILLED, BREACHED",
+    )
+    auto_retry_enabled: bool = Field(
+        default=True,
+        description="Per-transaction automated recovery kill-switch",
+    )
 
 
 class Transaction(TransactionBase, table=True):

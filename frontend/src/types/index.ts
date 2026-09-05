@@ -47,6 +47,11 @@ export interface TransactionItem {
   promise_to_pay_date?: string | null;
   mandate_retry_schedule?: string | null;
   voice_call_transcript?: string | null;
+  next_retry_at?: string | null;
+  dispatch_scheduled_at?: string | null;
+  ptp_reminder_sent?: boolean;
+  ptp_status?: 'PENDING' | 'FULFILLED' | 'BREACHED' | string | null;
+  auto_retry_enabled?: boolean;
   created_at: string;
   updated_at: string;
 }
