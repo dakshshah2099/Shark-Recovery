@@ -20,7 +20,6 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { CustomSelect } from '../components/CustomSelect';
-import { RecoverySchedulerCard } from '../components/RecoverySchedulerCard';
 
 interface SettingsViewProps {
   onClearDB: () => void;
@@ -825,9 +824,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         )}
       </div>
-
-      {/* Autonomous Background Recovery Scheduler Control */}
-      <RecoverySchedulerCard showNotification={showNotification} />
 
       {/* Database State Management */}
       <div className="bg-white dark:bg-[#121215] border border-rose-200 dark:border-rose-900/30 rounded-lg p-5 sm:p-7 space-y-3 shadow-xs transition-colors">
