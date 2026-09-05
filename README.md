@@ -7,7 +7,7 @@
 [![Vite](https://img.shields.io/badge/Bundler-Vite_8-646CFF.svg?logo=vite&logoColor=white)](https://vitejs.dev)
 [![TailwindCSS v4](https://img.shields.io/badge/Styling-TailwindCSS_v4-38B2AC.svg?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Razorpay](https://img.shields.io/badge/Payments-Razorpay_API-0C2340.svg?logo=razorpay&logoColor=white)](https://razorpay.com)
-[![Voice AI](https://img.shields.io/badge/Voice_AI-Full_Duplex_WebSockets(Using Gemini-3.1-flash-live-preview-4285F4.svg)](https://fastapi.tiangolo.com)
+[![Voice AI](https://img.shields.io/badge/Voice_AI-Full_Duplex_WebSockets(Using Gemini 3.1 flash live preview-4285F4.svg)]
 [![Twilio](https://img.shields.io/badge/Telephony-Twilio_Voice_%26_WhatsApp-F22F46.svg?logo=twilio&logoColor=white)](https://twilio.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
