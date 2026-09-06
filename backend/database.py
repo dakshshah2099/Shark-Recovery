@@ -14,7 +14,7 @@ logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
 logging.getLogger("sqlalchemy.pool").setLevel(logging.ERROR)
 logging.getLogger("sqlalchemy.dialects").setLevel(logging.ERROR)
 
-db_url = settings.DATABASE_URL
+db_url = (settings.DATABASE_URL or "").strip() or "sqlite+aiosqlite:///./recovery.db"
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
 elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
