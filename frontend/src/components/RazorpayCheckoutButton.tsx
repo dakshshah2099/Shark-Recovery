@@ -23,6 +23,7 @@ export const RazorpayCheckoutButton: React.FC<RazorpayCheckoutButtonProps> = ({
   const [sdkLoaded, setSdkLoaded] = useState<boolean>(false);
   const [initiating, setInitiating] = useState<boolean>(false);
   const isFailureReportedRef = useRef<boolean>(false);
+  const isSuccessRef = useRef<boolean>(false);
 
   // Load Razorpay Standard Checkout Script
   useEffect(() => {
@@ -61,6 +62,7 @@ export const RazorpayCheckoutButton: React.FC<RazorpayCheckoutButtonProps> = ({
 
     setInitiating(true);
     isFailureReportedRef.current = false;
+    isSuccessRef.current = false;
     showNotification('Initializing live Razorpay test checkout session...', 'loading', 0);
 
     try {
@@ -110,13 +112,46 @@ export const RazorpayCheckoutButton: React.FC<RazorpayCheckoutButtonProps> = ({
           color: '#0c2340',
         },
         handler: async (response: any) => {
+          isSuccessRef.current = true;
           showNotification(`Payment Succeeded (Payment ID: ${response.razorpay_payment_id})`, 'success', 4500);
           onSuccess();
           setInitiating(false);
         },
         modal: {
-          ondismiss: () => {
+          ondismiss: async () => {
             setInitiating(false);
+            // Smart Filter:
+            // 1. If payment already succeeded or failure already intercepted at gateway/bank, drop close event.
+            if (isFailureReportedRef.current || isSuccessRef.current) {
+              return;
+            }
+            // 2. Intentional checkout abandonment: User deliberately closed window without completing payment.
+            isFailureReportedRef.current = true;
+            showNotification(`⚠️ Checkout Abandoned: User closed checkout window. Intercepting with AI agent...`, 'loading', 0);
+            try {
+              const reportRes = await fetch('/api/checkout/report-failure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  order_id: orderData.order_id,
+                  error_code: 'USER_DROPOUT',
+                  error_description: 'Customer intentionally closed checkout window before completing payment',
+                  error_source: 'customer',
+                  error_step: 'checkout_modal',
+                  error_reason: 'user_closed_modal',
+                  amount: numAmount,
+                  customer_name: finalName,
+                  customer_email: finalEmail,
+                  customer_phone: finalPhone,
+                }),
+              });
+              if (reportRes.ok) {
+                showNotification(`⚡ Abandonment intercepted! AI recovery executed & outreach dispatched for ${finalName}.`, 'success', 5000);
+                onSuccess();
+              }
+            } catch (closeErr) {
+              console.error('Failed to report intentional checkout abandonment:', closeErr);
+            }
           },
         },
       };
