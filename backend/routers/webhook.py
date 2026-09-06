@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import or_, select
 try:
     from backend.agents.orchestrator import orchestrate_revenue_recovery, record_audit_log
     from backend.config import settings
@@ -89,6 +89,28 @@ async def handle_razorpay_webhook(
         customer_contact = payment_entity.get("contact") or "+919876543210"
         notes = payment_entity.get("notes", {})
         customer_name = notes.get("customer_name") or "Valued Customer"
+
+        # Deduplication Guard: Check if transaction already exists for this order or payment id
+        if order_id or payment_id:
+            conditions = []
+            if order_id:
+                conditions.append(Transaction.razorpay_order_id == order_id)
+            if payment_id:
+                conditions.append(Transaction.razorpay_payment_id == payment_id)
+            existing_query = await session.execute(
+                select(Transaction).where(or_(*conditions))
+            )
+            existing_txn = existing_query.scalars().first()
+            if existing_txn:
+                logger.info(
+                    f"Webhook duplicate: transaction already exists for order {order_id} / pay {payment_id} (txn: {existing_txn.id})."
+                )
+                return {
+                    "status": "processed",
+                    "deduplicated": True,
+                    "event": event,
+                    "transaction_id": existing_txn.id,
+                }
 
         # Find or create customer
         cust_query = await session.execute(

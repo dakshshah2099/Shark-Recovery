@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CreditCard, ShieldCheck, Loader2, AlertCircle, ArrowUpRight, HelpCircle } from 'lucide-react';
 
 interface RazorpayCheckoutButtonProps {
@@ -22,6 +22,7 @@ export const RazorpayCheckoutButton: React.FC<RazorpayCheckoutButtonProps> = ({
   const [amount, setAmount] = useState<string>('2499');
   const [sdkLoaded, setSdkLoaded] = useState<boolean>(false);
   const [initiating, setInitiating] = useState<boolean>(false);
+  const isFailureReportedRef = useRef<boolean>(false);
 
   // Load Razorpay Standard Checkout Script
   useEffect(() => {
@@ -59,6 +60,7 @@ export const RazorpayCheckoutButton: React.FC<RazorpayCheckoutButtonProps> = ({
     const finalPhone = customerPhone.trim() || '+919876543210';
 
     setInitiating(true);
+    isFailureReportedRef.current = false;
     showNotification('Initializing live Razorpay test checkout session...', 'loading', 0);
 
     try {
@@ -123,8 +125,26 @@ export const RazorpayCheckoutButton: React.FC<RazorpayCheckoutButtonProps> = ({
 
       // 3. Listen for client failure event
       rzpInstance.on('payment.failed', async (failureResponse: any) => {
+        // Prevent duplicate processing from modal dismissal/re-trigger
+        if (isFailureReportedRef.current) {
+          console.warn('Duplicate checkout payment.failed event suppressed.');
+          return;
+        }
+        isFailureReportedRef.current = true;
+
         const errObj = failureResponse.error || {};
         showNotification(`⚠️ Payment Failed: ${errObj.description || 'Checkout Dropout'}. Intercepting with AI agent...`, 'loading', 0);
+
+        // Automatically close the Razorpay modal after a brief moment to return seamlessly to dashboard
+        setTimeout(() => {
+          try {
+            if (rzpInstance && typeof rzpInstance.close === 'function') {
+              rzpInstance.close();
+            }
+          } catch (closeErr) {
+            console.warn('Auto-closing Razorpay checkout modal:', closeErr);
+          }
+        }, 800);
 
         try {
           const reportRes = await fetch('/api/checkout/report-failure', {

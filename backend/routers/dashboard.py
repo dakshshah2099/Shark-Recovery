@@ -554,6 +554,24 @@ async def report_checkout_failure_endpoint(
     Receives failure callback directly from Razorpay standard checkout client
     and invokes the autonomous revenue recovery orchestration pipeline.
     """
+    # Deduplication Guard: if failure has already been recorded for this order_id, return early
+    if payload.order_id:
+        existing_txn_query = await session.execute(
+            select(Transaction).where(Transaction.razorpay_order_id == payload.order_id)
+        )
+        existing_txn = existing_txn_query.scalars().first()
+        if existing_txn:
+            logger.info(
+                f"Checkout failure already recorded for order {payload.order_id} (txn: {existing_txn.id}). Deduplicating."
+            )
+            return {
+                "status": "processed",
+                "deduplicated": True,
+                "event": "checkout.payment_failed",
+                "transaction_id": existing_txn.id,
+                "message": "Duplicate failure event deduplicated",
+            }
+
     cust_query = await session.execute(
         select(Customer).where(Customer.email == payload.customer_email)
     )
