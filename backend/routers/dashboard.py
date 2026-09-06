@@ -256,6 +256,10 @@ async def get_whatsapp_feed(
         elif txn and txn.discount_applied_percent:
             discount_pct = float(txn.discount_applied_percent)
 
+        is_recovered = False
+        if txn and (txn.status == TransactionStatus.RECOVERED or (hasattr(txn.status, "value") and str(txn.status.value).lower() == "recovered")):
+            is_recovered = True
+
         feed.append({
             "id": log.id,
             "transaction_id": log.transaction_id,
@@ -265,6 +269,8 @@ async def get_whatsapp_feed(
             "payment_link": payment_link,
             "discount_percentage": discount_pct,
             "status": log.status.value if hasattr(log.status, "value") else str(log.status),
+            "is_recovered": is_recovered,
+            "transaction_status": txn.status.value if txn and hasattr(txn.status, "value") else (str(txn.status) if txn else "unknown"),
             "sent_at": log.created_at.isoformat() if log.created_at else "",
         })
     return feed
@@ -291,6 +297,17 @@ async def mark_transaction_recovered(
         raise HTTPException(status_code=404, detail="Transaction not found")
 
     payable = round(txn.amount * (1.0 - txn.discount_applied_percent / 100.0), 2)
+
+    # Idempotency Guard: if already recovered, return early to prevent double increment
+    if txn.status == TransactionStatus.RECOVERED:
+        return {
+            "status": "success",
+            "message": "Transaction already marked as recovered",
+            "transaction_id": txn.id,
+            "recovered_amount": txn.recovered_amount or payable,
+            "already_recovered": True,
+        }
+
     txn.status = TransactionStatus.RECOVERED
     txn.recovered_amount = payable
     if txn.promise_to_pay_date:

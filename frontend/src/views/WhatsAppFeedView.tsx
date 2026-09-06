@@ -17,6 +17,7 @@ import {
   Smile,
   Paperclip,
   Mic,
+  Loader2,
 } from 'lucide-react';
 import type { WhatsAppMessage } from '../types';
 import { formatToIST } from '../utils/date';
@@ -36,6 +37,7 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [payingId, setPayingId] = useState<string | null>(null);
+  const [recoveredTxnIds, setRecoveredTxnIds] = useState<Set<string>>(new Set());
 
   const fetchFeed = useCallback(async () => {
     setLoading(true);
@@ -44,6 +46,10 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
       if (res.ok) {
         const data: WhatsAppMessage[] = await res.json();
         setMessages(data);
+        const alreadyRecovered = new Set(
+          data.filter((m) => m.is_recovered || m.transaction_status === 'recovered').map((m) => m.transaction_id)
+        );
+        setRecoveredTxnIds((prev) => new Set([...prev, ...alreadyRecovered]));
         if (data.length > 0 && !selectedId) {
           setSelectedId(data[0].id);
         }
@@ -73,6 +79,9 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
   );
 
   const selectedMsg = messages.find((m) => m.id === selectedId) || filtered[0] || null;
+  const isSelectedPaid = selectedMsg
+    ? recoveredTxnIds.has(selectedMsg.transaction_id) || Boolean(selectedMsg.is_recovered) || selectedMsg.transaction_status === 'recovered'
+    : false;
 
   const handleCopyLink = (link: string) => {
     navigator.clipboard.writeText(link);
@@ -83,13 +92,18 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
 
   const handlePay = async (txnId: string) => {
     if (!txnId || txnId.startsWith('unknown')) return;
+    if (recoveredTxnIds.has(txnId)) return;
     setPayingId(txnId);
     try {
       if (onSimulatePay) {
         await onSimulatePay(txnId);
+        setRecoveredTxnIds((prev) => new Set([...prev, txnId]));
+        showNotification?.(`🎉 Payment recovered for ${txnId}!`, 'success', 4000);
+        await fetchFeed();
       } else {
         const res = await fetch(`/api/transactions/${txnId}/mark-recovered`, { method: 'POST' });
         if (res.ok) {
+          setRecoveredTxnIds((prev) => new Set([...prev, txnId]));
           showNotification?.(`🎉 Payment recovered for ${txnId}!`, 'success', 4000);
           await fetchFeed();
         }
@@ -201,10 +215,17 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
                             {msg.discount_percentage}% OFF
                           </span>
                         )}
-                        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
-                          <CheckCheck className="w-3 h-3" />
-                          Delivered
-                        </span>
+                        {(recoveredTxnIds.has(msg.transaction_id) || msg.is_recovered || msg.transaction_status === 'recovered') ? (
+                          <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-800 flex items-center gap-0.5">
+                            <Check className="w-2.5 h-2.5" />
+                            Recovered
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+                            <CheckCheck className="w-3 h-3" />
+                            Delivered
+                          </span>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -306,20 +327,42 @@ export const WhatsAppFeedView: React.FC<WhatsAppFeedViewProps> = ({
                           </button>
                         </div>
 
+                        {isSelectedPaid && (
+                          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-emerald-100/80 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                            <CheckCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <span>Payment Settled — 100% Recovered via Razorpay Link</span>
+                          </div>
+                        )}
+
                         <div className="flex items-center gap-2 pt-1">
-                          <button
-                            type="button"
-                            onClick={() => handlePay(selectedMsg.transaction_id)}
-                            disabled={payingId === selectedMsg.transaction_id}
-                            className="flex-1 py-2 px-3 rounded text-xs font-bold bg-[#008069] hover:bg-[#00705c] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                          >
-                            <CheckCheck className="w-4 h-4" />
-                            <span>
-                              {payingId === selectedMsg.transaction_id
-                                ? 'Simulating Settlement...'
-                                : 'Complete Payment'}
-                            </span>
-                          </button>
+                          {isSelectedPaid ? (
+                            <button
+                              type="button"
+                              disabled
+                              className="flex-1 py-2 px-3 rounded text-xs font-bold bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center gap-1.5 shadow-xs cursor-default opacity-90"
+                            >
+                              <CheckCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                              <span>Payment Settled</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handlePay(selectedMsg.transaction_id)}
+                              disabled={payingId === selectedMsg.transaction_id}
+                              className="flex-1 py-2 px-3 rounded text-xs font-bold bg-[#008069] hover:bg-[#00705c] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                            >
+                              {payingId === selectedMsg.transaction_id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <CheckCheck className="w-4 h-4" />
+                              )}
+                              <span>
+                                {payingId === selectedMsg.transaction_id
+                                  ? 'Simulating Settlement...'
+                                  : 'Complete Payment'}
+                              </span>
+                            </button>
+                          )}
 
                           <a
                             href={selectedMsg.payment_link}

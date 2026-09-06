@@ -82,6 +82,8 @@ export interface WhatsAppMessage {
   discount_percentage: number;
   template_name?: string | null;
   status: string;
+  is_recovered?: boolean;
+  transaction_status?: string;
   read_receipt?: boolean;
   timestamp?: string;
   sent_at: string;
