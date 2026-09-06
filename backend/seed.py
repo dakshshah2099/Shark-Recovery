@@ -773,9 +773,11 @@ async def seed_database():
                 }),
                 output_payload=json.dumps({
                     "channel": data["channel"],
+                    "discount_percentage": data["discount"],
                     "discount_percent": data["discount"],
                     "offer_code": f"SAVE{int(data['discount'])}" if data["discount"] > 0 else None,
                     "tone": "empathic_hinglish" if data["channel"] == "voice_ivr" else ("casual_hinglish" if data["channel"] == "whatsapp" else "professional"),
+                    "rationale": f"High conversion incentive applied for {data['category'].value} recovery.",
                 }),
                 execution_duration_ms=round(random.uniform(40.0, 85.0), 2),
                 created_at=created_time + timedelta(seconds=4),

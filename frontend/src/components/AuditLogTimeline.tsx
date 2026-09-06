@@ -168,7 +168,8 @@ const parsePayloadIntelligence = (log: AuditLogItem): ParsedIntelligence => {
     headline = `Voice AI Outreach${outputObj.customer_intent ? `: ${outputObj.customer_intent.replace(/_/g, ' ').toUpperCase()}` : ''}`;
     if (outputObj.call_id) keyValues.push({ label: 'Call ID', value: String(outputObj.call_id), highlight: true });
     if (outputObj.call_duration_seconds !== undefined) keyValues.push({ label: 'Duration', value: `${outputObj.call_duration_seconds}s` });
-    if (outputObj.discount_offered !== undefined) keyValues.push({ label: 'Discount', value: `${outputObj.discount_offered}%` });
+    const voiceDisc = outputObj.discount_offered ?? outputObj.discount_percent ?? outputObj.discount_percentage;
+    if (voiceDisc !== undefined) keyValues.push({ label: 'Discount', value: `${voiceDisc}%` });
     if (outputObj.promise_to_pay_date) keyValues.push({ label: 'Promise Date', value: String(outputObj.promise_to_pay_date) });
     if (outputObj.call_outcome) messageBody = String(outputObj.call_outcome);
     if (outputObj.dialogue && Array.isArray(outputObj.dialogue)) {
@@ -194,12 +195,14 @@ const parsePayloadIntelligence = (log: AuditLogItem): ParsedIntelligence => {
   }
 
   // Strategy Agent
-  if (outputObj.channel || outputObj.discount_percent !== undefined) {
-    headline = `Strategy: ${outputObj.channel || 'Multi-Channel'} with ${outputObj.discount_percent || 0}% Incentive`;
+  const discountVal = outputObj.discount_percentage ?? outputObj.discount_percent ?? outputObj.discount;
+  if (outputObj.channel || discountVal !== undefined || outputObj.offer_code || log.agent_name === 'StrategyAgent' || log.action_type === 'STRATEGY_DECIDED') {
+    const discNum = discountVal !== undefined && discountVal !== null ? Number(discountVal) : 0;
+    headline = `Strategy: ${outputObj.channel ? String(outputObj.channel).toUpperCase() : 'Multi-Channel'} with ${discNum}% Incentive`;
     if (outputObj.channel) keyValues.push({ label: 'Channel', value: String(outputObj.channel).toUpperCase(), highlight: true });
-    if (outputObj.discount_percent !== undefined) keyValues.push({ label: 'Discount', value: `${outputObj.discount_percent}%` });
+    if (discountVal !== undefined && discountVal !== null) keyValues.push({ label: 'Discount', value: `${discNum}%` });
     if (outputObj.offer_code) keyValues.push({ label: 'Coupon', value: String(outputObj.offer_code) });
-    if (outputObj.reasoning) messageBody = String(outputObj.reasoning);
+    if (outputObj.rationale || outputObj.reasoning) messageBody = String(outputObj.rationale || outputObj.reasoning);
   }
 
   // Payment Link
